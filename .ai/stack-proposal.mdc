@@ -1,0 +1,17 @@
+---
+alwaysApply: false
+---
+techStack:
+  frontend:
+    - framework: React
+    - styling: 
+        - Tailwind CSS
+        - shadcn/ui
+    - staticSiteGenerator: Astro
+    - language: TypeScript
+  backend:
+    - framework: NestJS
+    - language: TypeScript
+    - database: 
+        - type: PostgreSQL
+        - integration: TypeORM
