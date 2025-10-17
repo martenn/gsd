@@ -109,3 +109,37 @@ Given updated constraints (Google-only auth, avoid complex providers, simplicity
 - Path A: MVP in 2-3 weeks, full feature set in 4-5 weeks
 - Path B: MVP in 3-4 weeks, full feature set in 5-7 weeks
 </answers-claude>
+
+<answers-cursor-plan>
+
+## Summary (Cursor Plan)
+
+- **Feasibility**: Yes. Focus on two core features: 
+  - **Flow**: drag-and-drop `backlog → week → today` with ordering
+  - **Work Mode**: top “focus” task + next 2–3 preview; single action = complete
+- **MVP scope**: Google-only auth; per-user data; views for Backlogs, Week, Today, Work Mode; Done explored separately; no collaboration/notifications.
+- **Data model**: `Task(user_id, list: backlog|week|today|done, position float, done_at)`; `Backlog(name)`; index `(user_id, list, position)`. Use float `position` for cheap reordering; normalize periodically.
+- **Auth**: 
+  - Supabase Auth (Google-only) with RLS; or 
+  - NestJS + Passport Google → JWT/refresh, `google_sub` as identity.
+- **Two main paths**:
+  - **Path A (Simplest)**: React + Supabase (Auth + Postgres + RLS), host frontend on Vercel, Supabase handles HTTPS/DB. Fastest to MVP.
+  - **Path B (NestJS)**: React + NestJS + Postgres (Neon/Supabase). More control, more setup (CORS, HTTPS, Docker).
+
+### Docker + DigitalOcean variants
+- **Option A – App Platform (recommended)**: 
+  - Frontend (static) + NestJS (Docker) + DO Managed Postgres.
+  - Pros: minimal ops, auto HTTPS, rollbacks. Cost: ~$5–$12 (API) + ~$15 (DB).
+- **Option B – Single Droplet + Docker Compose (cheapest)**:
+  - `caddy/nginx` reverse proxy + `nest` + `postgres` containers (or managed DB).
+  - Pros: low cost ($6–$12). Cons: you manage TLS, backups, updates.
+
+### 6-week timeline
+- W1: Project setup, auth, DB schema, basic queries/endpoints.
+- W2: Backlogs UI + CRUD + DnD + optimistic updates.
+- W3: Week/Today lists, moves, ordering, Done flow.
+- W4: Work Mode (focus sync, next-up preview).
+- W5: Polishing, TZ handling, multi-tab ordering consistency, tests.
+- W6: Deploy (Vercel/Supabase or DO), envs, small UX refinements.
+
+</answers-cursor-plan>

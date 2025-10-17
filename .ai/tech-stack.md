@@ -1,0 +1,53 @@
+Tech Stack Summary
+- Frontend
+-- Framework: Astro (islands) + React 18
+-- Styling/UI: Tailwind CSS + shadcn/ui + lucide-react
+-- State/Server Data: TanStack Query (server state), local UI state in React
+-- Forms/Validation: react-hook-form + zod
+-- Routing: Astro pages; React app mounted for the authenticated app shell
+-- API Client: fetch wrapper with typed DTOs; optional OpenAPI client generation from backend swagger
+- Backend
+-- Runtime/Framework: NestJS (REST, modular)
+-- ORM: Prisma (PostgreSQL)
+-- Auth: Google OAuth 2.0 (@nestjs/passport + passport-google-oauth20)
+-- Session: Backend‑issued JWT in HttpOnly cookie
+-- Validation: class-validator + class-transformer (DTOs)
+-- Scheduling: @nestjs/schedule (retention/reindex)
+-- Security: CORS, helmet, rate limiting (@nestjs/throttler)
+- Database
+-- Engine: PostgreSQL 16
+-- Migrations: prisma migrate
+-- Indexes: on user_id, list_id, completed_at, order_index
+-- Transactions: handled in Nest services (Prisma $transaction)
+-- Local Dev: docker-compose (Postgres + optional pgAdmin)
+- Key Backend Modules (aligned to PRD)
+-- AuthModule: Google OAuth login/callback, JWT issuance
+-- ListsModule: CRUD, reorder, toggle backlog (ensure ≥1 backlog), delete-with-move
+-- TasksModule: CRUD, move (insert at top), reorder, complete (set completed_at)
+-- MetricsModule: daily/weekly aggregates (UTC storage, TZ applied in API)
+-- DoneModule: paginated read; retention job (keep N=500/user)
+-- MaintenanceModule: cron for retention and optional reindex
+-- HealthModule: liveness/readiness
+- Build/Quality
+-- Language/Tooling: TypeScript strict, ESLint, Prettier
+-- Testing: Jest + @nestjs/testing (unit), supertest (e2e)
+-- Docs: Swagger via @nestjs/swagger (enables typed client gen)
+- Environments
+-- Local: Astro dev server + Nest dev server; Postgres via Docker
+-- CI: GitHub Actions (lint, typecheck, test, build)
+-- Deploy: Containerized (Docker) for both services; Postgres managed or self‑hosted
+- Non‑functional
+-- Perf: simple sparse order_index with periodic reindex
+-- Limits: enforce in services (10 lists non‑Done, 100 tasks/list)
+-- Observability: Nest logger (pino or built‑in), request logging; optional OpenTelemetry
+- API Surface (v1)
+-- POST /auth/google (init) / GET /auth/google/callback
+-- GET/POST/PATCH/DELETE /v1/lists
+-- POST /v1/lists/:id/toggle-backlog
+-- DELETE /v1/lists/:id?dest=:destId
+-- GET/POST/PATCH/DELETE /v1/tasks
+-- POST /v1/tasks/:id/move
+-- POST /v1/tasks/:id/complete
+-- POST /v1/tasks/bulk-add
+-- GET /v1/done?page=n
+-- GET /v1/metrics/daily, GET /v1/metrics/weekly
