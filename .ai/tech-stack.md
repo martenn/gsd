@@ -1,6 +1,6 @@
 Tech Stack Summary
 - Frontend
--- Framework: Astro (islands) + React 18
+-- Framework: Astro (islands) + React 19
 -- Styling/UI: Tailwind CSS + shadcn/ui + lucide-react
 -- State/Server Data: TanStack Query (server state), local UI state in React
 -- Forms/Validation: react-hook-form + zod
