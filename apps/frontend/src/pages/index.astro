@@ -1,5 +1,5 @@
 ---
-
+import Counter from '../components/Counter';
 ---
 
 <html lang="en">
@@ -8,9 +8,11 @@
 		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 		<meta name="viewport" content="width=device-width" />
 		<meta name="generator" content={Astro.generator} />
-		<title>Astro</title>
+		<title>GSD - Getting Shit Done</title>
 	</head>
-	<body>
-		<h1>Astro</h1>
+	<body class="p-8 bg-gray-50">
+		<h1 class="text-3xl font-bold mb-6">GSD - Getting Shit Done</h1>
+		<p class="mb-4 text-gray-600">Monorepo setup complete with React 19 + Tailwind CSS</p>
+		<Counter client:load />
 	</body>
 </html>
