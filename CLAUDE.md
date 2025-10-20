@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **GSD (Getting Shit Done)** is a focused personal productivity app inspired by GTD. It helps solo users plan and execute work using multiple user-managed backlogs, intermediate lists, and a focused work mode. The MVP targets responsive web (desktop and mobile), single-user accounts, with Google OAuth authentication.
 
-**Current Status**: Pre-implementation phase with comprehensive PRD and tech stack defined.
+**Current Status**: Monorepo bootstrapped with basic infrastructure. Ready for feature implementation.
 
 ## Tech Stack
 
@@ -40,6 +40,38 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **Formatting**: Prettier
 - **Testing**: Jest + @nestjs/testing (unit), supertest (e2e)
 - **API Docs**: Swagger via @nestjs/swagger
+- **Monorepo**: pnpm workspaces (no Turborepo - kept simple)
+
+## Monorepo Structure
+
+```
+gsd/
+├── apps/
+│   ├── backend/          # NestJS API (@gsd/backend)
+│   │   ├── src/          # Source code
+│   │   ├── test/         # Tests (unit + e2e)
+│   │   └── prisma/       # Database schema and migrations
+│   └── frontend/         # Astro + React (@gsd/frontend)
+│       ├── src/
+│       │   ├── components/  # React components
+│       │   └── pages/       # Astro pages
+│       └── public/
+├── packages/
+│   ├── types/            # Shared TypeScript types (@gsd/types)
+│   └── validation/       # Shared Zod schemas (@gsd/validation)
+├── tools/
+│   └── docker/           # docker-compose.yml for local Postgres
+├── package.json          # Root workspace config
+├── pnpm-workspace.yaml   # Workspace definition
+└── tsconfig.base.json    # Shared TypeScript config
+```
+
+**Key Commands:**
+- `pnpm dev` - Start both apps in dev mode
+- `pnpm build` - Build all packages and apps
+- `pnpm test` - Run all tests
+- `pnpm db:migrate` - Run Prisma migrations
+- `pnpm db:studio` - Open Prisma Studio
 
 ## Architecture & Key Concepts
 

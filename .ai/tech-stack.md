@@ -1,4 +1,8 @@
 Tech Stack Summary
+- Monorepo
+-- Package Manager: pnpm v8+ (workspaces)
+-- Structure: apps/ (backend, frontend), packages/ (types, validation), tools/ (docker)
+-- No build orchestration (Turborepo skipped for simplicity)
 - Frontend
 -- Framework: Astro (islands) + React 19
 -- Styling/UI: Tailwind CSS + shadcn/ui + lucide-react
