@@ -1,0 +1,64 @@
+// GSD (Getting Shit Done) - Prisma Schema
+// Data model for task management with multiple backlogs and lists
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  googleId  String   @unique @map("google_id")
+  name      String?
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  lists List[]
+  tasks Task[]
+
+  @@index([email])
+  @@map("users")
+}
+
+model List {
+  id         String   @id @default(uuid())
+  name       String
+  orderIndex Float    @map("order_index")
+  isBacklog  Boolean  @default(false) @map("is_backlog")
+  isDone     Boolean  @default(false) @map("is_done")
+  color      String?
+  userId     String   @map("user_id")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  user  User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tasks Task[]
+
+  @@index([userId, orderIndex])
+  @@index([userId, isDone])
+  @@map("lists")
+}
+
+model Task {
+  id          String    @id @default(uuid())
+  title       String
+  description String?
+  orderIndex  Float     @map("order_index")
+  listId      String    @map("list_id")
+  userId      String    @map("user_id")
+  completedAt DateTime? @map("completed_at")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  list List @relation(fields: [listId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, listId, orderIndex])
+  @@index([userId, completedAt])
+  @@map("tasks")
+}
