@@ -225,3 +225,117 @@ These need to be resolved during implementation:
 - **Auth**: Google OAuth only; no other providers in MVP
 - **Collaboration**: Out of scope; single-user only
 - **Offline**: Not supported in MVP; online-only web app
+
+---
+
+## Coding Standards and Best Practices
+
+The following coding standards are automatically enforced for specific file types. These rules are sourced from `.cursor/rules/` and should be followed when working with the codebase.
+
+### Backend Development (TypeScript)
+
+**Support Level: EXPERT**
+- Favor elegant, maintainable solutions with verbose code. Assume understanding of language idioms and design patterns.
+- Highlight potential performance implications and optimization opportunities in suggested code.
+- Frame solutions within broader architectural contexts and suggest design alternatives when appropriate.
+- Focus comments on 'why' not 'what' - assume code readability through well-named functions and variables.
+- Proactively address edge cases, race conditions, and security considerations without being prompted.
+- When debugging, provide targeted diagnostic approaches rather than shotgun solutions.
+- Suggest comprehensive testing strategies rather than just example tests, including considerations for mocking, test organization, and coverage.
+
+**NestJS Best Practices**:
+- Use dependency injection for services to improve testability and maintainability following SOLID principles
+- Implement custom decorators for cross-cutting concerns to keep code DRY and maintain separation of business logic
+- Use interceptors for transforming the response data structure consistently
+- Leverage NestJS Guards for authorization to centralize access control logic across all resources
+- Implement domain-driven design with modules that encapsulate related functionality and maintain clear boundaries
+- Use Prisma with repository patterns to abstract database operations and simplify testing with mocks
+
+**Docker Best Practices**:
+- Use multi-stage builds to create smaller production images
+- Use non-root users in containers for better security
+
+### Frontend Development (React/Astro)
+
+**React Coding Standards**:
+- Use functional components with hooks instead of class components
+- Implement React.memo() for expensive components that render often with the same props
+- Utilize React.lazy() and Suspense for code-splitting and performance optimization
+- Use the useCallback hook for event handlers passed to child components to prevent unnecessary re-renders
+- Prefer useMemo for expensive calculations to avoid recomputation on every render
+- Implement useId() for generating unique IDs for accessibility attributes
+- Use the new use hook for data fetching in React 19+ projects
+- Leverage Server Components for data-fetching-heavy components when using React with Next.js or similar frameworks
+- Consider using the new useOptimistic hook for optimistic UI updates in forms
+- Use useTransition for non-urgent state updates to keep the UI responsive
+
+**Tailwind CSS Best Practices**:
+- Use the @layer directive to organize styles into components, utilities, and base layers
+- Implement Just-in-Time (JIT) mode for development efficiency and smaller CSS bundles
+- Use arbitrary values with square brackets (e.g., w-[123px]) for precise one-off designs
+- Leverage the @apply directive in component classes to reuse utility combinations
+- Implement the Tailwind configuration file for customizing theme, plugins, and variants
+- Use component extraction for repeated UI patterns instead of copying utility classes
+- Leverage the theme() function in CSS for accessing Tailwind theme values
+- Implement dark mode with the dark: variant
+- Use responsive variants (sm:, md:, lg:, etc.) for adaptive designs
+- Leverage state variants (hover:, focus:, active:, etc.) for interactive elements
+
+**Astro Coding Standards**:
+- Use Astro components (.astro) for static content and layout
+- Implement framework components in React only when interactivity is needed
+- Leverage View Transitions API for smooth page transitions
+- Use content collections with type safety for blog posts, documentation, etc.
+- Implement middleware for request/response modification
+- Use image optimization with the Astro Image integration
+- Leverage Server Endpoints for API routes
+- Implement hybrid rendering with server-side rendering where needed
+- Use Astro.cookies for server-side cookie management
+- Leverage import.meta.env for environment variables
+
+**Accessibility (ARIA) Standards**:
+- Use ARIA landmarks to identify regions of the page (main, navigation, search, etc.)
+- Apply appropriate ARIA roles to custom interface elements that lack semantic HTML equivalents
+- Set aria-expanded and aria-controls for expandable content like accordions and dropdowns
+- Use aria-live regions with appropriate politeness settings for dynamic content updates
+- Implement aria-hidden to hide decorative or duplicative content from screen readers
+- Apply aria-label or aria-labelledby for elements without visible text labels
+- Use aria-describedby to associate descriptive text with form inputs or complex elements
+- Implement aria-current for indicating the current item in a set, navigation, or process
+- Avoid redundant ARIA that duplicates the semantics of native HTML elements
+- Apply aria-invalid and appropriate error messaging for form validation
+
+### Version Control & Git Practices
+
+**Git Standards**:
+- Use conventional commits to create meaningful commit messages
+- Use feature branches with descriptive names
+- Write meaningful commit messages that explain why changes were made, not just what
+- Keep commits focused on single logical changes to facilitate code review and bisection
+- Use interactive rebase to clean up history before merging feature branches
+- Leverage git hooks to enforce code quality checks before commits and pushes
+
+**GitHub Standards**:
+- Use pull request templates to standardize information provided for code reviews
+- Implement branch protection rules to enforce quality checks
+- Configure required status checks to prevent merging code that fails tests or linting
+- Use GitHub Actions for CI/CD workflows to automate testing and deployment
+- Implement CODEOWNERS files to automatically assign reviewers based on code paths
+- Use GitHub Projects for tracking work items and connecting them to code changes
+
+### Documentation Standards
+
+- Update relevant documentation in /docs when modifying features
+- Keep README.md in sync with new capabilities
+- Maintain changelog entries in CHANGELOG.md
+
+### CI/CD Best Practices (GitHub Actions)
+
+- Check if `package.json` exists in project root and summarize key scripts
+- Check if `.nvmrc` exists in project root
+- Check if `.env.example` exists in project root to identify key environment variables
+- Always use terminal command: `git branch -a | cat` to verify whether we use `main` or `master` branch
+- Always use `env:` variables and secrets attached to jobs instead of global workflows
+- Always use `npm ci` for Node-based dependency setup
+- Extract common steps into composite actions in separate files
+- For each public action always use the most up-to-date version (use only major version)
