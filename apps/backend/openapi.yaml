@@ -1,0 +1,1107 @@
+openapi: 3.0.3
+info:
+  title: GSD (Getting Shit Done) API
+  description: |
+    API for GSD productivity application. Supports multiple user-managed lists (backlogs and intermediate lists),
+    task management, work mode focus, and completion metrics.
+
+    Key concepts:
+    - **Lists**: Organized left-to-right flow (backlogs → intermediate lists → Done)
+    - **Backlogs**: Leftmost lists, at least one must exist
+    - **Tasks**: Belong to exactly one list, can be moved between lists
+    - **Done**: Special hidden list for completed tasks
+    - **Active list**: Rightmost non-Done list (used in work mode)
+
+    Limits:
+    - Maximum 10 non-Done lists per user
+    - Maximum 100 tasks per list
+    - Retention: 500 most recent completed tasks
+  version: 1.0.0
+  contact:
+    name: GSD API Support
+
+servers:
+  - url: http://localhost:3000
+    description: Local development server
+  - url: https://api.gsd.example.com
+    description: Production server
+
+tags:
+  - name: lists
+    description: List management operations (CRUD, reorder, toggle backlog)
+  - name: tasks
+    description: Task management operations (CRUD, move, complete, reorder)
+  - name: done
+    description: Completed tasks archive with pagination
+  - name: metrics
+    description: Completion metrics (daily/weekly aggregates)
+  - name: health
+    description: Service health checks
+
+paths:
+  # ==================== LISTS ====================
+  /v1/lists:
+    get:
+      tags: [lists]
+      summary: Get all lists for current user
+      description: |
+        Returns all non-Done lists ordered by position (left-to-right).
+        Backlogs appear first, followed by intermediate lists.
+      operationId: getLists
+      responses:
+        '200':
+          description: Lists retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [lists]
+                properties:
+                  lists:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/List'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+    post:
+      tags: [lists]
+      summary: Create a new list
+      description: |
+        Creates a new list. By default creates an intermediate list.
+        Returns 400 if creating would exceed 10 non-Done lists limit.
+      operationId: createList
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateListDto'
+      responses:
+        '201':
+          description: List created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/List'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /v1/lists/{id}:
+    get:
+      tags: [lists]
+      summary: Get a specific list
+      operationId: getList
+      parameters:
+        - $ref: '#/components/parameters/ListId'
+      responses:
+        '200':
+          description: List retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/List'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+    patch:
+      tags: [lists]
+      summary: Update a list
+      description: Update list name, color, or order. Cannot modify Done list.
+      operationId: updateList
+      parameters:
+        - $ref: '#/components/parameters/ListId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateListDto'
+      responses:
+        '200':
+          description: List updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/List'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+    delete:
+      tags: [lists]
+      summary: Delete a list
+      description: |
+        Deletes a list and moves its tasks to the destination list.
+        Cannot delete if it's the last non-Done list.
+        Cannot delete Done list.
+      operationId: deleteList
+      parameters:
+        - $ref: '#/components/parameters/ListId'
+        - name: destListId
+          in: query
+          description: Destination list ID for tasks (defaults to default backlog)
+          required: false
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: List deleted successfully
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /v1/lists/{id}/toggle-backlog:
+    post:
+      tags: [lists]
+      summary: Toggle list backlog status
+      description: |
+        Mark or unmark a list as a backlog.
+        Cannot unmark if it's the last remaining backlog.
+      operationId: toggleBacklog
+      parameters:
+        - $ref: '#/components/parameters/ListId'
+      responses:
+        '200':
+          description: Backlog status toggled successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/List'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /v1/lists/{id}/reorder:
+    post:
+      tags: [lists]
+      summary: Reorder a list
+      description: Move list to a new position in the board order
+      operationId: reorderList
+      parameters:
+        - $ref: '#/components/parameters/ListId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReorderDto'
+      responses:
+        '200':
+          description: List reordered successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/List'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  # ==================== TASKS ====================
+  /v1/tasks:
+    get:
+      tags: [tasks]
+      summary: Get tasks
+      description: |
+        Get tasks, optionally filtered by list.
+        If no listId provided, returns all tasks for the user.
+      operationId: getTasks
+      parameters:
+        - name: listId
+          in: query
+          description: Filter tasks by list ID
+          required: false
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Tasks retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [tasks]
+                properties:
+                  tasks:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Task'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+    post:
+      tags: [tasks]
+      summary: Create a new task
+      description: |
+        Creates a task at the top of the specified list.
+        Returns 400 if the target list has 100 tasks.
+      operationId: createTask
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateTaskDto'
+      responses:
+        '201':
+          description: Task created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /v1/tasks/{id}:
+    get:
+      tags: [tasks]
+      summary: Get a specific task
+      operationId: getTask
+      parameters:
+        - $ref: '#/components/parameters/TaskId'
+      responses:
+        '200':
+          description: Task retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+    patch:
+      tags: [tasks]
+      summary: Update a task
+      description: Update task title, description, or other editable fields
+      operationId: updateTask
+      parameters:
+        - $ref: '#/components/parameters/TaskId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateTaskDto'
+      responses:
+        '200':
+          description: Task updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+    delete:
+      tags: [tasks]
+      summary: Delete a task
+      description: Hard delete a task (not recoverable in MVP)
+      operationId: deleteTask
+      parameters:
+        - $ref: '#/components/parameters/TaskId'
+      responses:
+        '204':
+          description: Task deleted successfully
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /v1/tasks/{id}/move:
+    post:
+      tags: [tasks]
+      summary: Move task to a different list
+      description: |
+        Moves a task to another list. Task is inserted at the top of the destination list.
+        Returns 400 if destination list has 100 tasks.
+      operationId: moveTask
+      parameters:
+        - $ref: '#/components/parameters/TaskId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MoveTaskDto'
+      responses:
+        '200':
+          description: Task moved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /v1/tasks/{id}/complete:
+    post:
+      tags: [tasks]
+      summary: Complete a task
+      description: |
+        Marks a task as complete, moves it to Done list, and sets completedAt timestamp.
+        Can be called from any list (plan mode or work mode).
+      operationId: completeTask
+      parameters:
+        - $ref: '#/components/parameters/TaskId'
+      responses:
+        '200':
+          description: Task completed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /v1/tasks/{id}/reorder:
+    post:
+      tags: [tasks]
+      summary: Reorder a task within its list
+      description: Move task to a new position within the same list
+      operationId: reorderTask
+      parameters:
+        - $ref: '#/components/parameters/TaskId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReorderDto'
+      responses:
+        '200':
+          description: Task reordered successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /v1/tasks/bulk-add:
+    post:
+      tags: [tasks]
+      summary: Bulk add tasks (Dump mode)
+      description: |
+        Quickly add multiple tasks to the default backlog.
+        Accepts up to 10 lines. Blank lines are ignored, duplicates allowed.
+        Tasks are inserted at the top of the target list.
+      operationId: bulkAddTasks
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BulkAddTasksDto'
+      responses:
+        '201':
+          description: Tasks created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [tasks, created]
+                properties:
+                  tasks:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Task'
+                  created:
+                    type: integer
+                    description: Number of tasks created
+                    example: 5
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  # ==================== DONE ====================
+  /v1/done:
+    get:
+      tags: [done]
+      summary: Get completed tasks
+      description: |
+        Returns paginated list of completed tasks in reverse chronological order.
+        Only the last 500 completed tasks are retained per user.
+      operationId: getDoneTasks
+      parameters:
+        - name: page
+          in: query
+          description: Page number (1-indexed)
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: limit
+          in: query
+          description: Items per page
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 50
+      responses:
+        '200':
+          description: Completed tasks retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [tasks, pagination]
+                properties:
+                  tasks:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Task'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  # ==================== METRICS ====================
+  /v1/metrics/daily:
+    get:
+      tags: [metrics]
+      summary: Get daily completion metrics
+      description: |
+        Returns count of tasks completed per day.
+        Timestamps are stored in UTC but presented in the user's local timezone.
+      operationId: getDailyMetrics
+      parameters:
+        - name: startDate
+          in: query
+          description: Start date (ISO 8601 format, e.g., 2024-01-01)
+          required: false
+          schema:
+            type: string
+            format: date
+        - name: endDate
+          in: query
+          description: End date (ISO 8601 format)
+          required: false
+          schema:
+            type: string
+            format: date
+        - name: timezone
+          in: query
+          description: IANA timezone identifier (e.g., America/New_York)
+          required: false
+          schema:
+            type: string
+            default: UTC
+      responses:
+        '200':
+          description: Daily metrics retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [metrics]
+                properties:
+                  metrics:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/DailyMetric'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /v1/metrics/weekly:
+    get:
+      tags: [metrics]
+      summary: Get weekly completion metrics
+      description: |
+        Returns count of tasks completed per week (week starts Monday).
+        Timestamps are stored in UTC but presented in the user's local timezone.
+      operationId: getWeeklyMetrics
+      parameters:
+        - name: startDate
+          in: query
+          description: Start date (ISO 8601 format)
+          required: false
+          schema:
+            type: string
+            format: date
+        - name: endDate
+          in: query
+          description: End date (ISO 8601 format)
+          required: false
+          schema:
+            type: string
+            format: date
+        - name: timezone
+          in: query
+          description: IANA timezone identifier
+          required: false
+          schema:
+            type: string
+            default: UTC
+      responses:
+        '200':
+          description: Weekly metrics retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [metrics]
+                properties:
+                  metrics:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/WeeklyMetric'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  # ==================== HEALTH ====================
+  /health:
+    get:
+      tags: [health]
+      summary: Health check
+      description: Basic liveness check
+      operationId: healthCheck
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [status]
+                properties:
+                  status:
+                    type: string
+                    enum: [ok]
+                    example: ok
+
+  /health/ready:
+    get:
+      tags: [health]
+      summary: Readiness check
+      description: Check if service is ready to accept traffic (DB connected, etc.)
+      operationId: readinessCheck
+      responses:
+        '200':
+          description: Service is ready
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [status, checks]
+                properties:
+                  status:
+                    type: string
+                    enum: [ready]
+                    example: ready
+                  checks:
+                    type: object
+                    properties:
+                      database:
+                        type: string
+                        enum: [ok, error]
+                      memory:
+                        type: string
+                        enum: [ok, error]
+        '503':
+          description: Service is not ready
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [status, checks]
+                properties:
+                  status:
+                    type: string
+                    enum: [not_ready]
+                  checks:
+                    type: object
+
+# ==================== COMPONENTS ====================
+components:
+  parameters:
+    ListId:
+      name: id
+      in: path
+      description: List UUID
+      required: true
+      schema:
+        type: string
+        format: uuid
+
+    TaskId:
+      name: id
+      in: path
+      description: Task UUID
+      required: true
+      schema:
+        type: string
+        format: uuid
+
+  schemas:
+    # ==================== LIST SCHEMAS ====================
+    List:
+      type: object
+      required:
+        - id
+        - name
+        - orderIndex
+        - isBacklog
+        - isDone
+        - userId
+        - createdAt
+        - updatedAt
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: List unique identifier
+        name:
+          type: string
+          description: List display name
+          minLength: 1
+          maxLength: 100
+          example: Today
+        orderIndex:
+          type: number
+          format: float
+          description: Position in the board (fractional indexing)
+          example: 1.5
+        isBacklog:
+          type: boolean
+          description: Whether this list is marked as a backlog
+          example: false
+        isDone:
+          type: boolean
+          description: Whether this is the special Done list
+          example: false
+        color:
+          type: string
+          nullable: true
+          description: System-assigned color for backlog lists (hex format)
+          pattern: '^#[0-9A-Fa-f]{6}$'
+          example: '#3B82F6'
+        userId:
+          type: string
+          format: uuid
+          description: Owner user ID
+        createdAt:
+          type: string
+          format: date-time
+          description: Creation timestamp
+        updatedAt:
+          type: string
+          format: date-time
+          description: Last update timestamp
+        taskCount:
+          type: integer
+          description: Number of tasks in this list (computed field)
+          minimum: 0
+          example: 12
+
+    CreateListDto:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+          description: List name
+          minLength: 1
+          maxLength: 100
+          example: Week
+        isBacklog:
+          type: boolean
+          description: Whether to mark this list as a backlog
+          default: false
+        color:
+          type: string
+          nullable: true
+          description: Optional color override (hex format)
+          pattern: '^#[0-9A-Fa-f]{6}$'
+
+    UpdateListDto:
+      type: object
+      properties:
+        name:
+          type: string
+          description: New list name
+          minLength: 1
+          maxLength: 100
+        color:
+          type: string
+          nullable: true
+          description: New color (hex format)
+          pattern: '^#[0-9A-Fa-f]{6}$'
+
+    # ==================== TASK SCHEMAS ====================
+    Task:
+      type: object
+      required:
+        - id
+        - title
+        - listId
+        - userId
+        - orderIndex
+        - createdAt
+        - updatedAt
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Task unique identifier
+        title:
+          type: string
+          description: Task title
+          minLength: 1
+          maxLength: 500
+          example: Review PRD document
+        description:
+          type: string
+          nullable: true
+          description: Optional task description
+          maxLength: 5000
+          example: Check for completeness and clarity
+        listId:
+          type: string
+          format: uuid
+          description: List this task belongs to
+        userId:
+          type: string
+          format: uuid
+          description: Owner user ID
+        orderIndex:
+          type: number
+          format: float
+          description: Position within the list (fractional indexing)
+          example: 2.5
+        completedAt:
+          type: string
+          format: date-time
+          nullable: true
+          description: Completion timestamp (null if not completed)
+        createdAt:
+          type: string
+          format: date-time
+          description: Creation timestamp
+        updatedAt:
+          type: string
+          format: date-time
+          description: Last update timestamp
+        originColor:
+          type: string
+          nullable: true
+          description: Color inherited from origin backlog (computed field)
+          pattern: '^#[0-9A-Fa-f]{6}$'
+          example: '#10B981'
+
+    CreateTaskDto:
+      type: object
+      required:
+        - title
+        - listId
+      properties:
+        title:
+          type: string
+          description: Task title
+          minLength: 1
+          maxLength: 500
+          example: Implement user authentication
+        description:
+          type: string
+          description: Optional task description
+          maxLength: 5000
+        listId:
+          type: string
+          format: uuid
+          description: Target list ID
+
+    UpdateTaskDto:
+      type: object
+      properties:
+        title:
+          type: string
+          description: New task title
+          minLength: 1
+          maxLength: 500
+        description:
+          type: string
+          nullable: true
+          description: New task description
+          maxLength: 5000
+
+    MoveTaskDto:
+      type: object
+      required:
+        - targetListId
+      properties:
+        targetListId:
+          type: string
+          format: uuid
+          description: Destination list ID
+
+    BulkAddTasksDto:
+      type: object
+      required:
+        - lines
+      properties:
+        lines:
+          type: array
+          description: Array of task titles (one per line, max 10)
+          minItems: 1
+          maxItems: 10
+          items:
+            type: string
+            minLength: 1
+            maxLength: 500
+          example:
+            - Review email
+            - Call dentist
+            - Update project plan
+        targetListId:
+          type: string
+          format: uuid
+          description: Target list (defaults to default backlog if not specified)
+          nullable: true
+
+    ReorderDto:
+      type: object
+      required:
+        - newOrderIndex
+      properties:
+        newOrderIndex:
+          type: number
+          format: float
+          description: New position index (fractional)
+          example: 3.5
+
+    # ==================== METRICS SCHEMAS ====================
+    DailyMetric:
+      type: object
+      required:
+        - date
+        - count
+      properties:
+        date:
+          type: string
+          format: date
+          description: Date (YYYY-MM-DD in specified timezone)
+          example: '2024-01-15'
+        count:
+          type: integer
+          description: Number of tasks completed on this date
+          minimum: 0
+          example: 8
+
+    WeeklyMetric:
+      type: object
+      required:
+        - weekStart
+        - weekEnd
+        - count
+      properties:
+        weekStart:
+          type: string
+          format: date
+          description: Week start date (Monday, YYYY-MM-DD)
+          example: '2024-01-08'
+        weekEnd:
+          type: string
+          format: date
+          description: Week end date (Sunday, YYYY-MM-DD)
+          example: '2024-01-14'
+        count:
+          type: integer
+          description: Number of tasks completed in this week
+          minimum: 0
+          example: 42
+
+    # ==================== COMMON SCHEMAS ====================
+    Pagination:
+      type: object
+      required:
+        - page
+        - limit
+        - total
+        - totalPages
+      properties:
+        page:
+          type: integer
+          description: Current page (1-indexed)
+          minimum: 1
+          example: 1
+        limit:
+          type: integer
+          description: Items per page
+          minimum: 1
+          example: 50
+        total:
+          type: integer
+          description: Total number of items
+          minimum: 0
+          example: 237
+        totalPages:
+          type: integer
+          description: Total number of pages
+          minimum: 0
+          example: 5
+
+    Error:
+      type: object
+      required:
+        - statusCode
+        - message
+      properties:
+        statusCode:
+          type: integer
+          description: HTTP status code
+          example: 400
+        message:
+          type: string
+          description: Error message
+          example: List name is required
+        error:
+          type: string
+          description: Error type
+          example: Bad Request
+        details:
+          type: array
+          description: Validation errors (if applicable)
+          items:
+            type: object
+            properties:
+              field:
+                type: string
+                example: name
+              message:
+                type: string
+                example: name must be a string
+
+  responses:
+    BadRequest:
+      description: Bad request (validation error, limit exceeded, etc.)
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            statusCode: 400
+            message: Cannot create list - maximum of 10 non-Done lists reached
+            error: Bad Request
+
+    Unauthorized:
+      description: Unauthorized - authentication required
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            statusCode: 401
+            message: Unauthorized
+            error: Unauthorized
+
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            statusCode: 404
+            message: List not found
+            error: Not Found
+
+    InternalError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            statusCode: 500
+            message: Internal server error
+            error: Internal Server Error
+
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: jwt
+      description: JWT token in HttpOnly cookie (set after Google OAuth)
+
+# Note: Auth endpoints (Google OAuth) intentionally excluded as per user request
+# Security will be added once auth is implemented
+# security:
+#   - cookieAuth: []
