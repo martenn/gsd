@@ -1,5 +1,7 @@
 ---
 import Counter from '../components/Counter';
+import CounterBackend from '../components/CounterBackend';
+import '../styles/global.css';
 ---
 
 <html lang="en">
@@ -13,6 +15,9 @@ import Counter from '../components/Counter';
 	<body class="p-8 bg-gray-50">
 		<h1 class="text-3xl font-bold mb-6">GSD - Getting Shit Done</h1>
 		<p class="mb-4 text-gray-600">Monorepo setup complete with React 19 + Tailwind CSS</p>
-		<Counter client:load />
+		<div class="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-4xl">
+			<Counter client:load />
+			<CounterBackend client:load />
+		</div>
 	</body>
 </html>

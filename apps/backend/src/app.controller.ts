@@ -1,4 +1,4 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, Post } from '@nestjs/common';
 import { AppService } from './app.service';
 
 @Controller()
@@ -8,5 +8,15 @@ export class AppController {
   @Get()
   getHello(): string {
     return this.appService.getHello();
+  }
+
+  @Get('counter')
+  getCounter(): { count: number } {
+    return { count: this.appService.getCounter() };
+  }
+
+  @Post('counter/increment')
+  incrementCounter(): { count: number } {
+    return { count: this.appService.incrementCounter() };
   }
 }
