@@ -243,6 +243,14 @@ The following coding standards are automatically enforced for specific file type
 - When debugging, provide targeted diagnostic approaches rather than shotgun solutions.
 - Suggest comprehensive testing strategies rather than just example tests, including considerations for mocking, test organization, and coverage.
 
+**TypeScript Best Practices**:
+- Avoid using `any` type - prefer explicit types or generics
+- Use strict mode in TypeScript configuration
+
+**Code Documentation**:
+- Don't use JSDoc or similar documentation comments, unless specifically requested
+- Rely on clear function/variable names and inline comments for "why" explanations only
+
 **NestJS Best Practices**:
 - Use dependency injection for services to improve testability and maintainability following SOLID principles
 - Implement custom decorators for cross-cutting concerns to keep code DRY and maintain separation of business logic

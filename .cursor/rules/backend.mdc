@@ -16,8 +16,6 @@ globs: '**/*.ts
 - When debugging, provide targeted diagnostic approaches rather than shotgun solutions.
 - Suggest comprehensive testing strategies rather than just example tests, including considerations for mocking, test organization, and coverage.
 
-## CODING_PRACTICES
-
 ### Guidelines for DOCUMENTATION
 
 #### DOC_UPDATES
@@ -27,6 +25,10 @@ globs: '**/*.ts
 - Maintain changelog entries in CHANGELOG.md
 
 ## CODING_PRACTICES
+
+### Guidelines for CODE_DOCUMENTATION
+
+- Don't use JSDoc or similar, unless specificaly requested
 
 ### Guidelines for VERSION_CONTROL
 
@@ -38,8 +40,6 @@ globs: '**/*.ts
 - Keep commits focused on single logical changes to facilitate code review and bisection
 - Use interactive rebase to clean up history before merging feature branches
 - Leverage git hooks to enforce code quality checks before commits and pushes
-
-## CODING_PRACTICES
 
 ### Guidelines for VERSION_CONTROL
 
@@ -53,6 +53,9 @@ globs: '**/*.ts
 - Use GitHub Projects for tracking work items and connecting them to code changes
 
 ### Guidelines for NODE
+
+#### TS
+- avoid using `any` type
 
 #### NEST
 
