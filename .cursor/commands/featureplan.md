@@ -4,17 +4,23 @@ Before we begin, review the following information:
 
 1. Specification:
 <prd>
+@.ai/prd.md
 </prd>
 
 2. Tech stack:
 <tech_stack>
-{{tech-stack}}
+@.ai/tech-stack.md
 </tech_stack>
 
 3. Implementation rules:
 <implementation_rules>
 @.cursor/rules/backend.mdc
 </implementation_rules>
+
+4. Implementation approach:
+<implementation_approach>
+Implement a maximum of 3 steps from the implementation plan, briefly summarize what you've done, and describe the plan for the next 3 actions - stop work at this point and wait for my feedback. First of all ask which endpoint we're working on, as we will work one by one.
+</implementation_approach>
 
 Your task is to create a comprehensive implementation plan for the feature. Before delivering the final plan, use <analysis> tags to analyze the information and outline your approach. In this analysis, ensure that:
 

@@ -29,6 +29,22 @@ globs: '**/*.ts
 ### Guidelines for CODE_DOCUMENTATION
 
 - Don't use JSDoc or similar, unless specificaly requested
+- Avoid inline comments that state the obvious (e.g., `// Blue` next to color codes)
+- Let well-named functions and variables be self-documenting
+- Focus on "why" not "what" when comments are necessary
+
+### Guidelines for NAMING_CONVENTIONS
+
+#### SERVICE_CLASSES
+- Avoid "Service" suffix in class names - use descriptive names instead
+- Examples: `ColorPool` instead of `ColorPoolService`, `ScanUsedColors` instead of `ColorScanService`
+- Class names should clearly indicate their primary responsibility
+- Use descriptive method names that explain intent
+
+#### FILE_NAMING
+- Match file names to class names: `color-pool.ts` for `ColorPool` class
+- Use kebab-case for file names: `scan-used-colors.ts` not `scanUsedColors.ts`
+- Test files should mirror source files: `color-pool.spec.ts` for `color-pool.ts`
 
 ### Guidelines for VERSION_CONTROL
 
@@ -108,6 +124,15 @@ apps/backend/src/{domain}/
 - Export only the module, not internal classes
 - Cross-domain dependencies TBD
 
+**Feature Separation:**
+- Each feature should have its own folder: `/src/{feature}/`
+- Features should not mix concerns - keep color management separate from list management
+- Cross-feature dependencies should be explicit through module imports
+- Export only what other features need, not internal implementation details
+- Keep services focused on single responsibility
+- Use dependency injection for cross-feature services
+- Avoid circular dependencies between features
+
 Example:
 ```typescript
 // infra/lists.repository.ts
@@ -169,6 +194,19 @@ export class CreateListDto implements CreateListRequest {
   isBacklog?: boolean;
 }
 ```
+
+### Guidelines for TESTING_CONVENTIONS
+
+#### TEST_FILE_NAMING
+- Test files should mirror source file names: `{feature}.spec.ts`
+- Use descriptive test descriptions that explain behavior
+- Group related tests in describe blocks
+
+#### TEST_ORGANIZATION
+- Test the public API, not internal implementation
+- Use meaningful test names that describe expected behavior
+- Keep tests focused and atomic
+- Use dependency injection to mock external dependencies
 
 ## DEVOPS
 
