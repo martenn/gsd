@@ -186,6 +186,8 @@ apps/backend/src/{domain}/
 1. **Adapters** (HTTP layer)
    - Controllers handle HTTP requests/responses
    - Delegate to use cases
+   - Use case dependencies named with `UseCase` suffix (e.g., `getListsUseCase: GetLists`)
+   - Method names follow OpenAPI operationId convention
    - No business logic
 
 2. **Use Cases** (Business logic layer)
@@ -242,11 +244,11 @@ export class GetLists {
 // adapters/lists.controller.ts
 @Controller('v1/lists')
 export class ListsController {
-  constructor(private readonly getLists: GetLists) {}
+  constructor(private readonly getListsUseCase: GetLists) {}
 
   @Get()
   async getLists(): Promise<GetListsResponseDto> {
-    const lists = await this.getLists.execute('user-id');
+    const lists = await this.getListsUseCase.execute('user-id');
     return { lists };
   }
 }

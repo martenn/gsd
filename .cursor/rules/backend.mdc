@@ -85,7 +85,10 @@ apps/backend/src/{domain}/
 
 **Layer Responsibilities:**
 
-**Adapters (HTTP):** Controllers only, delegate to use cases, no business logic
+**Adapters (HTTP):**
+- Controllers only, delegate to use cases, no business logic
+- Use case dependencies named with `UseCase` suffix (e.g., `getListsUseCase: GetLists`)
+- Method names follow OpenAPI operationId convention
 
 **Use Cases (Business Logic):**
 - One class per operation, named without suffix (e.g., `GetLists`, `CreateList`)
@@ -131,11 +134,11 @@ export class GetLists {
 // adapters/lists.controller.ts
 @Controller('v1/lists')
 export class ListsController {
-  constructor(private readonly getLists: GetLists) {}
+  constructor(private readonly getListsUseCase: GetLists) {}
 
   @Get()
   async getLists(): Promise<GetListsResponseDto> {
-    const lists = await this.getLists.execute('user-id');
+    const lists = await this.getListsUseCase.execute('user-id');
     return { lists };
   }
 }
