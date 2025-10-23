@@ -66,6 +66,107 @@ globs: '**/*.ts
 - Implement domain-driven design with modules that encapsulate related functionality and maintain clear boundaries
 - Use TypeORM or Mongoose with repository patterns to abstract database operations and simplify testing with mocks
 
+#### MODULE_STRUCTURE
+
+**Clean Architecture with Repository Pattern:**
+```
+apps/backend/src/{domain}/
+├── adapters/              # HTTP layer (controllers)
+│   └── {domain}.controller.ts
+├── use-cases/             # Business logic layer
+│   ├── {operation}.ts
+│   └── {operation}.spec.ts
+├── infra/                 # Infrastructure layer (database)
+│   └── {domain}.repository.ts
+├── dto/                   # Request DTOs with validation
+│   └── {request}.dto.ts
+└── {domain}.module.ts     # NestJS module configuration
+```
+
+**Layer Responsibilities:**
+
+**Adapters (HTTP):** Controllers only, delegate to use cases, no business logic
+
+**Use Cases (Business Logic):**
+- One class per operation, named without suffix (e.g., `GetLists`, `CreateList`)
+- Single `execute()` method
+- Depends on repositories, NOT PrismaClient
+- Contains business rules and orchestration
+- No database queries
+
+**Infrastructure (Database):**
+- Repositories encapsulate all Prisma operations
+- Named `{Domain}Repository` (e.g., `ListsRepository`)
+- Returns Prisma entities
+- No business logic
+
+**Module Rules:**
+- No `index.ts` file (module exports itself)
+- Export only the module, not internal classes
+- Cross-domain dependencies TBD
+
+Example:
+```typescript
+// infra/lists.repository.ts
+@Injectable()
+export class ListsRepository {
+  constructor(private readonly prisma: PrismaClient) {}
+
+  async findManyByUserId(userId: string): Promise<List[]> {
+    return this.prisma.list.findMany({ where: { userId } });
+  }
+}
+
+// use-cases/get-lists.ts
+@Injectable()
+export class GetLists {
+  constructor(private readonly repository: ListsRepository) {}
+
+  async execute(userId: string): Promise<ListDto[]> {
+    const lists = await this.repository.findManyByUserId(userId);
+    return lists.map(list => this.toDto(list));
+  }
+}
+
+// adapters/lists.controller.ts
+@Controller('v1/lists')
+export class ListsController {
+  constructor(private readonly getLists: GetLists) {}
+
+  @Get()
+  async getLists(): Promise<GetListsResponseDto> {
+    const lists = await this.getLists.execute('user-id');
+    return { lists };
+  }
+}
+```
+
+#### DTO_PATTERN
+
+**Request/Response Type Sharing:**
+- Place request interfaces in @gsd/types/api/*.ts (shared with frontend)
+- Backend request DTOs implement shared interfaces and add class-validator decorators
+- Response DTOs live in @gsd/types (shared interfaces only)
+- Backend internal DTOs stay in backend (service layer transformations)
+
+Example:
+```typescript
+// @gsd/types/api/lists.ts
+export interface CreateListRequest {
+  name: string;
+  isBacklog?: boolean;
+}
+
+// apps/backend/src/lists/dto/create-list.dto.ts
+export class CreateListDto implements CreateListRequest {
+  @IsString() @MinLength(1) @MaxLength(100)
+  name: string;
+
+  @IsBoolean() @IsOptional()
+  isBacklog?: boolean;
+}
+```
+
 ## DEVOPS
 
 ### Guidelines for CI_CD

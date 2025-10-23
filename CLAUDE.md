@@ -2,6 +2,16 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Meta-Rules for Claude Code
+
+**IMPORTANT:** When architectural patterns, coding standards, or rules are established or changed during a conversation:
+1. Always update CLAUDE.md with the new rule/pattern (this file)
+2. Always update the corresponding `.cursor/rules/*.mdc` file(s)
+3. Both files must stay in sync
+4. Changes should be made in the same response/action
+
+This ensures consistency across all development tools and documentation.
+
 ## Project Overview
 
 **GSD (Getting Shit Done)** is a focused personal productivity app inspired by GTD. It helps solo users plan and execute work using multiple user-managed backlogs, intermediate lists, and a focused work mode. The MVP targets responsive web (desktop and mobile), single-user accounts, with Google OAuth authentication.
@@ -152,6 +162,145 @@ Done & Metrics:
 - `GET /v1/done?page=n` (paginated completed tasks)
 - `GET /v1/metrics/daily` (daily completion counts)
 - `GET /v1/metrics/weekly` (weekly completion counts, week starts Monday)
+
+### Backend Architecture Pattern
+
+**Module Structure (Clean Architecture with Use Cases and Repository):**
+
+```
+apps/backend/src/{domain}/
+├── adapters/              # HTTP layer (controllers)
+│   └── {domain}.controller.ts
+├── use-cases/             # Business logic layer
+│   ├── {operation}.ts
+│   └── {operation}.spec.ts
+├── infra/                 # Infrastructure layer (database)
+│   └── {domain}.repository.ts
+├── dto/                   # Request DTOs with validation
+│   └── {request}.dto.ts
+└── {domain}.module.ts     # NestJS module configuration
+```
+
+**Layer Responsibilities:**
+
+1. **Adapters** (HTTP layer)
+   - Controllers handle HTTP requests/responses
+   - Delegate to use cases
+   - No business logic
+
+2. **Use Cases** (Business logic layer)
+   - One class per business operation
+   - Named by operation without suffix (e.g., `GetLists`, `CreateList`)
+   - Single `execute()` method
+   - Contains business rules and orchestration
+   - Depends on repositories, NOT PrismaClient directly
+   - No database queries
+
+3. **Infrastructure** (Database layer)
+   - Repositories encapsulate all database operations
+   - Named `{Domain}Repository` (e.g., `ListsRepository`)
+   - Uses PrismaClient for queries
+   - Returns Prisma entities
+   - No business logic
+
+4. **Module Rules:**
+   - No `index.ts` file needed (module exports itself)
+   - Export only the module, not internal classes
+   - Cross-domain dependencies TBD (open question for list → task scenarios)
+
+**Example:**
+
+```typescript
+// infra/lists.repository.ts
+@Injectable()
+export class ListsRepository {
+  constructor(private readonly prisma: PrismaClient) {}
+
+  async findManyByUserId(userId: string, includeDone: boolean): Promise<List[]> {
+    return this.prisma.list.findMany({
+      where: { userId, isDone: includeDone ? undefined : false },
+      orderBy: { orderIndex: 'asc' },
+    });
+  }
+
+  async create(data: CreateListData): Promise<List> {
+    return this.prisma.list.create({ data });
+  }
+}
+
+// use-cases/get-lists.ts
+@Injectable()
+export class GetLists {
+  constructor(private readonly repository: ListsRepository) {}
+
+  async execute(userId: string): Promise<ListDto[]> {
+    const lists = await this.repository.findManyByUserId(userId, false);
+    return lists.map(list => this.toDto(list));
+  }
+}
+
+// adapters/lists.controller.ts
+@Controller('v1/lists')
+export class ListsController {
+  constructor(private readonly getLists: GetLists) {}
+
+  @Get()
+  async getLists(): Promise<GetListsResponseDto> {
+    const lists = await this.getLists.execute('user-id');
+    return { lists };
+  }
+}
+```
+
+### DTO Architecture Pattern
+
+**Request/Response Type Sharing Strategy:**
+
+```
+@gsd/types/api/*.ts          → Shared interfaces (frontend + backend)
+  - Request interfaces (e.g., CreateListRequest)
+  - Response DTOs (e.g., ListDto, GetListsResponseDto)
+
+apps/backend/src/*/dto/*.ts  → Backend-only classes
+  - Request classes implement shared interfaces
+  - Add class-validator decorators for runtime validation
+```
+
+**Example:**
+
+```typescript
+// @gsd/types/api/lists.ts (shared)
+export interface CreateListRequest {
+  name: string;
+  isBacklog?: boolean;
+  color?: string;
+}
+
+// apps/backend/src/lists/dto/create-list.dto.ts (backend only)
+import { CreateListRequest } from '@gsd/types';
+
+export class CreateListDto implements CreateListRequest {
+  @IsString()
+  @MinLength(1)
+  @MaxLength(100)
+  name: string;
+
+  @IsBoolean()
+  @IsOptional()
+  isBacklog?: boolean;
+
+  @IsString()
+  @IsOptional()
+  @Matches(/^#[0-9A-Fa-f]{6}$/)
+  color?: string;
+}
+```
+
+**Rationale:**
+- Frontend gets pure TypeScript interfaces (no class-validator dependency)
+- Backend maintains full runtime validation control via class-validator
+- Type safety enforced between frontend requests and backend expectations
+- Single source of truth for API contracts
 
 ## Key Constraints & Requirements
 
