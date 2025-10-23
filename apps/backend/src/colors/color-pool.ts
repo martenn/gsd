@@ -18,7 +18,7 @@ const COLOR_PALETTE = [
   '#BE185D',
 ] as const;
 
-export type ColorCode = typeof COLOR_PALETTE[number];
+export type ColorCode = (typeof COLOR_PALETTE)[number];
 
 @Injectable()
 export class ColorPool {
@@ -31,7 +31,7 @@ export class ColorPool {
         return color;
       }
     }
-    
+
     throw new Error('No colors available in pool');
   }
 
@@ -40,7 +40,7 @@ export class ColorPool {
   }
 
   getAvailableColors(): ColorCode[] {
-    return COLOR_PALETTE.filter(color => !this.usedColors.has(color));
+    return COLOR_PALETTE.filter((color) => !this.usedColors.has(color));
   }
 
   markColorAsUsed(color: ColorCode): void {

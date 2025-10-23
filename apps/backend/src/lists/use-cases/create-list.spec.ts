@@ -3,10 +3,12 @@ import { BadRequestException } from '@nestjs/common';
 import { CreateList } from './create-list';
 import { CreateListDto } from '../dto/create-list.dto';
 import { ListsRepository } from '../infra/lists.repository';
+import { ColorPool } from '../../colors/color-pool';
 
 describe('CreateList', () => {
   let useCase: CreateList;
   let repository: ListsRepository;
+  let colorPool: ColorPool;
 
   beforeEach(async () => {
     repository = {
@@ -15,12 +17,24 @@ describe('CreateList', () => {
       create: jest.fn(),
     } as unknown as ListsRepository;
 
+    colorPool = {
+      getNextColor: jest.fn(),
+      markColorAsUsed: jest.fn(),
+      releaseColor: jest.fn(),
+      getAvailableColors: jest.fn(),
+      getPalette: jest.fn(),
+    } as unknown as ColorPool;
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         CreateList,
         {
           provide: ListsRepository,
           useValue: repository,
+        },
+        {
+          provide: ColorPool,
+          useValue: colorPool,
         },
       ],
     }).compile();
@@ -36,15 +50,17 @@ describe('CreateList', () => {
     expect(useCase).toBeDefined();
   });
 
-  it('should create a new list with default values', async () => {
+  it('should create a new list with auto-assigned color', async () => {
     const userId = 'test-user-1';
     const createListDto: CreateListDto = {
       name: 'New List',
     };
     const now = new Date();
+    const assignedColor = '#3B82F6';
 
     jest.spyOn(repository, 'countByUserId').mockResolvedValue(5);
     jest.spyOn(repository, 'findMaxOrderIndex').mockResolvedValue(3.0);
+    jest.spyOn(colorPool, 'getNextColor').mockReturnValue(assignedColor as any);
 
     const createdList = {
       id: 'new-list-id',
@@ -52,7 +68,7 @@ describe('CreateList', () => {
       orderIndex: 4.0,
       isBacklog: false,
       isDone: false,
-      color: null,
+      color: assignedColor,
       userId,
       createdAt: now,
       updatedAt: now,
@@ -63,10 +79,11 @@ describe('CreateList', () => {
     const result = await useCase.execute(userId, createListDto);
 
     expect(repository.countByUserId).toHaveBeenCalledWith(userId, false);
+    expect(colorPool.getNextColor).toHaveBeenCalled();
     expect(repository.create).toHaveBeenCalledWith({
       name: 'New List',
       isBacklog: false,
-      color: null,
+      color: assignedColor,
       userId,
       orderIndex: 4.0,
       isDone: false,
@@ -74,7 +91,7 @@ describe('CreateList', () => {
     expect(result).toEqual(createdList);
   });
 
-  it('should create a backlog list with color', async () => {
+  it('should create a backlog list with specific color', async () => {
     const userId = 'test-user-1';
     const createListDto: CreateListDto = {
       name: 'Backlog',
@@ -85,6 +102,7 @@ describe('CreateList', () => {
 
     jest.spyOn(repository, 'countByUserId').mockResolvedValue(2);
     jest.spyOn(repository, 'findMaxOrderIndex').mockResolvedValue(1.0);
+    jest.spyOn(colorPool, 'markColorAsUsed').mockImplementation(() => {});
 
     const createdList = {
       id: 'backlog-id',
@@ -102,6 +120,7 @@ describe('CreateList', () => {
 
     const result = await useCase.execute(userId, createListDto);
 
+    expect(colorPool.markColorAsUsed).toHaveBeenCalledWith('#3B82F6');
     expect(repository.create).toHaveBeenCalledWith({
       name: 'Backlog',
       isBacklog: true,
@@ -122,11 +141,9 @@ describe('CreateList', () => {
 
     jest.spyOn(repository, 'countByUserId').mockResolvedValue(10);
 
+    await expect(useCase.execute(userId, createListDto)).rejects.toThrow(BadRequestException);
     await expect(useCase.execute(userId, createListDto)).rejects.toThrow(
-      BadRequestException
-    );
-    await expect(useCase.execute(userId, createListDto)).rejects.toThrow(
-      'Cannot create list - maximum of 10 non-Done lists reached'
+      'Cannot create list - maximum of 10 non-Done lists reached',
     );
 
     expect(repository.create).not.toHaveBeenCalled();
@@ -138,9 +155,11 @@ describe('CreateList', () => {
       name: 'First List',
     };
     const now = new Date();
+    const assignedColor = '#EF4444';
 
     jest.spyOn(repository, 'countByUserId').mockResolvedValue(0);
     jest.spyOn(repository, 'findMaxOrderIndex').mockResolvedValue(null);
+    jest.spyOn(colorPool, 'getNextColor').mockReturnValue(assignedColor as any);
 
     const createdList = {
       id: 'first-list-id',
@@ -148,7 +167,7 @@ describe('CreateList', () => {
       orderIndex: 1.0,
       isBacklog: false,
       isDone: false,
-      color: null,
+      color: assignedColor,
       userId,
       createdAt: now,
       updatedAt: now,
@@ -161,8 +180,50 @@ describe('CreateList', () => {
     expect(repository.create).toHaveBeenCalledWith(
       expect.objectContaining({
         orderIndex: 1.0,
-      })
+        color: assignedColor,
+      }),
     );
     expect(result.orderIndex).toBe(1.0);
+  });
+
+  it('should throw BadRequestException when no colors available', async () => {
+    const userId = 'test-user-1';
+    const createListDto: CreateListDto = {
+      name: 'No Color List',
+    };
+
+    jest.spyOn(repository, 'countByUserId').mockResolvedValue(5);
+    jest.spyOn(repository, 'findMaxOrderIndex').mockResolvedValue(3.0);
+    jest.spyOn(colorPool, 'getNextColor').mockImplementation(() => {
+      throw new Error('No colors available in pool');
+    });
+
+    await expect(useCase.execute(userId, createListDto)).rejects.toThrow(BadRequestException);
+    await expect(useCase.execute(userId, createListDto)).rejects.toThrow(
+      'No colors available in pool',
+    );
+
+    expect(repository.create).not.toHaveBeenCalled();
+  });
+
+  it('should throw BadRequestException when specific color is already used', async () => {
+    const userId = 'test-user-1';
+    const createListDto: CreateListDto = {
+      name: 'Duplicate Color List',
+      color: '#3B82F6',
+    };
+
+    jest.spyOn(repository, 'countByUserId').mockResolvedValue(2);
+    jest.spyOn(repository, 'findMaxOrderIndex').mockResolvedValue(1.0);
+    jest.spyOn(colorPool, 'markColorAsUsed').mockImplementation(() => {
+      throw new Error('Color #3B82F6 is already in use');
+    });
+
+    await expect(useCase.execute(userId, createListDto)).rejects.toThrow(BadRequestException);
+    await expect(useCase.execute(userId, createListDto)).rejects.toThrow(
+      'Color #3B82F6 is already in use',
+    );
+
+    expect(repository.create).not.toHaveBeenCalled();
   });
 });
