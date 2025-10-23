@@ -7,14 +7,14 @@ import { CreateListDto } from '../dto/create-list.dto';
 @Controller('v1/lists')
 export class ListsController {
   constructor(
-    private readonly getLists: GetLists,
-    private readonly createList: CreateList,
+    private readonly getListsUseCase: GetLists,
+    private readonly createListUseCase: CreateList,
   ) {}
 
   @Get()
   async getLists(): Promise<GetListsResponseDto> {
     const userId = 'mock-user-id';
-    const lists = await this.getLists.execute(userId);
+    const lists = await this.getListsUseCase.execute(userId);
     return { lists };
   }
 
@@ -22,6 +22,6 @@ export class ListsController {
   @HttpCode(HttpStatus.CREATED)
   async createList(@Body() createListDto: CreateListDto): Promise<ListDto> {
     const userId = 'mock-user-id';
-    return this.createList.execute(userId, createListDto);
+    return this.createListUseCase.execute(userId, createListDto);
   }
 }
