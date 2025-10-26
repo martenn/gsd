@@ -1,3 +1,7 @@
+---
+description: Synchronize CLAUDE.md with .cursor/rules/ guidelines
+---
+
 # Synchronize CLAUDE.md with .cursor/rules/
 
 Your task is to ensure CLAUDE.md and .cursor/rules/*.mdc files stay in sync, following the meta-rule at the top of CLAUDE.md:

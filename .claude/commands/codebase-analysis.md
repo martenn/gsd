@@ -1,3 +1,7 @@
+---
+description: Deep analysis of GSD codebase architecture and structure
+---
+
 # Codebase Architecture Analysis
 
 Your task is to deeply analyze the GSD codebase and provide comprehensive documentation about its structure, patterns, and architecture.

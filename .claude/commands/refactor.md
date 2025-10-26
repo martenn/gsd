@@ -1,3 +1,7 @@
+---
+description: Guide code refactoring to align with GSD standards
+---
+
 # Code Refactoring Assistant
 
 Your task is to help refactor code to align with GSD project standards and improve code quality.

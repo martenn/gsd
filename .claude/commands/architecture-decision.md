@@ -1,3 +1,7 @@
+---
+description: Document and decide on architectural choices for GSD
+---
+
 # Architecture Decision Documentation
 
 Your task is to help document and decide on architectural choices for the GSD project.

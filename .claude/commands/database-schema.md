@@ -1,3 +1,7 @@
+---
+description: Design and review database schema changes for GSD
+---
+
 # Database Schema & Migration Assistant
 
 Your task is to help design, review, and implement database schema changes for GSD.
