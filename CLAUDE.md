@@ -184,31 +184,38 @@ apps/backend/src/{domain}/
 **Layer Responsibilities:**
 
 1. **Adapters** (HTTP layer)
-   - Controllers handle HTTP requests/responses
-   - Delegate to use cases
+   - Controllers only; delegate to use cases
+   - No business logic
    - Use case dependencies named with `UseCase` suffix (e.g., `getListsUseCase: GetLists`)
    - Method names follow OpenAPI operationId convention
-   - No business logic
 
 2. **Use Cases** (Business logic layer)
-   - One class per business operation
-   - Named by operation without suffix (e.g., `GetLists`, `CreateList`)
+   - One class per operation
+   - Named without suffix (e.g., `GetLists`, `CreateList`)
    - Single `execute()` method
+   - Depends on repositories, NOT PrismaClient
    - Contains business rules and orchestration
-   - Depends on repositories, NOT PrismaClient directly
    - No database queries
 
 3. **Infrastructure** (Database layer)
-   - Repositories encapsulate all database operations
+   - Repositories encapsulate all Prisma operations
    - Named `{Domain}Repository` (e.g., `ListsRepository`)
-   - Uses PrismaClient for queries
    - Returns Prisma entities
    - No business logic
 
 4. **Module Rules:**
-   - No `index.ts` file needed (module exports itself)
+   - No `index.ts` file (module exports itself)
    - Export only the module, not internal classes
-   - Cross-domain dependencies TBD (open question for list → task scenarios)
+   - Cross-domain dependencies TBD
+
+**Feature Separation:**
+- Each feature should have its own folder: `/src/{feature}/`
+- Features should not mix concerns - keep color management separate from list management
+- Cross-feature dependencies should be explicit through module imports
+- Export only what other features need, not internal implementation details
+- Keep services focused on single responsibility
+- Use dependency injection for cross-feature services
+- Avoid circular dependencies between features
 
 **Example:**
 
@@ -218,15 +225,8 @@ apps/backend/src/{domain}/
 export class ListsRepository {
   constructor(private readonly prisma: PrismaClient) {}
 
-  async findManyByUserId(userId: string, includeDone: boolean): Promise<List[]> {
-    return this.prisma.list.findMany({
-      where: { userId, isDone: includeDone ? undefined : false },
-      orderBy: { orderIndex: 'asc' },
-    });
-  }
-
-  async create(data: CreateListData): Promise<List> {
-    return this.prisma.list.create({ data });
+  async findManyByUserId(userId: string): Promise<List[]> {
+    return this.prisma.list.findMany({ where: { userId } });
   }
 }
 
@@ -236,7 +236,7 @@ export class GetLists {
   constructor(private readonly repository: ListsRepository) {}
 
   async execute(userId: string): Promise<ListDto[]> {
-    const lists = await this.repository.findManyByUserId(userId, false);
+    const lists = await this.repository.findManyByUserId(userId);
     return lists.map(list => this.toDto(list));
   }
 }
@@ -400,7 +400,19 @@ The following coding standards are automatically enforced for specific file type
 
 **Code Documentation**:
 - Don't use JSDoc or similar documentation comments, unless specifically requested
-- Rely on clear function/variable names and inline comments for "why" explanations only
+- Avoid inline comments that state the obvious (e.g., `// Blue` next to color codes)
+- Let well-named functions and variables be self-documenting
+- Focus on "why" not "what" when comments are necessary
+
+**Naming Conventions**:
+- Avoid "Service" suffix in class names - use descriptive names instead
+  - Examples: `ColorPool` instead of `ColorPoolService`, `ScanUsedColors` instead of `ColorScanService`
+  - Class names should clearly indicate their primary responsibility
+  - Use descriptive method names that explain intent
+- File naming conventions:
+  - Match file names to class names: `color-pool.ts` for `ColorPool` class
+  - Use kebab-case for file names: `scan-used-colors.ts` not `scanUsedColors.ts`
+  - Test files should mirror source files: `color-pool.spec.ts` for `color-pool.ts`
 
 **NestJS Best Practices**:
 - Use dependency injection for services to improve testability and maintainability following SOLID principles
@@ -409,6 +421,15 @@ The following coding standards are automatically enforced for specific file type
 - Leverage NestJS Guards for authorization to centralize access control logic across all resources
 - Implement domain-driven design with modules that encapsulate related functionality and maintain clear boundaries
 - Use Prisma with repository patterns to abstract database operations and simplify testing with mocks
+
+**Testing Conventions**:
+- Test files should mirror source file names: `{feature}.spec.ts`
+- Use descriptive test descriptions that explain behavior
+- Group related tests in describe blocks
+- Test the public API, not internal implementation
+- Use meaningful test names that describe expected behavior
+- Keep tests focused and atomic
+- Use dependency injection to mock external dependencies
 
 **Docker Best Practices**:
 - Use multi-stage builds to create smaller production images
@@ -498,3 +519,9 @@ The following coding standards are automatically enforced for specific file type
 - Always use `npm ci` for Node-based dependency setup
 - Extract common steps into composite actions in separate files
 - For each public action always use the most up-to-date version (use only major version)
+
+### DevOps & Containerization
+
+**Containerization (Docker)**:
+- Use multi-stage builds to create smaller production images
+- Use non-root users in containers for better security
