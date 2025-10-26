@@ -2,13 +2,20 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## Meta-Rules for Claude Code
+## Meta-Rules for Claude Code & Cursor IDE
 
 **IMPORTANT:** When architectural patterns, coding standards, or rules are established or changed during a conversation:
 1. Always update CLAUDE.md with the new rule/pattern (this file)
 2. Always update the corresponding `.cursor/rules/*.mdc` file(s)
 3. Both files must stay in sync
 4. Changes should be made in the same response/action
+
+**Custom Commands Sync:**
+- `.claude/commands/` - Used by Claude Code (this IDE)
+- `.cursor/commands/` - Used by Cursor IDE
+- Both directories must stay in sync
+- Run `./.maintain-command-sync.sh` to sync both directories
+- Update both locations when adding/modifying commands
 
 This ensures consistency across all development tools and documentation.
 
