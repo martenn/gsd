@@ -1,9 +1,15 @@
-import { Injectable, BadRequestException, ForbiddenException, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  BadRequestException,
+  ForbiddenException,
+  NotFoundException,
+} from '@nestjs/common';
 import { TaskDto } from '@gsd/types';
 import { CreateTaskDto } from '../dto/create-task.dto';
 import { TasksRepository } from '../infra/tasks.repository';
 import { ListsRepository } from '../../lists/infra/lists.repository';
 import { OrderIndexHelper } from '../infra/order-index.helper';
+import { Task } from '@prisma/client';
 
 const MAX_TASKS_PER_LIST = 100;
 
@@ -20,7 +26,7 @@ export class CreateTask {
 
     const orderIndex = await this.calculateOrderIndex(userId, dto.listId);
 
-    const task = await this.tasksRepository.create({
+    const task: Task = await this.tasksRepository.create({
       title: dto.title,
       description: dto.description ?? null,
       listId: dto.listId,
@@ -51,9 +57,7 @@ export class CreateTask {
     const currentTaskCount = await this.tasksRepository.countByList(userId, listId);
 
     if (currentTaskCount >= MAX_TASKS_PER_LIST) {
-      throw new BadRequestException(
-        `List has reached maximum task limit (${MAX_TASKS_PER_LIST})`,
-      );
+      throw new BadRequestException(`List has reached maximum task limit (${MAX_TASKS_PER_LIST})`);
     }
   }
 
@@ -62,7 +66,7 @@ export class CreateTask {
     return OrderIndexHelper.calculateTopPosition(maxOrderIndex);
   }
 
-  private toDto(task: any): TaskDto {
+  private toDto(task: Task): TaskDto {
     return {
       id: task.id,
       userId: task.userId,

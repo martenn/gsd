@@ -1,56 +1,42 @@
 import { Injectable } from '@nestjs/common';
-
-const COLOR_PALETTE = [
-  '#3B82F6',
-  '#EF4444',
-  '#10B981',
-  '#F59E0B',
-  '#8B5CF6',
-  '#EC4899',
-  '#06B6D4',
-  '#84CC16',
-  '#F97316',
-  '#6366F1',
-  '#14B8A6',
-  '#DC2626',
-  '#059669',
-  '#7C3AED',
-  '#BE185D',
-] as const;
-
-export type ColorCode = (typeof COLOR_PALETTE)[number];
+import { Color } from './color';
 
 @Injectable()
 export class ColorPool {
-  private usedColors: Set<ColorCode> = new Set();
+  private usedColors: Set<string> = new Set();
 
-  getNextColor(): ColorCode {
-    for (const color of COLOR_PALETTE) {
-      if (!this.usedColors.has(color)) {
-        this.usedColors.add(color);
-        return color;
+  getNextColor(): Color {
+    const palette = Color.palette;
+    for (const colorCode of palette) {
+      if (!this.usedColors.has(colorCode)) {
+        this.usedColors.add(colorCode);
+        return Color.of(colorCode);
       }
     }
 
     throw new Error('No colors available in pool');
   }
 
-  releaseColor(color: ColorCode): void {
-    this.usedColors.delete(color);
+  releaseColor(color: Color): void {
+    this.usedColors.delete(color.toString());
   }
 
-  getAvailableColors(): ColorCode[] {
-    return COLOR_PALETTE.filter((color) => !this.usedColors.has(color));
+  getAvailableColors(): Color[] {
+    const palette = Color.palette;
+    return palette
+      .filter((colorCode) => !this.usedColors.has(colorCode))
+      .map((colorCode) => Color.of(colorCode));
   }
 
-  markColorAsUsed(color: ColorCode): void {
-    if (this.usedColors.has(color)) {
-      throw new Error(`Color ${color} is already in use`);
+  markColorAsUsed(color: Color): void {
+    const colorString = color.toString();
+    if (this.usedColors.has(colorString)) {
+      throw new Error(`Color ${colorString} is already in use`);
     }
-    this.usedColors.add(color);
+    this.usedColors.add(colorString);
   }
 
-  getPalette(): readonly ColorCode[] {
-    return COLOR_PALETTE;
+  getPalette(): Color[] {
+    return Color.palette.map((colorCode) => Color.of(colorCode));
   }
 }

@@ -2,6 +2,7 @@ import { Injectable, NotFoundException, BadRequestException } from '@nestjs/comm
 import { List } from '@prisma/client';
 import { ListsRepository } from '../infra/lists.repository';
 import { ColorPool } from '../../colors/color-pool';
+import { Color } from '../../colors/color';
 
 @Injectable()
 export class DeleteList {
@@ -20,7 +21,12 @@ export class DeleteList {
 
     // TODO maybe move the check into color pool, like release when possible
     if (list?.color) {
-      this.colorPool.releaseColor(list.color as any);
+      try {
+        const color = Color.of(list.color);
+        this.colorPool.releaseColor(color);
+      } catch {
+        // Ignore invalid colors from the database
+      }
     }
   }
 

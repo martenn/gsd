@@ -9,7 +9,7 @@ export class UpdateTaskDto implements UpdateTaskRequest {
   title?: string;
 
   @IsOptional()
-  @ValidateIf((o) => o.description !== null)
+  @ValidateIf((o: UpdateTaskDto) => o.description !== null)
   @IsString()
   @MaxLength(5000, { message: 'Task description must not exceed 5000 characters' })
   description?: string | null;

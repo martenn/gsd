@@ -3,6 +3,7 @@ import { ListDto } from '@gsd/types';
 import { CreateListDto } from '../dto/create-list.dto';
 import { ListsRepository } from '../infra/lists.repository';
 import { ColorPool } from '../../colors/color-pool';
+import { Color } from '../../colors/color';
 
 const MAX_NON_DONE_LISTS = 10;
 
@@ -59,10 +60,11 @@ export class CreateList {
   private selectColor(createListDto: CreateListDto): string {
     try {
       if (createListDto.color) {
-        this.colorPool.markColorAsUsed(createListDto.color as any);
-        return createListDto.color;
+        const color = Color.of(createListDto.color);
+        this.colorPool.markColorAsUsed(color);
+        return color.toString();
       } else {
-        return this.colorPool.getNextColor();
+        return this.colorPool.getNextColor().toString();
       }
     } catch (error) {
       throw new BadRequestException(

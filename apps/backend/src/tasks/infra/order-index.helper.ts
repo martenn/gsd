@@ -24,11 +24,14 @@ export class OrderIndexHelper {
     return newIndex;
   }
 
-  static generateReindexedOrder(taskCount: number, startIndex: number = INITIAL_ORDER_INDEX): number[] {
+  static generateReindexedOrder(
+    taskCount: number,
+    startIndex: number = INITIAL_ORDER_INDEX,
+  ): number[] {
     const indices: number[] = [];
 
     for (let i = 0; i < taskCount; i++) {
-      indices.push(startIndex + (i * ORDER_STEP));
+      indices.push(startIndex + i * ORDER_STEP);
     }
 
     return indices;

@@ -1,14 +1,20 @@
-import { Injectable, BadRequestException, ForbiddenException, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  BadRequestException,
+  ForbiddenException,
+  NotFoundException,
+} from '@nestjs/common';
 import { TaskDto } from '@gsd/types';
 import { UpdateTaskDto } from '../dto/update-task.dto';
 import { TasksRepository } from '../infra/tasks.repository';
+import { Task } from '@prisma/client';
 
 @Injectable()
 export class UpdateTask {
   constructor(private readonly tasksRepository: TasksRepository) {}
 
   async execute(userId: string, taskId: string, dto: UpdateTaskDto): Promise<TaskDto> {
-    await this.validateAtLeastOneField(dto);
+    this.validateAtLeastOneField(dto);
     const task = await this.validateTaskOwnership(userId, taskId);
     this.validateTaskNotCompleted(task);
 
@@ -20,7 +26,7 @@ export class UpdateTask {
     return this.toDto(updatedTask);
   }
 
-  private async validateAtLeastOneField(dto: UpdateTaskDto): Promise<void> {
+  private validateAtLeastOneField(dto: UpdateTaskDto): void {
     if (dto.title === undefined && dto.description === undefined) {
       throw new BadRequestException('At least one field (title or description) must be provided');
     }
@@ -40,13 +46,13 @@ export class UpdateTask {
     return task;
   }
 
-  private validateTaskNotCompleted(task: any): void {
+  private validateTaskNotCompleted(task: Task): void {
     if (task.completedAt !== null) {
       throw new BadRequestException('Cannot modify a completed task');
     }
   }
 
-  private toDto(task: any): TaskDto {
+  private toDto(task: Task): TaskDto {
     return {
       id: task.id,
       userId: task.userId,

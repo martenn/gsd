@@ -3,6 +3,7 @@ import { NotFoundException, BadRequestException } from '@nestjs/common';
 import { DeleteList } from './delete-list';
 import { ListsRepository } from '../infra/lists.repository';
 import { ColorPool } from '../../colors/color-pool';
+import { Color } from '../../colors/color';
 
 describe('DeleteList', () => {
   let useCase: DeleteList;
@@ -98,7 +99,7 @@ describe('DeleteList', () => {
       expect(repository.findById).toHaveBeenCalledWith(listId, userId);
       expect(repository.findById).toHaveBeenCalledWith(destListId, userId);
       expect(repository.deleteWithTaskMove).toHaveBeenCalledWith(listId, destListId, userId);
-      expect(colorPool.releaseColor).toHaveBeenCalledWith('#3B82F6');
+      expect(colorPool.releaseColor).toHaveBeenCalledWith(Color.of('#3B82F6'));
     });
 
     it('should delete backlog when multiple backlogs exist', async () => {
@@ -144,7 +145,7 @@ describe('DeleteList', () => {
 
       expect(repository.countBacklogs).toHaveBeenCalledWith(userId);
       expect(repository.deleteWithTaskMove).toHaveBeenCalledWith(listId, destListId, userId);
-      expect(colorPool.releaseColor).toHaveBeenCalledWith('#10B981');
+      expect(colorPool.releaseColor).toHaveBeenCalledWith(Color.of('#10B981'));
     });
 
     it('should auto-promote leftmost intermediate when deleting last backlog', async () => {
