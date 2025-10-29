@@ -57,20 +57,6 @@ describe('Color', () => {
     });
   });
 
-  describe('toHexString', () => {
-    it('should return hex string representation', () => {
-      const color = Color.of('#10B981');
-
-      expect(color.toHexString()).toBe('#10B981');
-    });
-
-    it('should return same value as toString', () => {
-      const color = Color.of('#F59E0B');
-
-      expect(color.toHexString()).toBe(color.toString());
-    });
-  });
-
   describe('equals', () => {
     it('should return true for same color values', () => {
       const color1 = Color.of('#3B82F6');

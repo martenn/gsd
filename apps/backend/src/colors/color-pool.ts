@@ -3,14 +3,14 @@ import { Color } from './color';
 
 @Injectable()
 export class ColorPool {
-  private usedColors: Set<string> = new Set();
+  private usedColors: Set<Color> = new Set();
 
   getNextColor(): Color {
     const palette = Color.palette;
-    for (const colorCode of palette) {
-      if (!this.usedColors.has(colorCode)) {
-        this.usedColors.add(colorCode);
-        return Color.of(colorCode);
+    for (const color of palette) {
+      if (!this.usedColors.has(color)) {
+        this.usedColors.add(color);
+        return color;
       }
     }
 
@@ -18,25 +18,17 @@ export class ColorPool {
   }
 
   releaseColor(color: Color): void {
-    this.usedColors.delete(color.toString());
+    this.usedColors.delete(color);
   }
 
   getAvailableColors(): Color[] {
-    const palette = Color.palette;
-    return palette
-      .filter((colorCode) => !this.usedColors.has(colorCode))
-      .map((colorCode) => Color.of(colorCode));
+    return Color.palette.filter((color) => !this.usedColors.has(color));
   }
 
   markColorAsUsed(color: Color): void {
-    const colorString = color.toString();
-    if (this.usedColors.has(colorString)) {
-      throw new Error(`Color ${colorString} is already in use`);
+    if (this.usedColors.has(color)) {
+      throw new Error(`Color ${color.toString()} is already in use`);
     }
-    this.usedColors.add(colorString);
-  }
-
-  getPalette(): Color[] {
-    return Color.palette.map((colorCode) => Color.of(colorCode));
+    this.usedColors.add(color);
   }
 }

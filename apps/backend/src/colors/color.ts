@@ -19,6 +19,7 @@ const COLOR_PALETTE = [
 export type ColorCode = (typeof COLOR_PALETTE)[number];
 
 export class Color {
+  private static _palette = COLOR_PALETTE.map((colorCode) => Color.of(colorCode));
   private constructor(private readonly value: ColorCode) {}
 
   static of(colorString: string): Color {
@@ -30,15 +31,11 @@ export class Color {
     return new Color(colorString as ColorCode);
   }
 
-  static get palette(): readonly ColorCode[] {
-    return COLOR_PALETTE;
+  static get palette(): readonly Color[] {
+    return this._palette;
   }
 
   toString(): string {
-    return this.value;
-  }
-
-  toHexString(): string {
     return this.value;
   }
 
