@@ -26,7 +26,7 @@ export class CreateTask {
 
     const orderIndex = await this.calculateOrderIndex(userId, dto.listId);
 
-    const task: Task = await this.tasksRepository.create({
+    const task = await this.tasksRepository.create({
       title: dto.title,
       description: dto.description ?? null,
       listId: dto.listId,

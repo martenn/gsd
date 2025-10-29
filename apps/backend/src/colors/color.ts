@@ -19,20 +19,24 @@ const COLOR_PALETTE = [
 export type ColorCode = (typeof COLOR_PALETTE)[number];
 
 export class Color {
-  private static _palette = COLOR_PALETTE.map((colorCode) => Color.of(colorCode));
+  private static readonly paletteMap = new Map<ColorCode, Color>(
+    COLOR_PALETTE.map((code) => [code, new Color(code)]),
+  );
+
   private constructor(private readonly value: ColorCode) {}
 
   static of(colorString: string): Color {
-    if (!COLOR_PALETTE.includes(colorString as ColorCode)) {
+    const color = this.paletteMap.get(colorString as ColorCode);
+    if (!color) {
       throw new Error(
         `Invalid color: ${colorString}. Must be one of the predefined palette colors.`,
       );
     }
-    return new Color(colorString as ColorCode);
+    return color;
   }
 
   static get palette(): readonly Color[] {
-    return this._palette;
+    return Array.from(this.paletteMap.values());
   }
 
   toString(): string {

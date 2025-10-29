@@ -34,6 +34,7 @@ export class ScanUsedColors implements OnApplicationBootstrap {
           this.colorPool.markColorAsUsed(color);
         } catch {
           // Ignore invalid colors from the database
+          // TODO handle on repo level or just throw
         }
       }
     }

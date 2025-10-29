@@ -26,6 +26,7 @@ export class DeleteList {
         this.colorPool.releaseColor(color);
       } catch {
         // Ignore invalid colors from the database
+        // TODO handle on repo level or just throw
       }
     }
   }

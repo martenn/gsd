@@ -12,10 +12,9 @@ describe('Color', () => {
     it('should create Color for each palette color', () => {
       const palette = Color.palette;
 
-      for (const colorCode of palette) {
-        const color = Color.of(colorCode);
+      for (const color of palette) {
         expect(color).toBeInstanceOf(Color);
-        expect(color.toString()).toBe(colorCode);
+        expect(color.toString()).toMatch(/^#[0-9A-Fa-f]{6}$/);
       }
     });
 
@@ -39,6 +38,14 @@ describe('Color', () => {
       expect(() => Color.of('blue')).toThrow(
         'Invalid color: blue. Must be one of the predefined palette colors.',
       );
+    });
+
+    it('should return same instance for same color (singleton pattern)', () => {
+      const color1 = Color.of('#3B82F6');
+      const color2 = Color.of('#3B82F6');
+
+      expect(color1).toBe(color2);
+      expect(color1 === color2).toBe(true);
     });
   });
 
@@ -73,8 +80,7 @@ describe('Color', () => {
     });
 
     it('should work correctly with all palette combinations', () => {
-      const palette = Color.palette;
-      const colors = palette.map((code) => Color.of(code));
+      const colors = Color.palette;
 
       for (let i = 0; i < colors.length; i++) {
         for (let j = 0; j < colors.length; j++) {
@@ -106,8 +112,8 @@ describe('Color', () => {
       const palette = Color.palette;
       const hexPattern = /^#[0-9A-Fa-f]{6}$/;
 
-      for (const colorCode of palette) {
-        expect(colorCode).toMatch(hexPattern);
+      for (const color of palette) {
+        expect(color.toString()).toMatch(hexPattern);
       }
     });
 
@@ -119,9 +125,9 @@ describe('Color', () => {
 
     it('should have no duplicate colors', () => {
       const palette = Color.palette;
-      const uniqueColors = new Set(palette);
+      const uniqueHexCodes = new Set(palette.map((c) => c.toString()));
 
-      expect(uniqueColors.size).toBe(palette.length);
+      expect(uniqueHexCodes.size).toBe(palette.length);
     });
   });
 });
