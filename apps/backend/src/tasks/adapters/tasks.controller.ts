@@ -10,14 +10,24 @@ import {
   HttpCode,
   HttpStatus,
 } from '@nestjs/common';
-import { CreateTaskResponseDto, GetTasksResponseDto, UpdateTaskResponseDto } from '@gsd/types';
+import {
+  CreateTaskResponseDto,
+  GetTasksResponseDto,
+  UpdateTaskResponseDto,
+  MoveTaskResponseDto,
+} from '@gsd/types';
 import { CreateTask } from '../use-cases/create-task';
 import { GetTasks } from '../use-cases/get-tasks';
 import { UpdateTask } from '../use-cases/update-task';
 import { DeleteTask } from '../use-cases/delete-task';
+import { MoveTask } from '../use-cases/move-task';
+import { CompleteTask } from '../use-cases/complete-task';
+import { ReorderTask } from '../use-cases/reorder-task';
 import { CreateTaskDto } from '../dto/create-task.dto';
 import { UpdateTaskDto } from '../dto/update-task.dto';
 import { GetTasksQueryDto } from '../dto/get-tasks-query.dto';
+import { MoveTaskDto } from '../dto/move-task.dto';
+import { ReorderTaskDto } from '../dto/reorder-task.dto';
 
 @Controller('v1/tasks')
 export class TasksController {
@@ -26,6 +36,9 @@ export class TasksController {
     private readonly getTasksUseCase: GetTasks,
     private readonly updateTaskUseCase: UpdateTask,
     private readonly deleteTaskUseCase: DeleteTask,
+    private readonly moveTaskUseCase: MoveTask,
+    private readonly completeTaskUseCase: CompleteTask,
+    private readonly reorderTaskUseCase: ReorderTask,
   ) {}
 
   @Get()

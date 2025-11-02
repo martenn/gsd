@@ -30,6 +30,11 @@ export interface MoveTaskRequest {
   listId: string;
 }
 
+export interface ReorderTaskRequest {
+  newOrderIndex?: number;
+  afterTaskId?: string;
+}
+
 export interface BulkAddTasksRequest {
   tasks: Array<{
     title: string;
@@ -67,6 +72,10 @@ export interface MoveTaskResponseDto {
 }
 
 export interface CompleteTaskResponseDto {
+  task: TaskDto;
+}
+
+export interface ReorderTaskResponseDto {
   task: TaskDto;
 }
 

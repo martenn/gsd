@@ -100,6 +100,15 @@ export class ListsRepository {
     });
   }
 
+  async findDoneList(userId: string): Promise<List | null> {
+    return this.prisma.list.findFirst({
+      where: {
+        userId,
+        isDone: true,
+      },
+    });
+  }
+
   async promoteToBacklog(id: string): Promise<List> {
     return this.prisma.list.update({
       where: { id },
