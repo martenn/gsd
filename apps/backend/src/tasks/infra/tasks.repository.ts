@@ -190,4 +190,16 @@ export class TasksRepository {
       },
     });
   }
+
+  async updateOrderIndex(userId: string, taskId: string, newOrderIndex: number): Promise<Task> {
+    return this.prisma.task.update({
+      where: {
+        id: taskId,
+        userId,
+      },
+      data: {
+        orderIndex: newOrderIndex,
+      },
+    });
+  }
 }
