@@ -34,7 +34,7 @@ export class DeleteList {
           const color = Color.of(list.color);
           this.colorPool.releaseColor(color);
         } catch {
-          // Ignore invalid colors from the database
+          this.logger.error(`Invalid color ${list.color} for list ${listId}`);
           // TODO handle on repo level or just throw
         }
       }
