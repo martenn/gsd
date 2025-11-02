@@ -44,7 +44,9 @@ describe('ColorPool', () => {
   it('should throw error when marking already used color', () => {
     const color = service.getNextColor();
 
-    expect(() => service.markColorAsUsed(color)).toThrow(`Color ${color.toString()} is already in use`);
+    expect(() => service.markColorAsUsed(color)).toThrow(
+      `Color ${color.toString()} is already in use`,
+    );
   });
 
   it('should mark color as used when not in use', () => {

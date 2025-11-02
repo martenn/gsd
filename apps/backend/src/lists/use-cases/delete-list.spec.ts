@@ -4,6 +4,7 @@ import { DeleteList } from './delete-list';
 import { ListsRepository } from '../infra/lists.repository';
 import { ColorPool } from '../../colors/color-pool';
 import { Color } from '../../colors/color';
+import { AppLogger } from '../../logger/app-logger';
 
 describe('DeleteList', () => {
   let useCase: DeleteList;
@@ -29,6 +30,15 @@ describe('DeleteList', () => {
       getPalette: jest.fn(),
     } as unknown as ColorPool;
 
+    const logger = {
+      log: jest.fn(),
+      error: jest.fn(),
+      warn: jest.fn(),
+      debug: jest.fn(),
+      verbose: jest.fn(),
+      setContext: jest.fn(),
+    } as unknown as AppLogger;
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         DeleteList,
@@ -39,6 +49,10 @@ describe('DeleteList', () => {
         {
           provide: ColorPool,
           useValue: colorPool,
+        },
+        {
+          provide: AppLogger,
+          useValue: logger,
         },
       ],
     }).compile();

@@ -16,7 +16,7 @@ const COLOR_PALETTE = [
   '#BE185D',
 ] as const;
 
-export type ColorCode = (typeof COLOR_PALETTE)[number];
+type ColorCode = (typeof COLOR_PALETTE)[number];
 
 export class Color {
   private static readonly paletteMap = new Map<ColorCode, Color>(
@@ -44,6 +44,6 @@ export class Color {
   }
 
   equals(other: Color): boolean {
-    return this.value === other.value;
+    return this === other || this.value === other.value;
   }
 }

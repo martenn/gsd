@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { GetLists } from './get-lists';
 import { ListsRepository } from '../infra/lists.repository';
+import { AppLogger } from '../../logger/app-logger';
 
 describe('GetLists', () => {
   let useCase: GetLists;
@@ -11,12 +12,25 @@ describe('GetLists', () => {
       findManyByUserId: jest.fn(),
     } as unknown as ListsRepository;
 
+    const logger = {
+      log: jest.fn(),
+      error: jest.fn(),
+      warn: jest.fn(),
+      debug: jest.fn(),
+      verbose: jest.fn(),
+      setContext: jest.fn(),
+    } as unknown as AppLogger;
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         GetLists,
         {
           provide: ListsRepository,
           useValue: repository,
+        },
+        {
+          provide: AppLogger,
+          useValue: logger,
         },
       ],
     }).compile();

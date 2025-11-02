@@ -31,7 +31,9 @@ describe('Color', () => {
     });
 
     it('should throw error for empty string', () => {
-      expect(() => Color.of('')).toThrow('Invalid color: . Must be one of the predefined palette colors.');
+      expect(() => Color.of('')).toThrow(
+        'Invalid color: . Must be one of the predefined palette colors.',
+      );
     });
 
     it('should throw error for non-hex string', () => {

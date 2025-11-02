@@ -4,6 +4,7 @@ import { CreateListDto } from '../dto/create-list.dto';
 import { ListsRepository } from '../infra/lists.repository';
 import { ColorPool } from '../../colors/color-pool';
 import { Color } from '../../colors/color';
+import { AppLogger } from '../../logger/app-logger';
 
 const MAX_NON_DONE_LISTS = 10;
 
@@ -12,34 +13,49 @@ export class CreateList {
   constructor(
     private readonly repository: ListsRepository,
     private readonly colorPool: ColorPool,
-  ) {}
+    private readonly logger: AppLogger,
+  ) {
+    this.logger.setContext(CreateList.name);
+  }
 
   async execute(userId: string, createListDto: CreateListDto): Promise<ListDto> {
-    await this.validateMaxListCount(userId);
+    this.logger.log(`Creating list for user ${userId}: ${createListDto.name}`);
 
-    const newOrderIndex = await this.selectOrderIndex(userId);
-    const assignedColor = this.selectColor(createListDto);
+    try {
+      await this.validateMaxListCount(userId);
 
-    const list = await this.repository.create({
-      name: createListDto.name,
-      isBacklog: createListDto.isBacklog ?? false,
-      color: assignedColor,
-      userId,
-      orderIndex: newOrderIndex,
-      isDone: false,
-    });
+      const newOrderIndex = await this.selectOrderIndex(userId);
+      const assignedColor = this.selectColor(createListDto);
 
-    return {
-      id: list.id,
-      name: list.name,
-      orderIndex: list.orderIndex,
-      isBacklog: list.isBacklog,
-      isDone: list.isDone,
-      color: list.color,
-      userId: list.userId,
-      createdAt: list.createdAt,
-      updatedAt: list.updatedAt,
-    };
+      const list = await this.repository.create({
+        name: createListDto.name,
+        isBacklog: createListDto.isBacklog ?? false,
+        color: assignedColor,
+        userId,
+        orderIndex: newOrderIndex,
+        isDone: false,
+      });
+
+      this.logger.log(`List created successfully: ${list.id}`);
+
+      return {
+        id: list.id,
+        name: list.name,
+        orderIndex: list.orderIndex,
+        isBacklog: list.isBacklog,
+        isDone: list.isDone,
+        color: list.color,
+        userId: list.userId,
+        createdAt: list.createdAt,
+        updatedAt: list.updatedAt,
+      };
+    } catch (error) {
+      this.logger.error(
+        `Failed to create list for user ${userId}: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        error instanceof Error ? error.stack : undefined,
+      );
+      throw error;
+    }
   }
 
   private async selectOrderIndex(userId: string) {

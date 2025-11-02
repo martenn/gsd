@@ -8,22 +8,40 @@ import { TaskDto } from '@gsd/types';
 import { UpdateTaskDto } from '../dto/update-task.dto';
 import { TasksRepository } from '../infra/tasks.repository';
 import { Task } from '@prisma/client';
+import { AppLogger } from '../../logger/app-logger';
 
 @Injectable()
 export class UpdateTask {
-  constructor(private readonly tasksRepository: TasksRepository) {}
+  constructor(
+    private readonly tasksRepository: TasksRepository,
+    private readonly logger: AppLogger,
+  ) {
+    this.logger.setContext(UpdateTask.name);
+  }
 
   async execute(userId: string, taskId: string, dto: UpdateTaskDto): Promise<TaskDto> {
-    this.validateAtLeastOneField(dto);
-    const task = await this.validateTaskOwnership(userId, taskId);
-    this.validateTaskNotCompleted(task);
+    this.logger.log(`Updating task ${taskId} for user ${userId}`);
 
-    const updatedTask = await this.tasksRepository.update(userId, taskId, {
-      title: dto.title,
-      description: dto.description,
-    });
+    try {
+      this.validateAtLeastOneField(dto);
+      const task = await this.validateTaskOwnership(userId, taskId);
+      this.validateTaskNotCompleted(task);
 
-    return this.toDto(updatedTask);
+      const updatedTask = await this.tasksRepository.update(userId, taskId, {
+        title: dto.title,
+        description: dto.description,
+      });
+
+      this.logger.log(`Task ${taskId} updated successfully`);
+
+      return this.toDto(updatedTask);
+    } catch (error) {
+      this.logger.error(
+        `Failed to update task ${taskId} for user ${userId}: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        error instanceof Error ? error.stack : undefined,
+      );
+      throw error;
+    }
   }
 
   private validateAtLeastOneField(dto: UpdateTaskDto): void {

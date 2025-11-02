@@ -10,6 +10,7 @@ import { TasksRepository } from '../infra/tasks.repository';
 import { ListsRepository } from '../../lists/infra/lists.repository';
 import { OrderIndexHelper } from '../infra/order-index.helper';
 import { Task } from '@prisma/client';
+import { AppLogger } from '../../logger/app-logger';
 
 const MAX_TASKS_PER_LIST = 100;
 
@@ -18,23 +19,38 @@ export class CreateTask {
   constructor(
     private readonly tasksRepository: TasksRepository,
     private readonly listsRepository: ListsRepository,
-  ) {}
+    private readonly logger: AppLogger,
+  ) {
+    this.logger.setContext(CreateTask.name);
+  }
 
   async execute(userId: string, dto: CreateTaskDto): Promise<TaskDto> {
-    await this.validateList(userId, dto.listId);
-    await this.validateTaskCapacity(userId, dto.listId);
+    this.logger.log(`Creating task for user ${userId} in list ${dto.listId}: ${dto.title}`);
 
-    const orderIndex = await this.calculateOrderIndex(userId, dto.listId);
+    try {
+      await this.validateList(userId, dto.listId);
+      await this.validateTaskCapacity(userId, dto.listId);
 
-    const task = await this.tasksRepository.create({
-      title: dto.title,
-      description: dto.description ?? null,
-      listId: dto.listId,
-      userId,
-      orderIndex,
-    });
+      const orderIndex = await this.calculateOrderIndex(userId, dto.listId);
 
-    return this.toDto(task);
+      const task = await this.tasksRepository.create({
+        title: dto.title,
+        description: dto.description ?? null,
+        listId: dto.listId,
+        userId,
+        orderIndex,
+      });
+
+      this.logger.log(`Task created successfully: ${task.id}`);
+
+      return this.toDto(task);
+    } catch (error) {
+      this.logger.error(
+        `Failed to create task for user ${userId}: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        error instanceof Error ? error.stack : undefined,
+      );
+      throw error;
+    }
   }
 
   private async validateList(userId: string, listId: string): Promise<void> {

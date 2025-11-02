@@ -5,6 +5,7 @@ import { CreateListDto } from '../dto/create-list.dto';
 import { ListsRepository } from '../infra/lists.repository';
 import { ColorPool } from '../../colors/color-pool';
 import { Color } from '../../colors/color';
+import { AppLogger } from '../../logger/app-logger';
 
 describe('CreateList', () => {
   let useCase: CreateList;
@@ -26,6 +27,15 @@ describe('CreateList', () => {
       getPalette: jest.fn(),
     } as unknown as ColorPool;
 
+    const logger = {
+      log: jest.fn(),
+      error: jest.fn(),
+      warn: jest.fn(),
+      debug: jest.fn(),
+      verbose: jest.fn(),
+      setContext: jest.fn(),
+    } as unknown as AppLogger;
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         CreateList,
@@ -36,6 +46,10 @@ describe('CreateList', () => {
         {
           provide: ColorPool,
           useValue: colorPool,
+        },
+        {
+          provide: AppLogger,
+          useValue: logger,
         },
       ],
     }).compile();

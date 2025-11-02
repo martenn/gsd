@@ -3,31 +3,49 @@ import { List } from '@prisma/client';
 import { ListsRepository } from '../infra/lists.repository';
 import { ColorPool } from '../../colors/color-pool';
 import { Color } from '../../colors/color';
+import { AppLogger } from '../../logger/app-logger';
 
 @Injectable()
 export class DeleteList {
   constructor(
     private readonly repository: ListsRepository,
     private readonly colorPool: ColorPool,
-  ) {}
+    private readonly logger: AppLogger,
+  ) {
+    this.logger.setContext(DeleteList.name);
+  }
 
   async execute(userId: string, listId: string, destListId?: string): Promise<void> {
-    const list = await this.repository.findById(listId, userId);
-    await this.checkPrerequisites(list, userId);
+    this.logger.log(
+      `Deleting list ${listId} for user ${userId}, destination: ${destListId || 'auto'}`,
+    );
 
-    const destination = await this.resolveDestination(userId, listId, destListId);
-    // TODO where should this be done? now it's DB level, but maybe we should make it on domain level and then persist
-    await this.repository.deleteWithTaskMove(listId, destination.id, userId);
+    try {
+      const list = await this.repository.findById(listId, userId);
+      await this.checkPrerequisites(list, userId);
 
-    // TODO maybe move the check into color pool, like release when possible
-    if (list?.color) {
-      try {
-        const color = Color.of(list.color);
-        this.colorPool.releaseColor(color);
-      } catch {
-        // Ignore invalid colors from the database
-        // TODO handle on repo level or just throw
+      const destination = await this.resolveDestination(userId, listId, destListId);
+      // TODO where should this be done? now it's DB level, but maybe we should make it on domain level and then persist
+      await this.repository.deleteWithTaskMove(listId, destination.id, userId);
+
+      // TODO maybe move the check into color pool, like release when possible
+      if (list?.color) {
+        try {
+          const color = Color.of(list.color);
+          this.colorPool.releaseColor(color);
+        } catch {
+          // Ignore invalid colors from the database
+          // TODO handle on repo level or just throw
+        }
       }
+
+      this.logger.log(`List ${listId} deleted successfully, tasks moved to ${destination.id}`);
+    } catch (error) {
+      this.logger.error(
+        `Failed to delete list ${listId} for user ${userId}: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        error instanceof Error ? error.stack : undefined,
+      );
+      throw error;
     }
   }
 

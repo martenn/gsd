@@ -3,11 +3,13 @@ import { GetTasks } from './get-tasks';
 import { TasksRepository } from '../infra/tasks.repository';
 import { ListsRepository } from '../../lists/infra/lists.repository';
 import { GetTasksQueryDto } from '../dto/get-tasks-query.dto';
+import { AppLogger } from '../../logger/app-logger';
 
 describe('GetTasks', () => {
   let getTasks: GetTasks;
   let tasksRepository: jest.Mocked<TasksRepository>;
   let listsRepository: jest.Mocked<ListsRepository>;
+  let logger: jest.Mocked<AppLogger>;
 
   const userId = 'user-123';
   const listId = 'list-456';
@@ -22,7 +24,16 @@ describe('GetTasks', () => {
       findById: jest.fn(),
     } as any;
 
-    getTasks = new GetTasks(tasksRepository, listsRepository);
+    logger = {
+      log: jest.fn(),
+      error: jest.fn(),
+      warn: jest.fn(),
+      debug: jest.fn(),
+      verbose: jest.fn(),
+      setContext: jest.fn(),
+    } as any;
+
+    getTasks = new GetTasks(tasksRepository, listsRepository, logger);
   });
 
   describe('execute', () => {
