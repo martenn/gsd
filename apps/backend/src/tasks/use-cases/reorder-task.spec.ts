@@ -45,15 +45,27 @@ describe('ReorderTask', () => {
     };
 
     describe('using newOrderIndex', () => {
-      it('should reorder task with explicit newOrderIndex', async () => {
+      it('should reorder task with explicit newOrderIndex and return TaskDto', async () => {
         const dto: ReorderTaskDto = { newOrderIndex: 2000 };
-        tasksRepository.findById.mockResolvedValue(mockTask);
-        tasksRepository.updateOrderIndex.mockResolvedValue({
+        const reorderedTask = {
           ...mockTask,
           orderIndex: 2000,
-        });
+        };
+        tasksRepository.findById.mockResolvedValue(mockTask);
+        tasksRepository.updateOrderIndex.mockResolvedValue(reorderedTask);
 
-        await reorderTask.execute(userId, taskId, dto);
+        const result = await reorderTask.execute(userId, taskId, dto);
+
+        expect(result).toMatchObject({
+          id: taskId,
+          userId,
+          listId,
+          title: 'Test Task',
+          description: 'Test Description',
+          orderIndex: 2000,
+          isCompleted: false,
+        });
+        expect(result.createdAt).toBeDefined();
 
         expect(tasksRepository.updateOrderIndex).toHaveBeenCalledWith(
           userId,
@@ -105,17 +117,27 @@ describe('ReorderTask', () => {
         updatedAt: new Date(),
       };
 
-      it('should reorder task after reference task', async () => {
+      it('should reorder task after reference task and return TaskDto', async () => {
         const dto: ReorderTaskDto = { afterTaskId };
+        const reorderedTask = {
+          ...mockTask,
+          orderIndex: 1501,
+        };
         tasksRepository.findById
           .mockResolvedValueOnce(mockTask)
           .mockResolvedValueOnce(mockAfterTask);
-        tasksRepository.updateOrderIndex.mockResolvedValue({
-          ...mockTask,
-          orderIndex: 1501,
-        });
+        tasksRepository.updateOrderIndex.mockResolvedValue(reorderedTask);
 
-        await reorderTask.execute(userId, taskId, dto);
+        const result = await reorderTask.execute(userId, taskId, dto);
+
+        expect(result).toMatchObject({
+          id: taskId,
+          userId,
+          listId,
+          title: 'Test Task',
+          orderIndex: 1501,
+          isCompleted: false,
+        });
 
         expect(tasksRepository.updateOrderIndex).toHaveBeenCalledWith(
           userId,

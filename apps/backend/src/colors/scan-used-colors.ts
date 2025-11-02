@@ -2,7 +2,7 @@ import { Injectable, OnApplicationBootstrap } from '@nestjs/common';
 import { PrismaClient } from '@prisma/client';
 import { ColorPool } from './color-pool';
 import { Color } from './color';
-import { AppLogger } from 'src/logger/app-logger';
+import { AppLogger } from '../logger/app-logger';
 
 @Injectable()
 export class ScanUsedColors implements OnApplicationBootstrap {
