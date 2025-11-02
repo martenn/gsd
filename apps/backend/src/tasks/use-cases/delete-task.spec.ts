@@ -1,10 +1,12 @@
 import { ForbiddenException, NotFoundException } from '@nestjs/common';
 import { DeleteTask } from './delete-task';
 import { TasksRepository } from '../infra/tasks.repository';
+import { AppLogger } from '../../logger/app-logger';
 
 describe('DeleteTask', () => {
   let deleteTask: DeleteTask;
   let tasksRepository: jest.Mocked<TasksRepository>;
+  let logger: jest.Mocked<AppLogger>;
 
   const userId = 'user-123';
   const taskId = 'task-789';
@@ -15,7 +17,16 @@ describe('DeleteTask', () => {
       delete: jest.fn(),
     } as any;
 
-    deleteTask = new DeleteTask(tasksRepository);
+    logger = {
+      log: jest.fn(),
+      error: jest.fn(),
+      warn: jest.fn(),
+      debug: jest.fn(),
+      verbose: jest.fn(),
+      setContext: jest.fn(),
+    } as any;
+
+    deleteTask = new DeleteTask(tasksRepository, logger);
   });
 
   describe('execute', () => {

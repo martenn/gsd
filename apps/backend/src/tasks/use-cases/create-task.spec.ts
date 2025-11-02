@@ -3,11 +3,13 @@ import { CreateTask } from './create-task';
 import { TasksRepository } from '../infra/tasks.repository';
 import { ListsRepository } from '../../lists/infra/lists.repository';
 import { CreateTaskDto } from '../dto/create-task.dto';
+import { AppLogger } from '../../logger/app-logger';
 
 describe('CreateTask', () => {
   let createTask: CreateTask;
   let tasksRepository: jest.Mocked<TasksRepository>;
   let listsRepository: jest.Mocked<ListsRepository>;
+  let logger: jest.Mocked<AppLogger>;
 
   const userId = 'user-123';
   const listId = 'list-456';
@@ -24,7 +26,16 @@ describe('CreateTask', () => {
       findById: jest.fn(),
     } as any;
 
-    createTask = new CreateTask(tasksRepository, listsRepository);
+    logger = {
+      log: jest.fn(),
+      error: jest.fn(),
+      warn: jest.fn(),
+      debug: jest.fn(),
+      verbose: jest.fn(),
+      setContext: jest.fn(),
+    } as any;
+
+    createTask = new CreateTask(tasksRepository, listsRepository, logger);
   });
 
   describe('execute', () => {

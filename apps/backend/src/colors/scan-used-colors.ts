@@ -1,13 +1,18 @@
 import { Injectable, OnApplicationBootstrap } from '@nestjs/common';
 import { PrismaClient } from '@prisma/client';
-import { ColorPool, ColorCode } from './color-pool';
+import { ColorPool } from './color-pool';
+import { Color } from './color';
+import { AppLogger } from 'src/logger/app-logger';
 
 @Injectable()
 export class ScanUsedColors implements OnApplicationBootstrap {
   constructor(
     private readonly prisma: PrismaClient,
     private readonly colorPool: ColorPool,
-  ) {}
+    private readonly logger: AppLogger,
+  ) {
+    this.logger.setContext(ScanUsedColors.name);
+  }
 
   async onApplicationBootstrap() {
     await this.scanExistingColors();
@@ -27,14 +32,15 @@ export class ScanUsedColors implements OnApplicationBootstrap {
     });
 
     for (const list of listsWithColors) {
-      if (list.color && this.isValidColor(list.color)) {
-        this.colorPool.markColorAsUsed(list.color as ColorCode);
+      if (list.color) {
+        try {
+          const color = Color.of(list.color);
+          this.colorPool.markColorAsUsed(color);
+        } catch {
+          this.logger.error(`Invalid color ${list.color}`);
+          // TODO handle on repo level or just throw
+        }
       }
     }
-  }
-
-  private isValidColor(color: string): color is ColorCode {
-    const palette = this.colorPool.getPalette();
-    return palette.includes(color as ColorCode);
   }
 }

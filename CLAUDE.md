@@ -429,6 +429,24 @@ The following coding standards are automatically enforced for specific file type
 - Implement domain-driven design with modules that encapsulate related functionality and maintain clear boundaries
 - Use Prisma with repository patterns to abstract database operations and simplify testing with mocks
 
+**Logging Standards**:
+- Use `AppLogger` (from `src/logger/app-logger.ts`) for all logging throughout the application
+- Inject `AppLogger` via dependency injection in use cases, services, and other classes
+- Always call `setContext()` in the constructor to set the class name as context
+- Log levels:
+  - `log()` - General information about operations (e.g., "Creating list for user X")
+  - `error()` - Errors with stack traces (always include error message and stack)
+  - `warn()` - Warning conditions
+  - `debug()` - Detailed debugging information (request bodies, etc.)
+  - `verbose()` - Very detailed diagnostic information
+- Wrap use case `execute()` methods in try-catch blocks:
+  - Log at the start of execution with key parameters
+  - Log success at the end with created resource IDs
+  - Log errors with full context before re-throwing
+- HTTP requests/responses are automatically logged by `HttpLoggingInterceptor`
+- In tests, mock `AppLogger` with all methods (log, error, warn, debug, verbose, setContext)
+- Log configuration is environment-aware (more verbose in development, production logs only error/warn/log)
+
 **Testing Conventions**:
 - Test files should mirror source file names: `{feature}.spec.ts`
 - Use descriptive test descriptions that explain behavior

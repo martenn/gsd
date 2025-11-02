@@ -2,10 +2,12 @@ import { BadRequestException, ForbiddenException, NotFoundException } from '@nes
 import { UpdateTask } from './update-task';
 import { TasksRepository } from '../infra/tasks.repository';
 import { UpdateTaskDto } from '../dto/update-task.dto';
+import { AppLogger } from '../../logger/app-logger';
 
 describe('UpdateTask', () => {
   let updateTask: UpdateTask;
   let tasksRepository: jest.Mocked<TasksRepository>;
+  let logger: jest.Mocked<AppLogger>;
 
   const userId = 'user-123';
   const taskId = 'task-789';
@@ -16,7 +18,16 @@ describe('UpdateTask', () => {
       update: jest.fn(),
     } as any;
 
-    updateTask = new UpdateTask(tasksRepository);
+    logger = {
+      log: jest.fn(),
+      error: jest.fn(),
+      warn: jest.fn(),
+      debug: jest.fn(),
+      verbose: jest.fn(),
+      setContext: jest.fn(),
+    } as any;
+
+    updateTask = new UpdateTask(tasksRepository, logger);
   });
 
   describe('execute', () => {

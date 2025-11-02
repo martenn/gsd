@@ -1,13 +1,31 @@
 import { Injectable, ForbiddenException, NotFoundException } from '@nestjs/common';
 import { TasksRepository } from '../infra/tasks.repository';
+import { AppLogger } from '../../logger/app-logger';
 
 @Injectable()
 export class DeleteTask {
-  constructor(private readonly tasksRepository: TasksRepository) {}
+  constructor(
+    private readonly tasksRepository: TasksRepository,
+    private readonly logger: AppLogger,
+  ) {
+    this.logger.setContext(DeleteTask.name);
+  }
 
   async execute(userId: string, taskId: string): Promise<void> {
-    await this.validateTaskOwnership(userId, taskId);
-    await this.tasksRepository.delete(userId, taskId);
+    this.logger.log(`Deleting task ${taskId} for user ${userId}`);
+
+    try {
+      await this.validateTaskOwnership(userId, taskId);
+      await this.tasksRepository.delete(userId, taskId);
+
+      this.logger.log(`Task ${taskId} deleted successfully`);
+    } catch (error) {
+      this.logger.error(
+        `Failed to delete task ${taskId} for user ${userId}: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        error instanceof Error ? error.stack : undefined,
+      );
+      throw error;
+    }
   }
 
   private async validateTaskOwnership(userId: string, taskId: string): Promise<void> {

@@ -3,6 +3,8 @@ import { NotFoundException, BadRequestException } from '@nestjs/common';
 import { DeleteList } from './delete-list';
 import { ListsRepository } from '../infra/lists.repository';
 import { ColorPool } from '../../colors/color-pool';
+import { Color } from '../../colors/color';
+import { AppLogger } from '../../logger/app-logger';
 
 describe('DeleteList', () => {
   let useCase: DeleteList;
@@ -28,6 +30,15 @@ describe('DeleteList', () => {
       getPalette: jest.fn(),
     } as unknown as ColorPool;
 
+    const logger = {
+      log: jest.fn(),
+      error: jest.fn(),
+      warn: jest.fn(),
+      debug: jest.fn(),
+      verbose: jest.fn(),
+      setContext: jest.fn(),
+    } as unknown as AppLogger;
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         DeleteList,
@@ -38,6 +49,10 @@ describe('DeleteList', () => {
         {
           provide: ColorPool,
           useValue: colorPool,
+        },
+        {
+          provide: AppLogger,
+          useValue: logger,
         },
       ],
     }).compile();
@@ -98,7 +113,7 @@ describe('DeleteList', () => {
       expect(repository.findById).toHaveBeenCalledWith(listId, userId);
       expect(repository.findById).toHaveBeenCalledWith(destListId, userId);
       expect(repository.deleteWithTaskMove).toHaveBeenCalledWith(listId, destListId, userId);
-      expect(colorPool.releaseColor).toHaveBeenCalledWith('#3B82F6');
+      expect(colorPool.releaseColor).toHaveBeenCalledWith(Color.of('#3B82F6'));
     });
 
     it('should delete backlog when multiple backlogs exist', async () => {
@@ -144,7 +159,7 @@ describe('DeleteList', () => {
 
       expect(repository.countBacklogs).toHaveBeenCalledWith(userId);
       expect(repository.deleteWithTaskMove).toHaveBeenCalledWith(listId, destListId, userId);
-      expect(colorPool.releaseColor).toHaveBeenCalledWith('#10B981');
+      expect(colorPool.releaseColor).toHaveBeenCalledWith(Color.of('#10B981'));
     });
 
     it('should auto-promote leftmost intermediate when deleting last backlog', async () => {

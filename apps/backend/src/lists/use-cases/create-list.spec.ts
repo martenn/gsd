@@ -4,6 +4,8 @@ import { CreateList } from './create-list';
 import { CreateListDto } from '../dto/create-list.dto';
 import { ListsRepository } from '../infra/lists.repository';
 import { ColorPool } from '../../colors/color-pool';
+import { Color } from '../../colors/color';
+import { AppLogger } from '../../logger/app-logger';
 
 describe('CreateList', () => {
   let useCase: CreateList;
@@ -25,6 +27,15 @@ describe('CreateList', () => {
       getPalette: jest.fn(),
     } as unknown as ColorPool;
 
+    const logger = {
+      log: jest.fn(),
+      error: jest.fn(),
+      warn: jest.fn(),
+      debug: jest.fn(),
+      verbose: jest.fn(),
+      setContext: jest.fn(),
+    } as unknown as AppLogger;
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         CreateList,
@@ -35,6 +46,10 @@ describe('CreateList', () => {
         {
           provide: ColorPool,
           useValue: colorPool,
+        },
+        {
+          provide: AppLogger,
+          useValue: logger,
         },
       ],
     }).compile();
@@ -60,7 +75,7 @@ describe('CreateList', () => {
 
     jest.spyOn(repository, 'countByUserId').mockResolvedValue(5);
     jest.spyOn(repository, 'findMaxOrderIndex').mockResolvedValue(3.0);
-    jest.spyOn(colorPool, 'getNextColor').mockReturnValue(assignedColor as any);
+    jest.spyOn(colorPool, 'getNextColor').mockReturnValue(Color.of(assignedColor));
 
     const createdList = {
       id: 'new-list-id',
@@ -120,7 +135,7 @@ describe('CreateList', () => {
 
     const result = await useCase.execute(userId, createListDto);
 
-    expect(colorPool.markColorAsUsed).toHaveBeenCalledWith('#3B82F6');
+    expect(colorPool.markColorAsUsed).toHaveBeenCalledWith(Color.of('#3B82F6'));
     expect(repository.create).toHaveBeenCalledWith({
       name: 'Backlog',
       isBacklog: true,
@@ -159,7 +174,7 @@ describe('CreateList', () => {
 
     jest.spyOn(repository, 'countByUserId').mockResolvedValue(0);
     jest.spyOn(repository, 'findMaxOrderIndex').mockResolvedValue(null);
-    jest.spyOn(colorPool, 'getNextColor').mockReturnValue(assignedColor as any);
+    jest.spyOn(colorPool, 'getNextColor').mockReturnValue(Color.of(assignedColor));
 
     const createdList = {
       id: 'first-list-id',
