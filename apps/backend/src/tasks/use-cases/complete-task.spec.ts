@@ -61,16 +61,32 @@ describe('CompleteTask', () => {
       updatedAt: new Date(),
     };
 
-    it('should complete task successfully', async () => {
+    it('should complete task successfully and return TaskDto', async () => {
+      const completedAt = new Date();
+      const completedTask = {
+        ...mockTask,
+        completedAt,
+        listId: doneListId,
+        orderIndex: 2000,
+      };
+
       tasksRepository.findById.mockResolvedValue(mockTask);
       listsRepository.findDoneList.mockResolvedValue(mockDoneList);
-      tasksRepository.completeTask.mockResolvedValue({
-        ...mockTask,
-        completedAt: new Date(),
-        listId: doneListId,
-      });
+      tasksRepository.completeTask.mockResolvedValue(completedTask);
 
-      await completeTask.execute(userId, taskId);
+      const result = await completeTask.execute(userId, taskId);
+
+      expect(result).toMatchObject({
+        id: taskId,
+        userId,
+        listId: doneListId,
+        title: 'Test Task',
+        description: 'Test Description',
+        orderIndex: 2000,
+        isCompleted: true,
+      });
+      expect(result.completedAt).toEqual(completedAt);
+      expect(result.createdAt).toBeDefined();
 
       expect(tasksRepository.completeTask).toHaveBeenCalledWith(
         userId,
