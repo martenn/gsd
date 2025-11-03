@@ -2,13 +2,14 @@ import { Module } from '@nestjs/common';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { AuthModule } from './auth/auth.module';
 import { ListsModule } from './lists/lists.module';
 import { TasksModule } from './tasks/tasks.module';
 import { LoggerModule } from './logger/logger.module';
 import { HttpLoggingInterceptor } from './logger/http-logging.interceptor';
 
 @Module({
-  imports: [LoggerModule, ListsModule, TasksModule],
+  imports: [LoggerModule, AuthModule, ListsModule, TasksModule],
   controllers: [AppController],
   providers: [
     AppService,
