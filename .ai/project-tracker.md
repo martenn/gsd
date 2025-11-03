@@ -466,6 +466,18 @@ Infra:    ████████░░░░░░░░░░░░ 40% (6/15
 
 ### Medium Priority
 
+- [ ] **PrismaClient per module:** Multiple modules create new PrismaClient instances instead of using shared singleton
+  - **Location:** `auth.module.ts:34`, `lists.module.ts:19`, `tasks.module.ts:27`
+  - **Current behavior:** Each module creates its own `new PrismaClient()` instance
+  - **Impact:** Multiple database connections, potential connection pool exhaustion
+  - **Solution:** Create shared PrismaService provider in AppModule or dedicated DatabaseModule
+  - **PR Reference:** Google Auth PR - identified in code review
+- [ ] **Cookie/JWT expiration sync:** Cookie maxAge and JWT expiresIn calculated separately
+  - **Location:** `auth.controller.ts:54` (hardcoded 7 days) vs `auth.module.ts:26` (JWT_EXPIRES_IN env var)
+  - **Current behavior:** Cookie maxAge hardcoded to 7 days, JWT uses env var (defaults to 7d)
+  - **Impact:** Potential mismatch if JWT_EXPIRES_IN changes, cookie and token may expire at different times
+  - **Solution:** Calculate cookie maxAge from JWT_EXPIRES_IN env var or shared constant
+  - **PR Reference:** Google Auth PR - identified in code review
 - [ ] **Order index strategy:** Current simple incrementing may need fractional indexing (PRD open question)
   - Current: maxOrderIndex + 1000 increments
   - Concern: May cause integer overflow at scale
@@ -486,6 +498,15 @@ Infra:    ████████░░░░░░░░░░░░ 40% (6/15
   - Test scenarios needed:
     - Complete: success, not found, already completed
     - Reorder: both strategies (newOrderIndex, afterTaskId), validation errors
+- [ ] **E2E tests missing - Auth flow:** No end-to-end tests for authentication flow
+  - **Missing:** OAuth callback flow, JWT cookie issuance, signout, protected route access
+  - **Test scenarios needed:**
+    - Google OAuth callback success
+    - JWT cookie set correctly
+    - Protected routes require valid JWT
+    - Signout clears cookie
+    - Invalid/expired JWT handling
+  - **PR Reference:** Google Auth PR - identified in code review
 - [ ] **Error handling:** Need consistent error format across all endpoints
 - [ ] **Validation:** Some DTO validations incomplete (e.g., color hex format)
 

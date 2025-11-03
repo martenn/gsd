@@ -16,6 +16,7 @@ import { CurrentUser } from '../decorators/current-user.decorator';
 import { GetMe } from '../use-cases/get-me';
 import { SignOut } from '../use-cases/sign-out';
 import { JwtPayload } from '../dto/jwt-payload.dto';
+import { JwtUser } from '../dto/jwt-user.dto';
 import { AppLogger } from '../../logger/app-logger';
 
 @Controller('auth')
@@ -81,14 +82,14 @@ export class AuthController {
 
   @Get('me')
   @UseGuards(JwtAuthGuard)
-  async getMe(@CurrentUser() user: { id: string; email: string }): Promise<GetMeResponseDto> {
+  async getMe(@CurrentUser() user: JwtUser): Promise<GetMeResponseDto> {
     const userData = await this.getMeUseCase.execute(user.id);
     return { user: userData };
   }
 
   @Post('signout')
   @UseGuards(JwtAuthGuard)
-  signOut(@CurrentUser() user: { id: string; email: string }, @Res({ passthrough: true }) response: express.Response): SignOutResponseDto {
+  signOut(@CurrentUser() user: JwtUser, @Res({ passthrough: true }) response: express.Response): SignOutResponseDto {
     return this.signOutUseCase.execute(response, user.id);
   }
 }

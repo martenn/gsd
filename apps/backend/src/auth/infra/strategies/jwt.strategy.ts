@@ -3,6 +3,7 @@ import { PassportStrategy } from '@nestjs/passport';
 import { Strategy, ExtractJwt } from 'passport-jwt';
 import { Request } from 'express';
 import { JwtPayload } from '../../dto/jwt-payload.dto';
+import { JwtUser } from '../../dto/jwt-user.dto';
 import { AppLogger } from '../../../logger/app-logger';
 
 const cookieExtractor = (req: Request): string | null => {
@@ -28,7 +29,7 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
     this.logger.setContext(JwtStrategy.name);
   }
 
-  async validate(payload: JwtPayload): Promise<{ id: string; email: string }> {
+  async validate(payload: JwtPayload): Promise<JwtUser> {
     if (!payload.sub || !payload.email) {
       this.logger.warn(
         `Invalid JWT payload: ${JSON.stringify(payload)}`,

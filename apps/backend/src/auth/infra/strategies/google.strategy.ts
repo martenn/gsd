@@ -62,7 +62,7 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
         new UnauthorizedException('Failed to authenticate with Google'),
         false,
       );
-      throw new UnauthorizedException('Failed to authenticate with Google');
+      return;
     }
   }
 }
