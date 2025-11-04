@@ -5,7 +5,7 @@
   "description": "GSD (Getting Shit Done) - Personal productivity app",
   "engines": {
     "node": ">=18.0.0",
-    "pnpm": ">=8.0.0"
+    "pnpm": ">=9.0.0"
   },
   "scripts": {
     "dev": "pnpm --parallel --recursive --filter \"./apps/*\" dev",
