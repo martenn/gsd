@@ -1,8 +1,4 @@
-import {
-  Injectable,
-  NotFoundException,
-  InternalServerErrorException,
-} from '@nestjs/common';
+import { Injectable, NotFoundException, InternalServerErrorException } from '@nestjs/common';
 import { TaskDto } from '@gsd/types';
 import { TasksRepository } from '../infra/tasks.repository';
 import { ListsRepository } from '../../lists/infra/lists.repository';
@@ -35,11 +31,7 @@ export class CompleteTask {
         );
       }
 
-      const completedTask = await this.tasksRepository.completeTask(
-        userId,
-        taskId,
-        doneList.id,
-      );
+      const completedTask = await this.tasksRepository.completeTask(userId, taskId, doneList.id);
 
       this.logger.log(
         `Successfully completed task ${taskId} and moved to Done list ${doneList.id}`,

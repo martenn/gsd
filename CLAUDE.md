@@ -455,6 +455,13 @@ The following coding standards are automatically enforced for specific file type
 - Use meaningful test names that describe expected behavior
 - Keep tests focused and atomic
 - Use dependency injection to mock external dependencies
+- **Focus on business logic, not structure**: Tests should verify behavior and logic, not compilation-level guarantees
+  - ❌ Don't test method existence: `expect(instance.method).toBeDefined()` - TypeScript verifies this
+  - ❌ Don't test type checks: `expect(result).toBeInstanceOf(Class)` - TypeScript verifies this
+  - ❌ Don't test property existence: `expect(result.property).toBeDefined()` - TypeScript verifies this
+  - ❌ Don't test function type: `expect(typeof fn).toBe('function')` - TypeScript verifies this
+  - ✅ Do test return values, business rules, error conditions, state changes, side effects
+  - Example: Instead of testing if a color is defined, test that it matches the expected format or value
 
 **Docker Best Practices**:
 - Use multi-stage builds to create smaller production images

@@ -86,7 +86,6 @@ describe('CompleteTask', () => {
         isCompleted: true,
       });
       expect(result.completedAt).toEqual(completedAt);
-      expect(result.createdAt).toBeDefined();
 
       expect(tasksRepository.completeTask).toHaveBeenCalledWith(
         userId,

@@ -65,10 +65,6 @@ describe('DeleteList', () => {
     jest.resetAllMocks();
   });
 
-  it('should be defined', () => {
-    expect(useCase).toBeDefined();
-  });
-
   describe('successful deletion scenarios', () => {
     it('should delete intermediate list and move tasks to specified destination', async () => {
       const userId = 'test-user-1';

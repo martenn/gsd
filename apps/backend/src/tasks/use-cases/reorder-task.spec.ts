@@ -65,7 +65,6 @@ describe('ReorderTask', () => {
           orderIndex: 2000,
           isCompleted: false,
         });
-        expect(result.createdAt).toBeDefined();
 
         expect(tasksRepository.updateOrderIndex).toHaveBeenCalledWith(
           userId,

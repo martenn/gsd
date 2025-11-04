@@ -41,9 +41,7 @@ describe('SignOut', () => {
       });
 
       expect(logger.log).toHaveBeenCalledWith(`Signing out user: ${userId}`);
-      expect(logger.log).toHaveBeenCalledWith(
-        `User signed out successfully: ${userId}`,
-      );
+      expect(logger.log).toHaveBeenCalledWith(`User signed out successfully: ${userId}`);
     });
 
     it('should use secure cookie in production', () => {

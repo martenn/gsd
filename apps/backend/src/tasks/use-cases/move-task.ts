@@ -16,9 +16,7 @@ export class MoveTask {
   }
 
   async execute(userId: string, taskId: string, targetListId: string): Promise<TaskDto> {
-    this.logger.log(
-      `Moving task ${taskId} to list ${targetListId} for user ${userId}`,
-    );
+    this.logger.log(`Moving task ${taskId} to list ${targetListId} for user ${userId}`);
 
     try {
       const task = await this.tasksRepository.findById(userId, taskId);

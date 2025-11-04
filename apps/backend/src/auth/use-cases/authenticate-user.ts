@@ -34,9 +34,7 @@ export class AuthenticateUser {
         name,
       });
 
-      this.logger.log(
-        `User authenticated successfully: ${user.id} (${user.email})`,
-      );
+      this.logger.log(`User authenticated successfully: ${user.id} (${user.email})`);
 
       return user;
     } catch (error) {
@@ -48,10 +46,7 @@ export class AuthenticateUser {
     }
   }
 
-  private constructName(name?: {
-    givenName?: string;
-    familyName?: string;
-  }): string | null {
+  private constructName(name?: { givenName?: string; familyName?: string }): string | null {
     if (!name) return null;
     const parts = [name.givenName, name.familyName].filter(Boolean);
     return parts.length > 0 ? parts.join(' ') : null;

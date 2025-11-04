@@ -60,9 +60,7 @@ describe('AuthenticateUser', () => {
         email: 'user@example.com',
         name: 'John Doe',
       });
-      expect(logger.log).toHaveBeenCalledWith(
-        'Authenticating user with Google ID: google-id-123',
-      );
+      expect(logger.log).toHaveBeenCalledWith('Authenticating user with Google ID: google-id-123');
       expect(logger.log).toHaveBeenCalledWith(
         'User authenticated successfully: user-id-123 (user@example.com)',
       );
@@ -132,9 +130,7 @@ describe('AuthenticateUser', () => {
         emails: [],
       };
 
-      await expect(useCase.execute(profile)).rejects.toThrow(
-        'Google profile must include email',
-      );
+      await expect(useCase.execute(profile)).rejects.toThrow('Google profile must include email');
 
       expect(logger.error).toHaveBeenCalled();
       expect(repository.upsertByGoogleId).not.toHaveBeenCalled();
@@ -150,9 +146,7 @@ describe('AuthenticateUser', () => {
       const error = new Error('Database connection failed');
       repository.upsertByGoogleId.mockRejectedValue(error);
 
-      await expect(useCase.execute(profile)).rejects.toThrow(
-        'Database connection failed',
-      );
+      await expect(useCase.execute(profile)).rejects.toThrow('Database connection failed');
 
       expect(logger.error).toHaveBeenCalled();
     });

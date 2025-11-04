@@ -13,14 +13,8 @@ describe('ColorPool', () => {
     service = module.get<ColorPool>(ColorPool);
   });
 
-  it('should be defined', () => {
-    expect(service).toBeDefined();
-  });
-
   it('should get next available color', () => {
     const color = service.getNextColor();
-    expect(color).toBeDefined();
-    expect(color).toBeInstanceOf(Color);
     expect(color.toString()).toMatch(/^#[0-9A-Fa-f]{6}$/);
   });
 

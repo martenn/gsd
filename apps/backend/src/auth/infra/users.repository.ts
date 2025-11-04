@@ -17,11 +17,7 @@ export class UsersRepository {
     });
   }
 
-  async create(data: {
-    googleId: string;
-    email: string;
-    name?: string | null;
-  }): Promise<User> {
+  async create(data: { googleId: string; email: string; name?: string | null }): Promise<User> {
     return this.prisma.user.create({
       data: {
         googleId: data.googleId,
