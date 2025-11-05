@@ -45,6 +45,12 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Generate Prisma Client
+        run: pnpm --filter @gsd/backend db:generate
+
+      - name: Build packages
+        run: pnpm build:packages
+
       - name: Run linting
         run: pnpm lint
 
@@ -53,9 +59,6 @@ jobs:
 
       - name: Run tests
         run: pnpm test
-
-      - name: Build packages
-        run: pnpm build:packages
 
       - name: Build apps
         run: pnpm build:apps
