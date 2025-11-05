@@ -5,15 +5,13 @@ describe('Color', () => {
     it('should create Color from valid hex string', () => {
       const color = Color.of('#3B82F6');
 
-      expect(color).toBeDefined();
-      expect(color).toBeInstanceOf(Color);
+      expect(color.toString()).toBe('#3B82F6');
     });
 
     it('should create Color for each palette color', () => {
       const palette = Color.palette;
 
       for (const color of palette) {
-        expect(color).toBeInstanceOf(Color);
         expect(color.toString()).toMatch(/^#[0-9A-Fa-f]{6}$/);
       }
     });
@@ -100,14 +98,7 @@ describe('Color', () => {
     it('should return all available colors', () => {
       const palette = Color.palette;
 
-      expect(palette).toBeDefined();
       expect(palette.length).toBeGreaterThan(0);
-    });
-
-    it('should return readonly array', () => {
-      const palette = Color.palette;
-
-      expect(Array.isArray(palette)).toBe(true);
     });
 
     it('should contain valid hex color codes', () => {

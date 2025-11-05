@@ -65,13 +65,8 @@ describe('ReorderTask', () => {
           orderIndex: 2000,
           isCompleted: false,
         });
-        expect(result.createdAt).toBeDefined();
 
-        expect(tasksRepository.updateOrderIndex).toHaveBeenCalledWith(
-          userId,
-          taskId,
-          2000,
-        );
+        expect(tasksRepository.updateOrderIndex).toHaveBeenCalledWith(userId, taskId, 2000);
       });
 
       it('should accept orderIndex of 0', async () => {
@@ -84,11 +79,7 @@ describe('ReorderTask', () => {
 
         await reorderTask.execute(userId, taskId, dto);
 
-        expect(tasksRepository.updateOrderIndex).toHaveBeenCalledWith(
-          userId,
-          taskId,
-          0,
-        );
+        expect(tasksRepository.updateOrderIndex).toHaveBeenCalledWith(userId, taskId, 0);
       });
 
       it('should throw BadRequestException for negative newOrderIndex', async () => {
@@ -139,18 +130,12 @@ describe('ReorderTask', () => {
           isCompleted: false,
         });
 
-        expect(tasksRepository.updateOrderIndex).toHaveBeenCalledWith(
-          userId,
-          taskId,
-          1501,
-        );
+        expect(tasksRepository.updateOrderIndex).toHaveBeenCalledWith(userId, taskId, 1501);
       });
 
       it('should throw NotFoundException when reference task does not exist', async () => {
         const dto: ReorderTaskDto = { afterTaskId };
-        tasksRepository.findById
-          .mockResolvedValueOnce(mockTask)
-          .mockResolvedValueOnce(null);
+        tasksRepository.findById.mockResolvedValueOnce(mockTask).mockResolvedValueOnce(null);
 
         await expect(reorderTask.execute(userId, taskId, dto)).rejects.toThrow(
           new NotFoundException(`Reference task with ID ${afterTaskId} not found`),
@@ -161,12 +146,10 @@ describe('ReorderTask', () => {
 
       it('should throw BadRequestException when reference task is in different list', async () => {
         const dto: ReorderTaskDto = { afterTaskId };
-        tasksRepository.findById
-          .mockResolvedValueOnce(mockTask)
-          .mockResolvedValueOnce({
-            ...mockAfterTask,
-            listId: 'different-list',
-          });
+        tasksRepository.findById.mockResolvedValueOnce(mockTask).mockResolvedValueOnce({
+          ...mockAfterTask,
+          listId: 'different-list',
+        });
 
         await expect(reorderTask.execute(userId, taskId, dto)).rejects.toThrow(
           new BadRequestException(

@@ -8,7 +8,7 @@ import { AppLogger } from '../../../logger/app-logger';
 
 const cookieExtractor = (req: Request): string | null => {
   if (req?.cookies?.jwt) {
-    return req.cookies.jwt;
+    return req.cookies.jwt as string;
   }
   return null;
 };
@@ -29,11 +29,9 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
     this.logger.setContext(JwtStrategy.name);
   }
 
-  async validate(payload: JwtPayload): Promise<JwtUser> {
+  validate(payload: JwtPayload): JwtUser {
     if (!payload.sub || !payload.email) {
-      this.logger.warn(
-        `Invalid JWT payload: ${JSON.stringify(payload)}`,
-      );
+      this.logger.warn(`Invalid JWT payload: ${JSON.stringify(payload)}`);
       throw new UnauthorizedException('Invalid token payload');
     }
 

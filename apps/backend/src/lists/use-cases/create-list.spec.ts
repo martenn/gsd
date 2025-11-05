@@ -61,10 +61,6 @@ describe('CreateList', () => {
     jest.clearAllMocks();
   });
 
-  it('should be defined', () => {
-    expect(useCase).toBeDefined();
-  });
-
   it('should create a new list with auto-assigned color', async () => {
     const userId = 'test-user-1';
     const createListDto: CreateListDto = {

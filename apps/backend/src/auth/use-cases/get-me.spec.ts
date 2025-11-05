@@ -58,9 +58,7 @@ describe('GetMe', () => {
       });
       expect(repository.findById).toHaveBeenCalledWith(userId);
       expect(logger.log).toHaveBeenCalledWith(`Fetching user: ${userId}`);
-      expect(logger.log).toHaveBeenCalledWith(
-        `User fetched successfully: ${userId}`,
-      );
+      expect(logger.log).toHaveBeenCalledWith(`User fetched successfully: ${userId}`);
     });
 
     it('should return user DTO with null name', async () => {
@@ -108,13 +106,7 @@ describe('GetMe', () => {
       const result = await useCase.execute(userId);
 
       expect(result).not.toHaveProperty('googleId');
-      expect(Object.keys(result)).toEqual([
-        'id',
-        'email',
-        'name',
-        'createdAt',
-        'updatedAt',
-      ]);
+      expect(Object.keys(result)).toEqual(['id', 'email', 'name', 'createdAt', 'updatedAt']);
     });
   });
 });

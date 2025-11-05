@@ -44,18 +44,14 @@ export class TasksController {
   ) {}
 
   @Get()
-  async getTasks(
-    @Query() query: GetTasksQueryDto,
-  ): Promise<GetTasksResponseDto> {
+  async getTasks(@Query() query: GetTasksQueryDto): Promise<GetTasksResponseDto> {
     const userId = 'mock-user-id';
     return this.getTasksUseCase.execute(userId, query);
   }
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
-  async createTask(
-    @Body() createTaskDto: CreateTaskDto,
-  ): Promise<CreateTaskResponseDto> {
+  async createTask(@Body() createTaskDto: CreateTaskDto): Promise<CreateTaskResponseDto> {
     const userId = 'mock-user-id';
     const task = await this.createTaskUseCase.execute(userId, createTaskDto);
     return { task };
@@ -67,11 +63,7 @@ export class TasksController {
     @Body() updateTaskDto: UpdateTaskDto,
   ): Promise<UpdateTaskResponseDto> {
     const userId = 'mock-user-id';
-    const task = await this.updateTaskUseCase.execute(
-      userId,
-      id,
-      updateTaskDto,
-    );
+    const task = await this.updateTaskUseCase.execute(userId, id, updateTaskDto);
     return { task };
   }
 
@@ -93,9 +85,7 @@ export class TasksController {
   }
 
   @Post(':id/complete')
-  async completeTask(
-    @Param('id') taskId: string,
-  ): Promise<CompleteTaskResponseDto> {
+  async completeTask(@Param('id') taskId: string): Promise<CompleteTaskResponseDto> {
     const userId = 'mock-user-id';
     const task = await this.completeTaskUseCase.execute(userId, taskId);
     return { task };

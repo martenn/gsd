@@ -15,28 +15,29 @@ export class HttpLoggingInterceptor implements NestInterceptor {
     const request = ctx.getRequest<Request>();
     const response = ctx.getResponse<Response>();
 
-    const { method, url, body } = request;
+    const { method, url } = request;
+    const body = request.body as Record<string, unknown>;
     const userAgent = request.get('user-agent') || '';
     const startTime = Date.now();
 
     this.logger.log(`${method} ${url} - ${userAgent}`);
 
-    if (Object.keys(body).length > 0) {
+    if (body && Object.keys(body).length > 0) {
       this.logger.debug(`Request body: ${JSON.stringify(body)}`);
     }
 
     return next.handle().pipe(
       tap({
-        next: (data) => {
+        next: () => {
           const { statusCode } = response;
           const responseTime = Date.now() - startTime;
           this.logger.log(`${method} ${url} ${statusCode} - ${responseTime}ms`);
         },
-        error: (error) => {
+        error: (error: Error & { status?: number }) => {
           const responseTime = Date.now() - startTime;
           this.logger.error(
             `${method} ${url} ${error.status || 500} - ${responseTime}ms - ${error.message}`,
-            error.stack,
+            error.stack ?? '',
           );
         },
       }),

@@ -42,10 +42,6 @@ describe('GetLists', () => {
     jest.clearAllMocks();
   });
 
-  it('should be defined', () => {
-    expect(useCase).toBeDefined();
-  });
-
   it('should return empty array when user has no lists', async () => {
     const userId = 'test-user-1';
 

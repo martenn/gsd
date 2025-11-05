@@ -1,11 +1,4 @@
-import {
-  Controller,
-  Get,
-  Post,
-  UseGuards,
-  Res,
-  HttpStatus,
-} from '@nestjs/common';
+import { Controller, Get, Post, UseGuards, Res, HttpStatus } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import * as express from 'express';
 import { JwtService } from '@nestjs/jwt';
@@ -16,7 +9,7 @@ import { CurrentUser } from '../decorators/current-user.decorator';
 import { GetMe } from '../use-cases/get-me';
 import { SignOut } from '../use-cases/sign-out';
 import { JwtPayload } from '../dto/jwt-payload.dto';
-import { JwtUser } from '../dto/jwt-user.dto';
+import type { JwtUser } from '../dto/jwt-user.dto';
 import { AppLogger } from '../../logger/app-logger';
 
 @Controller('auth')
@@ -38,11 +31,9 @@ export class AuthController {
 
   @Get('google/callback')
   @UseGuards(AuthGuard('google'))
-  async googleAuthCallback(@CurrentUser() user: User, @Res() response: express.Response) {
+  googleAuthCallback(@CurrentUser() user: User, @Res() response: express.Response) {
     try {
-      this.logger.log(
-        `Google OAuth callback successful for user: ${user.id}`,
-      );
+      this.logger.log(`Google OAuth callback successful for user: ${user.id}`);
 
       const payload: JwtPayload = {
         sub: user.id,
@@ -89,7 +80,10 @@ export class AuthController {
 
   @Post('signout')
   @UseGuards(JwtAuthGuard)
-  signOut(@CurrentUser() user: JwtUser, @Res({ passthrough: true }) response: express.Response): SignOutResponseDto {
+  signOut(
+    @CurrentUser() user: JwtUser,
+    @Res({ passthrough: true }) response: express.Response,
+  ): SignOutResponseDto {
     return this.signOutUseCase.execute(response, user.id);
   }
 }

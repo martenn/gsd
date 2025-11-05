@@ -78,12 +78,7 @@ describe('MoveTask', () => {
 
       expect(result.listId).toBe(targetListId);
       expect(result.orderIndex).toBe(3000);
-      expect(tasksRepository.moveTask).toHaveBeenCalledWith(
-        userId,
-        taskId,
-        targetListId,
-        3000,
-      );
+      expect(tasksRepository.moveTask).toHaveBeenCalledWith(userId, taskId, targetListId, 3000);
     });
 
     it('should insert at orderIndex 1000 when target list is empty', async () => {
@@ -100,12 +95,7 @@ describe('MoveTask', () => {
       const result = await moveTask.execute(userId, taskId, targetListId);
 
       expect(result.orderIndex).toBe(1000);
-      expect(tasksRepository.moveTask).toHaveBeenCalledWith(
-        userId,
-        taskId,
-        targetListId,
-        1000,
-      );
+      expect(tasksRepository.moveTask).toHaveBeenCalledWith(userId, taskId, targetListId, 1000);
     });
 
     it('should throw NotFoundException when task does not exist', async () => {

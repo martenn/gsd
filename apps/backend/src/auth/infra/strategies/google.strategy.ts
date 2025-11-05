@@ -42,9 +42,7 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
     done: VerifyCallback,
   ): Promise<User> {
     try {
-      this.logger.log(
-        `Google OAuth callback received for user: ${profile.emails?.[0]?.value}`,
-      );
+      this.logger.log(`Google OAuth callback received for user: ${profile.emails?.[0]?.value}`);
 
       const user = await this.authenticateUserUseCase.execute(profile);
 
@@ -58,10 +56,7 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
         error instanceof Error ? error.stack : undefined,
       );
 
-      done(
-        new UnauthorizedException('Failed to authenticate with Google'),
-        false,
-      );
+      done(new UnauthorizedException('Failed to authenticate with Google'), false);
       return;
     }
   }
