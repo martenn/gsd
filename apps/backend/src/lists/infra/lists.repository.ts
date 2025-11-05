@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaClient, List } from '@prisma/client';
+import { PrismaClient, List, Prisma } from '@prisma/client';
 
 @Injectable()
 export class ListsRepository {
@@ -117,7 +117,7 @@ export class ListsRepository {
   }
 
   async deleteWithTaskMove(listId: string, destListId: string, userId: string): Promise<void> {
-    await this.prisma.$transaction(async (tx) => {
+    await this.prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       await tx.task.updateMany({
         where: {
           listId,

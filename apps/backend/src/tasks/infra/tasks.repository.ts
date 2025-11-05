@@ -147,7 +147,7 @@ export class TasksRepository {
     });
 
     await this.prisma.$transaction(
-      tasks.map((task, index) =>
+      tasks.map((task: { id: string }, index: number) =>
         this.prisma.task.update({
           where: { id: task.id },
           data: { orderIndex: newIndices[index] },
