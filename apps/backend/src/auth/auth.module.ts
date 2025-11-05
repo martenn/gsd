@@ -23,7 +23,7 @@ import { JwtAuthGuard } from './guards/jwt-auth.guard';
         return secret;
       })(),
       signOptions: {
-        expiresIn: (process.env.JWT_EXPIRES_IN ?? '7d') as string | number,
+        expiresIn: 60 * 60 * 24 * 7, // 7 days in seconds
       },
     }),
   ],
