@@ -56,8 +56,9 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
         error instanceof Error ? error.stack : undefined,
       );
 
-      done(new UnauthorizedException('Failed to authenticate with Google'), false);
-      return;
+      const authError = new UnauthorizedException('Failed to authenticate with Google');
+      done(authError, false);
+      throw authError;
     }
   }
 }
