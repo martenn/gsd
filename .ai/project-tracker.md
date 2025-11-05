@@ -405,13 +405,14 @@ Infra:    ████████░░░░░░░░░░░░ 40% (6/15
 
 ### Priority 1: User Experience Enhancements
 
-| Feature                          | Est. | PRD Ref | Status         |
-| -------------------------------- | ---- | ------- | -------------- |
-| Undo/Redo functionality          | 3d   | -       | ⚪ Not started |
-| Keyboard shortcuts customization | 2d   | -       | ⚪ Not started |
-| Dark mode                        | 2d   | -       | ⚪ Not started |
-| Task search/filter               | 3d   | -       | ⚪ Not started |
-| Bulk task operations             | 2d   | -       | ⚪ Not started |
+| Feature                                    | Est. | PRD Ref | Status         |
+| ------------------------------------------ | ---- | ------- | -------------- |
+| Persist last active mode & list selection  | 1d   | -       | ⚪ Not started |
+| Undo/Redo functionality                    | 3d   | -       | ⚪ Not started |
+| Keyboard shortcuts customization           | 2d   | -       | ⚪ Not started |
+| Dark mode                                  | 2d   | -       | ⚪ Not started |
+| Task search/filter                         | 3d   | -       | ⚪ Not started |
+| Bulk task operations                       | 2d   | -       | ⚪ Not started |
 
 ### Priority 2: Advanced Features
 
