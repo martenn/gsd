@@ -1,6 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ColorPool } from './color-pool';
-import { Color } from './color';
 
 describe('ColorPool', () => {
   let service: ColorPool;

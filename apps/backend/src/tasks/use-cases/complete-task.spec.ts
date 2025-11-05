@@ -87,14 +87,8 @@ describe('CompleteTask', () => {
       });
       expect(result.completedAt).toEqual(completedAt);
 
-      expect(tasksRepository.completeTask).toHaveBeenCalledWith(
-        userId,
-        taskId,
-        doneListId,
-      );
-      expect(logger.log).toHaveBeenCalledWith(
-        `Completing task ${taskId} for user ${userId}`,
-      );
+      expect(tasksRepository.completeTask).toHaveBeenCalledWith(userId, taskId, doneListId);
+      expect(logger.log).toHaveBeenCalledWith(`Completing task ${taskId} for user ${userId}`);
       expect(logger.log).toHaveBeenCalledWith(
         `Successfully completed task ${taskId} and moved to Done list ${doneListId}`,
       );

@@ -35,4 +35,15 @@ export default tseslint.config(
       'prettier/prettier': ['error', { endOfLine: 'lf' }],
     },
   },
+  // Relaxed rules for test files
+  {
+    files: ['**/*.spec.ts', '**/*.e2e-spec.ts', '**/test/**/*.ts'],
+    rules: {
+      '@typescript-eslint/unbound-method': 'off', // Jest expect patterns are safe
+      '@typescript-eslint/no-unsafe-assignment': 'warn',
+      '@typescript-eslint/no-unsafe-member-access': 'warn',
+      '@typescript-eslint/no-unsafe-call': 'warn',
+      '@typescript-eslint/no-unsafe-return': 'warn',
+    },
+  },
 );

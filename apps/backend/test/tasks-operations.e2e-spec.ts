@@ -174,10 +174,7 @@ describe('Tasks Operations (e2e)', () => {
     });
 
     it('should return 400 when listId is missing in request body', async () => {
-      await request(app.getHttpServer())
-        .post(`/v1/tasks/${taskId}/move`)
-        .send({})
-        .expect(400);
+      await request(app.getHttpServer()).post(`/v1/tasks/${taskId}/move`).send({}).expect(400);
     });
 
     it('should return 400 when listId is invalid UUID format', async () => {
