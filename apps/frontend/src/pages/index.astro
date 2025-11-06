@@ -1,6 +1,4 @@
 ---
-import Counter from '../components/Counter';
-import CounterBackend from '../components/CounterBackend';
 import '../styles/global.css';
 ---
 
@@ -12,12 +10,50 @@ import '../styles/global.css';
 		<meta name="generator" content={Astro.generator} />
 		<title>GSD - Getting Shit Done</title>
 	</head>
-	<body class="p-8 bg-gray-50">
-		<h1 class="text-3xl font-bold mb-6">GSD - Getting Shit Done</h1>
-		<p class="mb-4 text-gray-600">Monorepo setup complete with React 19 + Tailwind CSS</p>
-		<div class="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-4xl">
-			<Counter client:load />
-			<CounterBackend client:load />
-		</div>
+	<body class="min-h-screen bg-gray-50 flex flex-col">
+		<!-- Header -->
+		<header class="w-full py-6 px-4">
+			<div class="max-w-7xl mx-auto">
+				<h1 class="text-2xl font-bold text-gray-900">GSD</h1>
+			</div>
+		</header>
+
+		<!-- Hero Section -->
+		<main class="flex-1 flex items-center justify-center px-4" role="main">
+			<div class="max-w-md w-full text-center space-y-8">
+				<div class="space-y-4">
+					<h2 class="text-4xl font-bold text-gray-900">
+						GSD - Getting Shit Done
+					</h2>
+					<p class="text-xl text-gray-600">
+						A simple, keyboard-first productivity app for focused work.
+					</p>
+				</div>
+
+				<!-- Sign In Button -->
+				<div>
+					<a
+						href="/auth/google"
+						class="inline-block w-full max-w-xs px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+						aria-label="Sign in with Google"
+					>
+						Sign in with Google
+					</a>
+				</div>
+			</div>
+		</main>
+
+		<!-- Footer -->
+		<footer class="w-full py-6 px-4 border-t border-gray-200">
+			<div class="max-w-7xl mx-auto text-center text-sm text-gray-500 space-x-4">
+				<a href="/privacy" class="hover:text-gray-700 transition-colors">
+					Privacy Policy
+				</a>
+				<span aria-hidden="true">·</span>
+				<a href="/terms" class="hover:text-gray-700 transition-colors">
+					Terms of Service
+				</a>
+			</div>
+		</footer>
 	</body>
 </html>
