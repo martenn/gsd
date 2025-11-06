@@ -2,27 +2,26 @@ name: Claude Code Review
 
 on:
   pull_request:
-    types: [opened, synchronize]
-    # Optional: Only run on specific file changes
-    # paths:
-    #   - "src/**/*.ts"
-    #   - "src/**/*.tsx"
-    #   - "src/**/*.js"
-    #   - "src/**/*.jsx"
+    types: [labeled, ready_for_review]
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: 'PR number to review'
+        required: true
+        type: number
+      force_review:
+        description: 'Force review even if PR is too large or in draft'
+        required: false
+        type: boolean
+        default: false
 
 jobs:
   claude-review:
-    # Optional: Filter by PR author
-    # if: |
-    #   github.event.pull_request.user.login == 'external-contributor' ||
-    #   github.event.pull_request.user.login == 'new-developer' ||
-    #   github.event.pull_request.author_association == 'FIRST_TIME_CONTRIBUTOR'
-
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      pull-requests: read
-      issues: read
+      pull-requests: write
+      issues: write
       id-token: write
 
     steps:
@@ -31,14 +30,106 @@ jobs:
         with:
           fetch-depth: 1
 
+      - name: Get PR details
+        id: pr-details
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const prNumber = context.payload.pull_request?.number || parseInt('${{ github.event.inputs.pr_number }}');
+            const { data: pr } = await github.rest.pulls.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: prNumber
+            });
+
+            const totalChanges = pr.additions + pr.deletions;
+            const hasLabel = pr.labels.some(label => label.name === 'review:claude');
+            const isDraft = pr.draft;
+
+            core.setOutput('pr_number', prNumber);
+            core.setOutput('total_changes', totalChanges);
+            core.setOutput('has_label', hasLabel);
+            core.setOutput('is_draft', isDraft);
+            core.setOutput('title', pr.title);
+
+            console.log('PR Analysis:', { prNumber, totalChanges, hasLabel, isDraft });
+
+      - name: Check review conditions
+        id: check-conditions
+        uses: actions/github-script@v7
+        env:
+          TOTAL_CHANGES: ${{ steps.pr-details.outputs.total_changes }}
+          HAS_LABEL: ${{ steps.pr-details.outputs.has_label }}
+          IS_DRAFT: ${{ steps.pr-details.outputs.is_draft }}
+          FORCE_REVIEW: ${{ github.event.inputs.force_review }}
+        with:
+          script: |
+            const totalChanges = parseInt(process.env.TOTAL_CHANGES);
+            const hasLabel = process.env.HAS_LABEL === 'true';
+            const isDraft = process.env.IS_DRAFT === 'true';
+            const forceReview = process.env.FORCE_REVIEW === 'true';
+
+            const MAX_CHANGES = 500;  // Skip PRs larger than this (safety limit)
+            const skipReasons = [];
+
+            // Force review overrides safety checks
+            if (forceReview) {
+              core.setOutput('should_review', 'true');
+              core.setOutput('skip_reason', '');
+              console.log('Force review enabled - proceeding');
+              return;
+            }
+
+            // Primary control: Must have label
+            if (!hasLabel) {
+              skipReasons.push('Missing "review:claude" label');
+            }
+
+            // Safety check: Skip draft PRs
+            if (isDraft) {
+              skipReasons.push('PR is in draft status');
+            }
+
+            // Safety check: Skip PRs that are too large
+            if (totalChanges > MAX_CHANGES) {
+              skipReasons.push(`PR too large (${totalChanges} changes, max ${MAX_CHANGES})`);
+            }
+
+            const shouldReview = skipReasons.length === 0;
+            core.setOutput('should_review', shouldReview.toString());
+            core.setOutput('skip_reason', skipReasons.join(', '));
+
+            if (!shouldReview) {
+              console.log('Skipping review. Reasons:', skipReasons);
+            } else {
+              console.log('All conditions met. Proceeding with review.');
+            }
+
+      - name: Add skip comment
+        if: steps.check-conditions.outputs.should_review != 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const skipReason = '${{ steps.check-conditions.outputs.skip_reason }}';
+            const prNumber = ${{ steps.pr-details.outputs.pr_number }};
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: prNumber,
+              body: `🤖 **Claude Code Review Skipped**\n\n**Reason:** ${skipReason}\n\n**To trigger a review:**\n- Add the \`review:claude\` label to this PR\n- Mark the PR as ready for review (if it's a draft)\n- Or use the [manual trigger workflow](../../actions/workflows/claude-code-review.yml) with the PR number and force option`
+            });
+
       - name: Run Claude Code Review
+        if: steps.check-conditions.outputs.should_review == 'true'
         id: claude-review
         uses: anthropics/claude-code-action@v1
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           prompt: |
             REPO: ${{ github.repository }}
-            PR NUMBER: ${{ github.event.pull_request.number }}
+            PR NUMBER: ${{ steps.pr-details.outputs.pr_number }}
+            PR TITLE: ${{ steps.pr-details.outputs.title }}
 
             Please review this pull request and provide feedback on:
             - Code quality and best practices
@@ -46,12 +137,24 @@ jobs:
             - Performance considerations
             - Security concerns
             - Test coverage
+            - Alignment with repository standards in CLAUDE.md
 
             Use the repository's CLAUDE.md for guidance on style and conventions. Be constructive and helpful in your feedback.
 
             Use `gh pr comment` with your Bash tool to leave your review as a comment on the PR.
 
-          # See https://github.com/anthropics/claude-code-action/blob/main/docs/usage.md
-          # or https://docs.claude.com/en/docs/claude-code/cli-reference for available options
           claude_args: '--allowed-tools "Bash(gh issue view:*),Bash(gh search:*),Bash(gh issue list:*),Bash(gh pr comment:*),Bash(gh pr diff:*),Bash(gh pr view:*),Bash(gh pr list:*)"'
 
+      - name: Add completion comment
+        if: steps.check-conditions.outputs.should_review == 'true' && success()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const prNumber = ${{ steps.pr-details.outputs.pr_number }};
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: prNumber,
+              body: `✅ **Claude Code Review Completed**\n\nReview has been posted above. Check the workflow logs for details.`
+            });
