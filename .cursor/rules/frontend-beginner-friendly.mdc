@@ -1,0 +1,116 @@
+# Frontend Implementation Rules for Beginners
+
+## Core Principles
+
+**Support Level: BEGINNER-FRIENDLY**
+- Keep code in small, understandable chunks (prefer multiple simple components over one complex component)
+- Always favor simpler solutions over clever or optimized ones
+- Omit nice-to-have features; implement only what's strictly necessary for MVP
+- When in doubt, ask for clarification before implementing
+- Document unclear decisions in a tracker file for future discussion
+
+## Code Organization
+
+**Component Size**:
+- Maximum 50-80 lines per component (excluding types)
+- If a component grows larger, split it into smaller components
+- Each component should have a single, clear responsibility
+
+**File Structure**:
+- One component per file (no multiple exports)
+- Keep related files together in feature folders
+- Use clear, descriptive file names matching component names
+
+**Naming Conventions**:
+- Components: PascalCase (e.g., `TaskCard.tsx`)
+- Files: Match component name (e.g., `TaskCard.tsx` for `TaskCard` component)
+- Hooks: `use` prefix (e.g., `useTaskList.ts`)
+- Types: `types.ts` suffix for separate type files
+
+## React Best Practices
+
+**Component Patterns**:
+- Use functional components only (no class components)
+- Use TypeScript interfaces for props (defined at top of file)
+- Keep useState and useEffect at the top of components
+- Extract complex logic into custom hooks
+
+**State Management**:
+- Start with local useState for UI state
+- Use TanStack Query only for server data
+- Avoid premature optimization with context or complex state
+
+**Props**:
+- Keep props simple and flat (avoid nested objects when possible)
+- Use explicit prop types (no `any` or overly complex unions)
+- Provide default values for optional props
+
+## Styling
+
+**Tailwind CSS**:
+- Use utility classes directly in JSX (no @apply in MVP)
+- Keep class lists readable (use clsx or cn helper for conditional classes)
+- Use shadcn/ui components as-is (no customization in MVP)
+
+**Avoid Premature Styling**:
+- Focus on functionality first, polish later
+- Use basic Tailwind spacing and colors initially
+- Don't spend time on animations or transitions in MVP
+
+## Error Handling
+
+**Keep It Simple**:
+- Use try-catch for async operations
+- Display simple error messages (no toast libraries in MVP)
+- Log errors to console for debugging
+- Don't implement complex error recovery in MVP
+
+## Testing (Post-MVP)
+
+**For MVP**:
+- Manual testing in browser is sufficient
+- Focus on functionality over test coverage
+- Add tests after MVP is working
+
+## When to Ask for Help
+
+**Always ask before**:
+- Implementing a feature that seems too complex
+- Adding a new library or dependency
+- Deviating from existing patterns
+- Making architectural decisions
+
+**Track for later**:
+- Nice-to-have features
+- Performance optimizations
+- Advanced error handling
+- Accessibility enhancements (beyond basic semantic HTML)
+
+## MVP Feature Omissions
+
+The following can be omitted or simplified for MVP:
+
+**Omit**:
+- Loading skeletons (use simple spinner)
+- Optimistic updates (update after server confirms)
+- Complex animations
+- Advanced keyboard navigation (implement basic first)
+- Accessibility beyond semantic HTML and ARIA basics
+
+**Simplify**:
+- Error messages (generic messages OK)
+- Validation (basic client-side validation only)
+- Empty states (simple text message OK)
+- Mobile responsiveness (focus on desktop first, basic mobile later)
+
+## Code Review Checklist
+
+Before submitting code, verify:
+- [ ] Component is under 80 lines
+- [ ] No complex nested ternaries
+- [ ] Props have explicit types
+- [ ] No `any` types used
+- [ ] Error cases handled with try-catch
+- [ ] Component has single responsibility
+- [ ] File follows naming conventions
+- [ ] Uses existing patterns from codebase
