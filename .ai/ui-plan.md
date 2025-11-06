@@ -1,9 +1,10 @@
 # UI Architecture for GSD (Getting Shit Done)
 
-**Document Version:** 1.0
-**Date:** 2025-11-05
+**Document Version:** 1.1
+**Date:** 2025-11-06
 **Status:** Ready for Implementation
 **Based On:** PRD v1.0, OpenAPI Specification v1.0, MVP UI Architecture Summary
+**Last Updated:** Addressed PR #16 review feedback (security, naming conventions, keyboard shortcuts)
 
 ---
 
@@ -41,6 +42,71 @@ GSD is a keyboard-first productivity application built as a responsive web app t
 - **Forms:** react-hook-form + zod validation
 - **Icons:** lucide-react
 - **Routing:** Astro pages for static, React Router for SPA
+
+### Security Architecture
+
+**XSS Protection:**
+- React automatically escapes all rendered content by default
+- Strict policy: No `dangerouslySetInnerHTML` usage in MVP
+- All user input sanitized via zod schemas before rendering
+- Rich text editing out of scope for MVP (plain text only)
+
+**Content Security Policy (CSP):**
+- Implemented via Helmet middleware in NestJS backend
+- Strict CSP directives:
+  - `default-src 'self'` - Only allow resources from same origin
+  - `script-src 'self'` - No inline scripts, only bundled JS
+  - `style-src 'self' 'unsafe-inline'` - Allow Tailwind inline styles
+  - `img-src 'self' data: https:` - Allow images from same origin and data URIs
+  - `connect-src 'self'` - Only allow API calls to same origin
+  - `frame-ancestors 'none'` - Prevent clickjacking
+
+**Authentication & Session Management:**
+- JWT tokens issued by backend after Google OAuth
+- Stored in HttpOnly cookies (JavaScript cannot access)
+- Cookie attributes: `Secure`, `SameSite=Strict`, `HttpOnly`
+- Token expiration: 7 days (configurable)
+- Refresh strategy: Silent refresh on 401 responses via interceptor
+- Automatic logout on token expiration with redirect to landing page
+
+**Input Validation & Sanitization:**
+- Frontend validation: react-hook-form + zod schemas
+- Backend validation: class-validator + class-transformer (defense in depth)
+- Max length enforcement on all text inputs:
+  - Task title: 500 characters
+  - Task description: 5000 characters
+  - List name: 100 characters
+- No HTML tags allowed in any user input (stripped if present)
+
+**CORS Configuration:**
+- Backend configured to allow only frontend origin
+- Credentials included for cookie-based auth
+- Pre-flight requests properly handled
+- No wildcard origins in production
+
+**Rate Limiting:**
+- Implemented via @nestjs/throttler
+- Global rate limit: 100 requests per minute per IP
+- Auth endpoints: 5 requests per minute per IP
+- Stricter limits on mutation endpoints (create/update/delete)
+
+**API Security:**
+- All `/v1/*` endpoints require valid JWT
+- Backend enforces user data isolation via userId from JWT
+- Resource IDs validated to prevent unauthorized access
+- Pagination parameters validated to prevent abuse
+- SQL injection prevented via Prisma parameterized queries
+
+**HTTPS & Transport Security:**
+- HTTPS required in production (HTTP redirects to HTTPS)
+- HSTS headers enabled (Strict-Transport-Security)
+- Secure WebSocket connections if added post-MVP
+
+**Audit Logging:**
+- Authentication events logged (login, logout, failed attempts)
+- Sensitive operations logged (account deletion, list/task mutations)
+- Logs exclude sensitive data (passwords, tokens)
+- Logs retained for 90 days for security analysis
 
 ---
 
@@ -146,7 +212,7 @@ Comprehensive task and list management interface with keyboard-first navigation.
 **List Components:**
 - `<ListColumn>` - Individual list container (280px width)
 - `<ListHeader>` - List name (editable), task count badge, actions menu, limit indicator
-- `<ListBody>` - Scrollable task container
+- `<TaskListContainer>` - Scrollable task container
 - `<TaskRow>` - Task card with title, description, origin color border, actions
 - `<ListActionsMenu>` - Rename, delete, toggle backlog, reorder options
 - `<CreateListButton>` - Trigger for new list creation (disabled at 10 lists)
@@ -396,7 +462,7 @@ Display comprehensive list of keyboard shortcuts, categorized by context (Global
 **Content Components:**
 - `<SearchInput>` - Filter shortcuts by keyword
 - `<ShortcutCategorySection>` - Grouped shortcuts
-  - "Global Shortcuts" (Cmd+P, Cmd+W, Cmd+D, Cmd+K, ?)
+  - "Global Shortcuts" (Cmd+P, Cmd+W, Cmd+Shift+A, Cmd+Shift+D, Cmd+K, ?)
   - "Plan Mode Shortcuts" (Arrow keys, n, e, l, etc.)
   - "Work Mode Shortcuts" (Complete, Switch to Plan)
 - `<ShortcutRow>` - Individual shortcut display
@@ -616,7 +682,7 @@ Display legal policies (Privacy Policy, Terms of Service) in accessible, readabl
 11. Empty state appears: "No tasks in Today" with actions to add task or switch to Plan
 
 **Stage 6: Review Progress (Done Archive)**
-1. User presses `Cmd+D` to switch to Done Archive
+1. User presses `Cmd+Shift+A` to switch to Done Archive
 2. Sees metrics header: "Today: 8 tasks • This week: 32 tasks • Last week: 28 tasks"
 3. Sees paginated list of completed tasks (newest first)
 4. Each task shows completion timestamp (e.g., "2 hours ago"), origin color
@@ -737,10 +803,12 @@ Display legal policies (Privacy Policy, Terms of Service) in accessible, readabl
 **Global Keyboard Shortcuts (Work Everywhere):**
 - `Cmd+P` → Navigate to Plan Mode
 - `Cmd+W` → Navigate to Work Mode
-- `Cmd+D` → Navigate to Done Archive
+- `Cmd+Shift+A` → Navigate to Done Archive
 - `Cmd+Shift+D` → Open Dump Mode modal
 - `Cmd+K` → Open Command Palette
 - `?` → Open Keyboard Help overlay
+
+**Note:** `Cmd+Shift+A` is used for Done Archive to avoid conflict with browser's native `Cmd+D` (Add Bookmark) shortcut.
 
 ---
 
@@ -990,7 +1058,7 @@ Display legal policies (Privacy Policy, Terms of Service) in accessible, readabl
 
 **Child Components:**
 - `<ListHeader>`
-- `<ListBody>`
+- `<TaskListContainer>`
 
 **Styling:**
 - Fixed width: 280px (desktop), 240px (tablet), 100vw (mobile)
@@ -1023,8 +1091,8 @@ Display legal policies (Privacy Policy, Terms of Service) in accessible, readabl
 
 ---
 
-#### `<ListBody>`
-**Purpose:** Scrollable container for tasks
+#### `<TaskListContainer>`
+**Purpose:** Scrollable container for tasks within a list
 **Responsibilities:**
 - Render task rows in order
 - Handle empty state
