@@ -1,0 +1,42 @@
+---
+import '../../styles/global.css';
+
+// Get query parameters
+const url = new URL(Astro.request.url);
+const success = url.searchParams.get('success') === 'true';
+const error = url.searchParams.get('error');
+
+// Determine where to redirect
+// For now, redirect to a placeholder page since /app doesn't exist yet
+// TODO: Replace with actual app route when implementing Plan Mode
+const redirectUrl = success ? '/auth/success' : '/';
+---
+
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width" />
+		<title>Authenticating - GSD</title>
+		<meta http-equiv="refresh" content={`0;url=${redirectUrl}`} />
+	</head>
+	<body class="min-h-screen bg-gray-50 flex items-center justify-center">
+		<div class="text-center">
+			{success ? (
+				<div>
+					<h1 class="text-2xl font-bold text-gray-900 mb-4">Authentication successful!</h1>
+					<p class="text-gray-600 mb-4">Redirecting to your dashboard...</p>
+				</div>
+			) : (
+				<div>
+					<h1 class="text-2xl font-bold text-gray-900 mb-4">Authentication failed</h1>
+					<p class="text-gray-600 mb-4">{error || 'Something went wrong. Please try again.'}</p>
+					<p class="text-gray-600">Redirecting to home page...</p>
+				</div>
+			)}
+			<div class="mt-4">
+				<div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+			</div>
+		</div>
+	</body>
+</html>
