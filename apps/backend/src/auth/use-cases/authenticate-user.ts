@@ -3,11 +3,13 @@ import { User } from '@prisma/client';
 import { UsersRepository } from '../infra/users.repository';
 import { GoogleProfile } from '../dto/google-profile.dto';
 import { AppLogger } from '../../logger/app-logger';
+import { OnboardUser } from './onboard-user';
 
 @Injectable()
 export class AuthenticateUser {
   constructor(
     private readonly repository: UsersRepository,
+    private readonly onboardUserUseCase: OnboardUser,
     private readonly logger: AppLogger,
   ) {
     this.logger.setContext(AuthenticateUser.name);
@@ -35,6 +37,8 @@ export class AuthenticateUser {
       });
 
       this.logger.log(`User authenticated successfully: ${user.id} (${user.email})`);
+
+      await this.onboardUserUseCase.execute(user.id);
 
       return user;
     } catch (error) {

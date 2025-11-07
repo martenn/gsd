@@ -7,13 +7,18 @@ import { UsersRepository } from './infra/users.repository';
 import { GoogleStrategy } from './infra/strategies/google.strategy';
 import { JwtStrategy } from './infra/strategies/jwt.strategy';
 import { AuthenticateUser } from './use-cases/authenticate-user';
+import { OnboardUser } from './use-cases/onboard-user';
 import { GetMe } from './use-cases/get-me';
 import { SignOut } from './use-cases/sign-out';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
+import { ListsModule } from '../lists/lists.module';
+import { ColorModule } from '../colors/color.module';
 
 @Module({
   imports: [
     PassportModule,
+    ListsModule,
+    ColorModule,
     JwtModule.register({
       secret: (() => {
         const secret = process.env.JWT_SECRET;
@@ -33,6 +38,7 @@ import { JwtAuthGuard } from './guards/jwt-auth.guard';
     JwtStrategy,
     UsersRepository,
     AuthenticateUser,
+    OnboardUser,
     GetMe,
     SignOut,
     JwtAuthGuard,
