@@ -200,9 +200,11 @@ apps/backend/src/{domain}/
    - One class per operation
    - Named without suffix (e.g., `GetLists`, `CreateList`)
    - Single `execute()` method
-   - Depends on repositories, NOT PrismaClient
+   - Prefer depending on other use cases over repositories (especially for cross-domain operations)
+   - Within same domain: repository access is acceptable
+   - Cross-domain: use other domain's use cases via module imports
    - Contains business rules and orchestration
-   - No database queries
+   - No direct database queries (use repositories)
 
 3. **Infrastructure** (Database layer)
    - Repositories encapsulate all Prisma operations
@@ -213,7 +215,8 @@ apps/backend/src/{domain}/
 4. **Module Rules:**
    - No `index.ts` file (module exports itself)
    - Export only the module, not internal classes
-   - Cross-domain dependencies TBD
+   - Cross-domain dependencies: import other domain modules and inject their use cases
+   - Example: AuthModule imports ListsModule to inject CreateList use case in OnboardUser
 
 **Feature Separation:**
 - Each feature should have its own folder: `/src/{feature}/`
