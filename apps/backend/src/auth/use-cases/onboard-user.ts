@@ -1,13 +1,15 @@
 import { Injectable } from '@nestjs/common';
+import { CreateList } from '../../lists/use-cases/create-list';
+import { GetLists } from '../../lists/use-cases/get-lists';
 import { ListsRepository } from '../../lists/infra/lists.repository';
-import { ColorPool } from '../../colors/color-pool';
 import { AppLogger } from '../../logger/app-logger';
 
 @Injectable()
 export class OnboardUser {
   constructor(
+    private readonly getListsUseCase: GetLists,
+    private readonly createListUseCase: CreateList,
     private readonly listsRepository: ListsRepository,
-    private readonly colorPool: ColorPool,
     private readonly logger: AppLogger,
   ) {
     this.logger.setContext(OnboardUser.name);
@@ -17,9 +19,9 @@ export class OnboardUser {
     this.logger.log(`Starting onboarding for user: ${userId}`);
 
     try {
-      const existingListCount = await this.listsRepository.countByUserId(userId, true);
+      const existingLists = await this.getListsUseCase.execute(userId);
 
-      if (existingListCount > 0) {
+      if (existingLists.length > 0) {
         this.logger.log(`User ${userId} already has lists, skipping onboarding`);
         return;
       }
@@ -37,38 +39,28 @@ export class OnboardUser {
   }
 
   private async createDefaultLists(userId: string): Promise<void> {
-    const backlogColor = this.colorPool.getNextColor().toString();
-    const todayColor = this.colorPool.getNextColor().toString();
-
-    await this.listsRepository.create({
+    await this.createListUseCase.execute(userId, {
       name: 'Backlog',
       isBacklog: true,
-      isDone: false,
-      color: backlogColor,
-      userId,
-      orderIndex: 1,
     });
 
     this.logger.log(`Created default backlog for user: ${userId}`);
 
-    await this.listsRepository.create({
+    await this.createListUseCase.execute(userId, {
       name: 'Today',
       isBacklog: false,
-      isDone: false,
-      color: todayColor,
-      userId,
-      orderIndex: 2,
     });
 
     this.logger.log(`Created default "Today" list for user: ${userId}`);
 
+    const maxOrderIndex = await this.listsRepository.findMaxOrderIndex(userId);
     await this.listsRepository.create({
       name: 'Done',
       isBacklog: false,
       isDone: true,
       color: null,
       userId,
-      orderIndex: 3,
+      orderIndex: (maxOrderIndex ?? 0) + 1,
     });
 
     this.logger.log(`Created "Done" list for user: ${userId}`);
