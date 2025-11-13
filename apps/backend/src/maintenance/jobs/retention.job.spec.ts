@@ -1,10 +1,15 @@
 import { RetentionJob } from './retention.job';
-import { PrismaClient } from '@prisma/client';
 import { AppLogger } from '../../logger/app-logger';
 
 describe('RetentionJob', () => {
   let retentionJob: RetentionJob;
-  let prisma: jest.Mocked<PrismaClient>;
+  let prisma: {
+    task: {
+      groupBy: jest.Mock;
+      findMany: jest.Mock;
+      deleteMany: jest.Mock;
+    };
+  };
   let logger: jest.Mocked<AppLogger>;
 
   beforeEach(() => {
@@ -14,7 +19,7 @@ describe('RetentionJob', () => {
         findMany: jest.fn(),
         deleteMany: jest.fn(),
       },
-    } as any;
+    };
 
     logger = {
       log: jest.fn(),
@@ -25,7 +30,7 @@ describe('RetentionJob', () => {
       setContext: jest.fn(),
     } as any;
 
-    retentionJob = new RetentionJob(prisma, logger);
+    retentionJob = new RetentionJob(prisma as any, logger);
   });
 
   describe('execute', () => {
