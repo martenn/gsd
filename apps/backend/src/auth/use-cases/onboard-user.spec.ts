@@ -80,9 +80,7 @@ describe('OnboardUser', () => {
         updatedAt: new Date(),
       };
 
-      createListUseCase.execute
-        .mockResolvedValueOnce(backlogList)
-        .mockResolvedValueOnce(todayList);
+      createListUseCase.execute.mockResolvedValueOnce(backlogList).mockResolvedValueOnce(todayList);
 
       listsRepository.findMaxOrderIndex.mockResolvedValue(2);
       listsRepository.create.mockResolvedValue({
@@ -125,7 +123,9 @@ describe('OnboardUser', () => {
       expect(logger.log).toHaveBeenCalledWith(`Created default backlog for user: ${userId}`);
       expect(logger.log).toHaveBeenCalledWith(`Created default "Today" list for user: ${userId}`);
       expect(logger.log).toHaveBeenCalledWith(`Created "Done" list for user: ${userId}`);
-      expect(logger.log).toHaveBeenCalledWith(`Onboarding completed successfully for user: ${userId}`);
+      expect(logger.log).toHaveBeenCalledWith(
+        `Onboarding completed successfully for user: ${userId}`,
+      );
     });
 
     it('should skip onboarding when user already has lists', async () => {
@@ -150,7 +150,9 @@ describe('OnboardUser', () => {
       expect(listsRepository.create).not.toHaveBeenCalled();
 
       expect(logger.log).toHaveBeenCalledWith(`Starting onboarding for user: ${userId}`);
-      expect(logger.log).toHaveBeenCalledWith(`User ${userId} already has lists, skipping onboarding`);
+      expect(logger.log).toHaveBeenCalledWith(
+        `User ${userId} already has lists, skipping onboarding`,
+      );
     });
 
     it('should handle Done list creation when no previous lists exist', async () => {

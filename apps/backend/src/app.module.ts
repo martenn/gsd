@@ -5,11 +5,12 @@ import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { ListsModule } from './lists/lists.module';
 import { TasksModule } from './tasks/tasks.module';
+import { DoneModule } from './done/done.module';
 import { LoggerModule } from './logger/logger.module';
 import { HttpLoggingInterceptor } from './logger/http-logging.interceptor';
 
 @Module({
-  imports: [LoggerModule, AuthModule, ListsModule, TasksModule],
+  imports: [LoggerModule, AuthModule, ListsModule, TasksModule, DoneModule],
   controllers: [AppController],
   providers: [
     AppService,
