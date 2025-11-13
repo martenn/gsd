@@ -3,51 +3,47 @@ import '../../styles/global.css';
 ---
 
 <html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<meta name="viewport" content="width=device-width" />
-		<title>Success - GSD</title>
-	</head>
-	<body class="min-h-screen bg-gray-50 flex flex-col">
-		<!-- Header -->
-		<header class="w-full py-6 px-4 border-b border-gray-200">
-			<div class="max-w-7xl mx-auto">
-				<h1 class="text-2xl font-bold text-gray-900">GSD</h1>
-			</div>
-		</header>
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width" />
+    <title>Success - GSD</title>
+  </head>
+  <body class="min-h-screen bg-gray-50 flex flex-col">
+    <!-- Header -->
+    <header class="w-full py-6 px-4 border-b border-gray-200">
+      <div class="max-w-7xl mx-auto">
+        <h1 class="text-2xl font-bold text-gray-900">GSD</h1>
+      </div>
+    </header>
 
-		<!-- Content -->
-		<main class="flex-1 flex items-center justify-center px-4" role="main">
-			<div class="max-w-md w-full text-center space-y-6">
-				<div class="text-6xl">✅</div>
-				<h2 class="text-3xl font-bold text-gray-900">
-					You're signed in!
-				</h2>
-				<p class="text-lg text-gray-600">
-					Your authentication was successful. You now have an active session.
-				</p>
-				<div class="pt-4 space-y-3">
-					<p class="text-sm text-gray-500">
-						The authenticated app (Plan Mode) will be implemented next.
-					</p>
-					<p class="text-sm text-gray-500">
-						For now, you can verify your session by checking the API:
-					</p>
-					<code class="block bg-gray-100 p-3 rounded text-xs text-left overflow-x-auto">
-						curl http://localhost:3000/auth/me --cookie-jar -
-					</code>
-				</div>
-			</div>
-		</main>
+    <!-- Content -->
+    <main class="flex-1 flex items-center justify-center px-4" role="main">
+      <div class="max-w-md w-full text-center space-y-6">
+        <div class="text-6xl">✅</div>
+        <h2 class="text-3xl font-bold text-gray-900">You're signed in!</h2>
+        <p class="text-lg text-gray-600">
+          Your authentication was successful. You now have an active session.
+        </p>
+        <div class="pt-4 space-y-3">
+          <p class="text-sm text-gray-500">
+            The authenticated app (Plan Mode) will be implemented next.
+          </p>
+          <p class="text-sm text-gray-500">
+            For now, you can verify your session by checking the API:
+          </p>
+          <code class="block bg-gray-100 p-3 rounded text-xs text-left overflow-x-auto">
+            curl http://localhost:3000/auth/me --cookie-jar -
+          </code>
+        </div>
+      </div>
+    </main>
 
-		<!-- Footer -->
-		<footer class="w-full py-6 px-4 border-t border-gray-200">
-			<div class="max-w-7xl mx-auto text-center text-sm text-gray-500">
-				<a href="/" class="hover:text-gray-700 transition-colors">
-					Back to Home
-				</a>
-			</div>
-		</footer>
-	</body>
+    <!-- Footer -->
+    <footer class="w-full py-6 px-4 border-t border-gray-200">
+      <div class="max-w-7xl mx-auto text-center text-sm text-gray-500">
+        <a href="/" class="hover:text-gray-700 transition-colors"> Back to Home </a>
+      </div>
+    </footer>
+  </body>
 </html>

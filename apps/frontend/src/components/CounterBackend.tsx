@@ -32,7 +32,7 @@ export default function CounterBackend() {
       <h2 className="text-xl font-bold mb-2">Backend Counter (PoC)</h2>
       <p className="mb-4">Count: {count}</p>
       <button
-        onClick={handleIncrement}
+        onClick={() => void handleIncrement()}
         disabled={loading}
         className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 disabled:bg-green-300"
       >
