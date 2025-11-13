@@ -3,11 +3,13 @@ import { AuthenticateUser } from './authenticate-user';
 import { UsersRepository } from '../infra/users.repository';
 import { AppLogger } from '../../logger/app-logger';
 import { GoogleProfile } from '../dto/google-profile.dto';
+import { OnboardUser } from './onboard-user';
 
 describe('AuthenticateUser', () => {
   let useCase: AuthenticateUser;
   let repository: jest.Mocked<UsersRepository>;
   let logger: jest.Mocked<AppLogger>;
+  let onboardUser: jest.Mocked<OnboardUser>;
 
   beforeEach(async () => {
     const mockRepository = {
@@ -20,17 +22,23 @@ describe('AuthenticateUser', () => {
       error: jest.fn(),
     };
 
+    const mockOnboardUser = {
+      execute: jest.fn().mockResolvedValue(undefined),
+    };
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         AuthenticateUser,
         { provide: UsersRepository, useValue: mockRepository },
         { provide: AppLogger, useValue: mockLogger },
+        { provide: OnboardUser, useValue: mockOnboardUser },
       ],
     }).compile();
 
     useCase = module.get<AuthenticateUser>(AuthenticateUser);
     repository = module.get(UsersRepository);
     logger = module.get(AppLogger);
+    onboardUser = module.get(OnboardUser);
   });
 
   describe('execute', () => {
@@ -64,6 +72,7 @@ describe('AuthenticateUser', () => {
       expect(logger.log).toHaveBeenCalledWith(
         'User authenticated successfully: user-id-123 (user@example.com)',
       );
+      expect(onboardUser.execute).toHaveBeenCalledWith('user-id-123');
     });
 
     it('should authenticate user with name constructed from givenName and familyName', async () => {
@@ -95,6 +104,7 @@ describe('AuthenticateUser', () => {
         email: 'jane@example.com',
         name: 'Jane Smith',
       });
+      expect(onboardUser.execute).toHaveBeenCalledWith('user-id-456');
     });
 
     it('should authenticate user with null name when no name provided', async () => {
@@ -122,6 +132,7 @@ describe('AuthenticateUser', () => {
         email: 'noname@example.com',
         name: null,
       });
+      expect(onboardUser.execute).toHaveBeenCalledWith('user-id-789');
     });
 
     it('should throw error when email is missing from Google profile', async () => {
@@ -134,6 +145,7 @@ describe('AuthenticateUser', () => {
 
       expect(logger.error).toHaveBeenCalled();
       expect(repository.upsertByGoogleId).not.toHaveBeenCalled();
+      expect(onboardUser.execute).not.toHaveBeenCalled();
     });
 
     it('should log and re-throw repository errors', async () => {
@@ -149,6 +161,7 @@ describe('AuthenticateUser', () => {
       await expect(useCase.execute(profile)).rejects.toThrow('Database connection failed');
 
       expect(logger.error).toHaveBeenCalled();
+      expect(onboardUser.execute).not.toHaveBeenCalled();
     });
   });
 });
