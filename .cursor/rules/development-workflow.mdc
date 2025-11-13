@@ -1,0 +1,36 @@
+---
+Rule Type: Auto Attached
+globs: '**/*.ts,**/*.tsx,**/*.js,**/*.jsx,**/*.md'
+---
+## DEVELOPMENT_WORKFLOW
+
+### Guidelines for PROJECT_TRACKING
+
+#### AFTER_FEATURE_COMPLETION
+
+**IMPORTANT**: After completing any feature, module, or significant implementation:
+
+1. Update `.ai/project-tracker.md` immediately
+2. Mark completed features with ✅ status in the relevant phase table
+3. Update progress percentages for the relevant phase (e.g., "50% (9/18)" → "56% (10/18)")
+4. Update the overall MVP progress overview at the top of the file
+5. Update the "Last Updated" timestamp to the current date
+6. Ensure phase progress bars are visually accurate
+
+**Examples of when to update:**
+- After implementing a new module (e.g., DoneModule, AuthModule)
+- After completing a significant feature (e.g., OAuth integration, pagination)
+- After setting up infrastructure (e.g., linting, CI/CD, logging)
+- After implementing a major component (e.g., AppShell, PlanMode layout)
+
+**What to update:**
+- Feature status: ⚪ → 🟡 (in progress) → ✅ (completed)
+- Phase progress: Update count and percentage
+- Overall MVP progress: Update total count and percentage
+- Timestamp: Update "Last Updated" field
+
+This ensures:
+- Visibility into project status for all contributors
+- Accurate tracking of completion toward MVP goals
+- Historical record of when features were completed
+- Clear communication of what's done and what's remaining

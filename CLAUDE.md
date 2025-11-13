@@ -362,6 +362,14 @@ export class CreateListDto implements CreateListRequest {
 - **E2E tests**: supertest for API endpoints
 - Focus on business logic: list/task CRUD, limits enforcement, backlog constraints
 
+### Project Tracking
+- **IMPORTANT**: After completing any feature, module, or significant implementation, update `.ai/project-tracker.md`
+- Mark completed features with ✅ status
+- Update progress percentages for the relevant phase
+- Update the "Last Updated" timestamp
+- Keep the overall MVP progress overview in sync
+- This ensures visibility into project status and helps track completion toward MVP goals
+
 ### CI/CD
 - GitHub Actions workflow: lint, typecheck, test, build
 - Deploy: Containerized (Docker) for both frontend and backend services

@@ -1,16 +1,16 @@
 # GSD Project Tracker
 
-**Last Updated:** 2025-11-07
+**Last Updated:** 2025-11-13
 **Current Sprint:** Core Features & Frontend Prep
 
 ## 📊 MVP Progress Overview
 
 ```
-Overall MVP Completion: ████░░░░░░░░░░░░ 23% (29/125 features)
+Overall MVP Completion: ████░░░░░░░░░░░░ 24% (30/125 features)
 
 Backend:  ██████████░░░░░░░░░░ 53% (18/34 features)
 Frontend: ░░░░░░░░░░░░░░░░░░░░  3% (2/73 features)
-Infra:    █████████░░░░░░░░░░ 50% (9/18 features)
+Infra:    ███████████░░░░░░░░░ 56% (10/18 features)
 ```
 
 **Target MVP Completion:** TBD
@@ -52,7 +52,7 @@ Infra:    █████████░░░░░░░░░░ 50% (9/18 fe
 ## 🏗️ Phase 1: Foundation (Infrastructure)
 
 **Goal:** Core infrastructure for development
-**Progress:** ████████████░░░░░░░░ 50% (9/18)
+**Progress:** ████████████░░░░░░░░ 56% (10/18)
 
 | Status | Feature                          | Est. | Notes                                    | Owner |
 | ------ | -------------------------------- | ---- | ---------------------------------------- | ----- |
@@ -60,7 +60,8 @@ Infra:    █████████░░░░░░░░░░ 50% (9/18 fe
 | ✅     | NestJS backend bootstrap         | -    | Basic structure                          | -     |
 | ✅     | Astro frontend bootstrap         | -    | Basic structure                          | -     |
 | ✅     | TypeScript configuration         | -    | Strict mode enabled                      | -     |
-| ✅     | ESLint + Prettier                | -    | Configured                               | -     |
+| ✅     | ESLint + Prettier (backend)      | -    | Backend linting configured               | -     |
+| ✅     | ESLint + Prettier (frontend)     | -    | Frontend linting configured              | -     |
 | ✅     | Prisma schema + migrations       | -    | User, List, Task models                  | -     |
 | ✅     | Docker Compose (PostgreSQL)      | -    | Local dev DB                             | -     |
 | ✅     | Repository pattern architecture  | -    | Lists, Tasks repos                       | -     |
