@@ -6,9 +6,9 @@
 ## 📊 MVP Progress Overview
 
 ```
-Overall MVP Completion: ████░░░░░░░░░░░░ 24% (30/125 features)
+Overall MVP Completion: █████░░░░░░░░░░░ 26% (32/125 features)
 
-Backend:  ██████████░░░░░░░░░░ 53% (18/34 features)
+Backend:  ███████████░░░░░░░░░ 59% (20/34 features)
 Frontend: ░░░░░░░░░░░░░░░░░░░░  3% (2/73 features)
 Infra:    ███████████░░░░░░░░░ 56% (10/18 features)
 ```
@@ -188,18 +188,25 @@ Infra:    ███████████░░░░░░░░░ 56% (10/1
 ## 📦 Phase 5: Done Archive & Retention
 
 **Goal:** Completed tasks view and retention management
-**Progress:** ░░░░░░░░░░░░░░░░░░░░ 0% (0/4)
+**Progress:** ██████████░░░░░░░░░░ 50% (2/4)
 
-| Status | Feature                      | Est. | Notes                               | PRD Ref | Owner |
-| ------ | ---------------------------- | ---- | ----------------------------------- | ------- | ----- |
-| ⚪     | DoneModule setup             | 0.5d | New module                          | 3.5     | -     |
-| ⚪     | GET /v1/done                 | 1d   | Paginated (50/page, reverse chrono) | US-015  | -     |
-| ⚪     | Retention job                | 1d   | Keep last 500, delete older         | 3.5     | -     |
-| ⚪     | @nestjs/schedule integration | 0.5d | For retention cleanup               | -       | -     |
+| Status | Feature                      | Est. | Notes                                       | PRD Ref | Owner |
+| ------ | ---------------------------- | ---- | ------------------------------------------- | ------- | ----- |
+| ✅     | DoneModule setup             | -    | Module with repository and use case         | 3.5     | ✅    |
+| ✅     | GET /v1/done                 | -    | Paginated (limit/offset), JWT protected     | US-015  | ✅    |
+| ⚪     | Retention job                | 1d   | Keep last 500, delete older                 | 3.5     | -     |
+| ⚪     | @nestjs/schedule integration | 0.5d | For retention cleanup                       | -       | -     |
 
 **Endpoints:**
 
-- `GET /v1/done?page=1&limit=50`
+- `GET /v1/done?limit=50&offset=0` (completed ✅)
+
+**Implementation Details:**
+- DoneRepository with Prisma queries (findCompletedTasks, countCompletedTasks)
+- GetDoneTasks use case with pagination defaults (limit=50, offset=0, max=100)
+- JWT authentication required
+- Returns tasks with list name and color
+- Unit tests: 7 passing
 
 **Business Rules:**
 
