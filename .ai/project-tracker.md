@@ -6,9 +6,9 @@
 ## 📊 MVP Progress Overview
 
 ```
-Overall MVP Completion: █████░░░░░░░░░░░ 26% (32/125 features)
+Overall MVP Completion: █████░░░░░░░░░░░ 27% (34/125 features)
 
-Backend:  ███████████░░░░░░░░░ 59% (20/34 features)
+Backend:  ████████████░░░░░░░░ 65% (22/34 features)
 Frontend: ░░░░░░░░░░░░░░░░░░░░  3% (2/73 features)
 Infra:    ███████████░░░░░░░░░ 56% (10/18 features)
 ```
@@ -188,14 +188,14 @@ Infra:    ███████████░░░░░░░░░ 56% (10/1
 ## 📦 Phase 5: Done Archive & Retention
 
 **Goal:** Completed tasks view and retention management
-**Progress:** ██████████░░░░░░░░░░ 50% (2/4)
+**Progress:** ████████████████████ 100% (4/4) ✅ COMPLETE
 
 | Status | Feature                      | Est. | Notes                                       | PRD Ref | Owner |
 | ------ | ---------------------------- | ---- | ------------------------------------------- | ------- | ----- |
 | ✅     | DoneModule setup             | -    | Module with repository and use case         | 3.5     | ✅    |
 | ✅     | GET /v1/done                 | -    | Paginated (limit/offset), JWT protected     | US-015  | ✅    |
-| ⚪     | Retention job                | 1d   | Keep last 500, delete older                 | 3.5     | -     |
-| ⚪     | @nestjs/schedule integration | 0.5d | For retention cleanup                       | -       | -     |
+| ✅     | Retention job                | -    | Cron job (daily 2 AM UTC), keeps 500/user   | 3.5     | ✅    |
+| ✅     | @nestjs/schedule integration | -    | Integrated with RetentionJob                | -       | ✅    |
 
 **Endpoints:**
 
@@ -206,7 +206,10 @@ Infra:    ███████████░░░░░░░░░ 56% (10/1
 - GetDoneTasks use case with pagination defaults (limit=50, offset=0, max=100)
 - JWT authentication required
 - Returns tasks with list name and color
-- Unit tests: 7 passing
+- RetentionJob with @Cron decorator (daily 2 AM UTC)
+- Automatic cleanup: keeps 500 most recent completed tasks per user
+- Error handling: continues processing if individual user fails
+- Unit tests: 15 passing (7 for GetDoneTasks, 8 for RetentionJob)
 
 **Business Rules:**
 
