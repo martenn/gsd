@@ -7,9 +7,7 @@ const success = url.searchParams.get('success') === 'true';
 const error = url.searchParams.get('error');
 
 // Determine where to redirect
-// For now, redirect to a placeholder page since /app doesn't exist yet
-// TODO: Replace with actual app route when implementing Plan Mode
-const redirectUrl = success ? '/auth/success' : '/';
+const redirectUrl = success ? '/app/plan' : '/';
 ---
 
 <!doctype html>

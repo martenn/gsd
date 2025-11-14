@@ -7,10 +7,12 @@ export function AppShell({ children }: AppShellProps) {
   const { user, isLoading, isAuthenticated, logout } = useAuth();
 
   useEffect(() => {
+    console.log('AppShell auth state:', { isLoading, isAuthenticated, user });
     if (!isLoading && !isAuthenticated) {
+      console.log('Not authenticated, redirecting to /');
       window.location.href = '/';
     }
-  }, [isLoading, isAuthenticated]);
+  }, [isLoading, isAuthenticated, user]);
 
   if (isLoading) {
     return (

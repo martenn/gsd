@@ -7,7 +7,16 @@ export function useAuth() {
 
   const { data, isLoading, error } = useQuery({
     queryKey: ['auth', 'me'],
-    queryFn: getMe,
+    queryFn: async () => {
+      try {
+        const result = await getMe();
+        console.log('Auth check successful:', result);
+        return result;
+      } catch (err) {
+        console.error('Auth check failed:', err);
+        throw err;
+      }
+    },
     retry: false,
     staleTime: 10 * 60 * 1000,
   });
