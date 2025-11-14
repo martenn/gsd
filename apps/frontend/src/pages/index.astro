@@ -51,5 +51,27 @@ const apiUrl = import.meta.env.PUBLIC_API_URL || 'http://localhost:3000';
         <a href="/terms" class="hover:text-gray-700 transition-colors"> Terms of Service </a>
       </div>
     </footer>
+
+    <!-- Check if user is already authenticated and redirect -->
+    <script>
+      const apiUrl = import.meta.env.PUBLIC_API_URL || 'http://localhost:3000';
+
+      async function checkAuth() {
+        try {
+          const response = await fetch(`${apiUrl}/auth/me`, {
+            credentials: 'include'
+          });
+
+          if (response.ok) {
+            console.log('User already authenticated, redirecting to app');
+            window.location.href = '/app/plan';
+          }
+        } catch (error) {
+          console.log('Not authenticated or error checking auth');
+        }
+      }
+
+      checkAuth();
+    </script>
   </body>
 </html>

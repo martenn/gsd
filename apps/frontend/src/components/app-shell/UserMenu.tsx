@@ -6,7 +6,7 @@ export function UserMenu({ user, onLogout }: UserMenuProps) {
 
   const handleLogout = () => {
     setIsOpen(false);
-    onLogout();
+    window.location.href = '/logout';
   };
 
   return (
