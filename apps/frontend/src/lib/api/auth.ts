@@ -6,5 +6,5 @@ export async function getMe(): Promise<GetMeResponseDto> {
 }
 
 export async function logout(): Promise<SignOutResponseDto> {
-  return apiClient.post('/auth/logout');
+  return apiClient.post('/auth/signout');
 }

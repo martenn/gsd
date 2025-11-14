@@ -23,14 +23,17 @@ const apiUrl = import.meta.env.PUBLIC_API_URL || 'http://localhost:3000';
     <script define:vars={{ apiUrl }}>
       async function logout() {
         try {
-          await fetch(`${apiUrl}/auth/logout`, {
+          console.log('Calling logout API...');
+          const response = await fetch(`${apiUrl}/auth/signout`, {
             method: 'POST',
             credentials: 'include'
           });
+          console.log('Logout response:', response.status);
         } catch (error) {
           console.error('Logout error:', error);
         } finally {
           // Always redirect to home, even if logout fails
+          console.log('Redirecting to home page');
           window.location.href = '/';
         }
       }
