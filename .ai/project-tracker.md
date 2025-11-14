@@ -1,14 +1,14 @@
 # GSD Project Tracker
 
-**Last Updated:** 2025-11-13
+**Last Updated:** 2025-11-14
 **Current Sprint:** Core Features & Frontend Prep
 
 ## 📊 MVP Progress Overview
 
 ```
-Overall MVP Completion: █████░░░░░░░░░░░ 27% (34/125 features)
+Overall MVP Completion: ██████░░░░░░░░░░ 28% (35/125 features)
 
-Backend:  ████████████░░░░░░░░ 65% (22/34 features)
+Backend:  ████████████░░░░░░░░ 68% (23/34 features)
 Frontend: ░░░░░░░░░░░░░░░░░░░░  3% (2/73 features)
 Infra:    ███████████░░░░░░░░░ 56% (10/18 features)
 ```
@@ -89,8 +89,8 @@ Infra:    ███████████░░░░░░░░░ 56% (10/1
 ## 🔐 Phase 2: Authentication & Authorization
 
 **Goal:** User authentication and data isolation
-**Progress:** ███████████████░░░░░ 75% (6/8)
-**Status:** 🟢 Mostly Complete (2 optional features remaining)
+**Progress:** ██████████████████░░ 88% (7/8)
+**Status:** 🟢 Core Complete (1 optional feature remaining)
 
 | Status | Feature                      | Est. | Notes                                      | PRD Ref | Owner |
 | ------ | ---------------------------- | ---- | ------------------------------------------ | ------- | ----- |
@@ -100,8 +100,8 @@ Infra:    ███████████░░░░░░░░░ 56% (10/1
 | ✅     | Cookie security attributes   | -    | HttpOnly, Secure, SameSite=Strict          | 3.7     | ✅    |
 | ✅     | Auth guards                  | -    | JwtAuthGuard implemented                   | 3.7     | ✅    |
 | ✅     | User model & creation        | -    | On first OAuth login with onboarding       | 3.7     | ✅    |
-| ⚪     | Replace mock userId          | 0.5d | Use req.user.id everywhere                 | -       | -     |
-| ⚪     | Audit logging (auth events)  | 1d   | Login, logout, failed attempts             | -       | -     |
+| ✅     | Replace mock userId          | -    | JWT auth on all Lists/Tasks/Done endpoints | -       | ✅    |
+| ⚪     | Audit logging (auth events)  | 1d   | Login, logout, failed attempts (optional)  | -       | -     |
 
 **Endpoints:**
 
@@ -118,7 +118,8 @@ Infra:    ███████████░░░░░░░░░ 56% (10/1
 
 **Phase Blockers:** None
 **Dependencies:** ✅ Google OAuth credentials configured
-**Next Up:** Replace mock userId in controllers (optional), audit logging (optional)
+**Protected Endpoints:** All `/v1/lists`, `/v1/tasks`, `/v1/done` endpoints now require JWT
+**Next Up:** Audit logging (optional post-MVP feature)
 
 ---
 

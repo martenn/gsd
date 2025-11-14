@@ -9,6 +9,7 @@ import {
   Param,
   HttpCode,
   HttpStatus,
+  UseGuards,
 } from '@nestjs/common';
 import {
   CreateTaskResponseDto,
@@ -18,6 +19,9 @@ import {
   CompleteTaskResponseDto,
   ReorderTaskResponseDto,
 } from '@gsd/types';
+import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
+import { CurrentUser } from '../../auth/decorators/current-user.decorator';
+import type { JwtUser } from '../../auth/dto/jwt-user.dto';
 import { CreateTask } from '../use-cases/create-task';
 import { GetTasks } from '../use-cases/get-tasks';
 import { UpdateTask } from '../use-cases/update-task';
@@ -32,6 +36,7 @@ import { MoveTaskDto } from '../dto/move-task.dto';
 import { ReorderTaskDto } from '../dto/reorder-task.dto';
 
 @Controller('v1/tasks')
+@UseGuards(JwtAuthGuard)
 export class TasksController {
   constructor(
     private readonly createTaskUseCase: CreateTask,
@@ -44,60 +49,65 @@ export class TasksController {
   ) {}
 
   @Get()
-  async getTasks(@Query() query: GetTasksQueryDto): Promise<GetTasksResponseDto> {
-    const userId = 'mock-user-id';
-    return this.getTasksUseCase.execute(userId, query);
+  async getTasks(
+    @CurrentUser() user: JwtUser,
+    @Query() query: GetTasksQueryDto,
+  ): Promise<GetTasksResponseDto> {
+    return this.getTasksUseCase.execute(user.id, query);
   }
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
-  async createTask(@Body() createTaskDto: CreateTaskDto): Promise<CreateTaskResponseDto> {
-    const userId = 'mock-user-id';
-    const task = await this.createTaskUseCase.execute(userId, createTaskDto);
+  async createTask(
+    @CurrentUser() user: JwtUser,
+    @Body() createTaskDto: CreateTaskDto,
+  ): Promise<CreateTaskResponseDto> {
+    const task = await this.createTaskUseCase.execute(user.id, createTaskDto);
     return { task };
   }
 
   @Patch(':id')
   async updateTask(
+    @CurrentUser() user: JwtUser,
     @Param('id') id: string,
     @Body() updateTaskDto: UpdateTaskDto,
   ): Promise<UpdateTaskResponseDto> {
-    const userId = 'mock-user-id';
-    const task = await this.updateTaskUseCase.execute(userId, id, updateTaskDto);
+    const task = await this.updateTaskUseCase.execute(user.id, id, updateTaskDto);
     return { task };
   }
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  async deleteTask(@Param('id') id: string): Promise<void> {
-    const userId = 'mock-user-id';
-    await this.deleteTaskUseCase.execute(userId, id);
+  async deleteTask(@CurrentUser() user: JwtUser, @Param('id') id: string): Promise<void> {
+    await this.deleteTaskUseCase.execute(user.id, id);
   }
 
   @Post(':id/move')
   async moveTask(
+    @CurrentUser() user: JwtUser,
     @Param('id') taskId: string,
     @Body() dto: MoveTaskDto,
   ): Promise<MoveTaskResponseDto> {
-    const userId = 'mock-user-id';
-    const task = await this.moveTaskUseCase.execute(userId, taskId, dto.listId);
+    const task = await this.moveTaskUseCase.execute(user.id, taskId, dto.listId);
     return { task };
   }
 
   @Post(':id/complete')
-  async completeTask(@Param('id') taskId: string): Promise<CompleteTaskResponseDto> {
-    const userId = 'mock-user-id';
-    const task = await this.completeTaskUseCase.execute(userId, taskId);
+  async completeTask(
+    @CurrentUser() user: JwtUser,
+    @Param('id') taskId: string,
+  ): Promise<CompleteTaskResponseDto> {
+    const task = await this.completeTaskUseCase.execute(user.id, taskId);
     return { task };
   }
 
   @Post(':id/reorder')
   async reorderTask(
+    @CurrentUser() user: JwtUser,
     @Param('id') taskId: string,
     @Body() dto: ReorderTaskDto,
   ): Promise<ReorderTaskResponseDto> {
-    const userId = 'mock-user-id';
-    const task = await this.reorderTaskUseCase.execute(userId, taskId, dto);
+    const task = await this.reorderTaskUseCase.execute(user.id, taskId, dto);
     return { task };
   }
 }
