@@ -34,3 +34,31 @@ This ensures:
 - Accurate tracking of completion toward MVP goals
 - Historical record of when features were completed
 - Clear communication of what's done and what's remaining
+
+### Guidelines for DOCUMENTATION_ORGANIZATION
+
+#### VIEW_IMPLEMENTATION_PLANS
+
+**Location**: `.ai/plans/` directory
+
+**File Naming**: `{view-name}-view-implementation-plan.md`
+
+**Examples:**
+- `.ai/plans/app-shell-view-implementation-plan.md`
+- `.ai/plans/plan-mode-view-implementation-plan.md`
+- `.ai/plans/work-mode-view-implementation-plan.md`
+
+**Purpose**: Detailed blueprints for implementing frontend views
+
+#### PROJECT_DOCUMENTATION
+
+**Location**: `.ai/` root directory
+
+**Files Include:**
+- `prd.md` - Product Requirements Document
+- `tech-stack.md` - Technology stack overview
+- `mvp-ui-architecture-summary.md` - UI architecture decisions
+- `project-tracker.md` - MVP progress tracking
+- Other project-wide documentation
+
+**Important**: Keep view implementation plans separate in `.ai/plans/` to maintain clear organization between project-level docs and view-specific implementation details

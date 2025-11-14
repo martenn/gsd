@@ -375,6 +375,14 @@ export class CreateListDto implements CreateListRequest {
 - Deploy: Containerized (Docker) for both frontend and backend services
 - Postgres: managed service or self-hosted
 
+### Documentation Organization
+- **View Implementation Plans**: Store in `.ai/plans/` directory
+  - File naming: `{view-name}-view-implementation-plan.md`
+  - Example: `.ai/plans/app-shell-view-implementation-plan.md`
+  - These plans provide detailed blueprints for implementing frontend views
+- **Project Documentation**: Store in `.ai/` root for project-wide docs
+  - PRD, tech stack, architecture summaries, project tracker, etc.
+
 ## Open Implementation Questions
 
 These need to be resolved during implementation:
