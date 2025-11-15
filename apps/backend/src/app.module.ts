@@ -7,11 +7,12 @@ import { ListsModule } from './lists/lists.module';
 import { TasksModule } from './tasks/tasks.module';
 import { DoneModule } from './done/done.module';
 import { MaintenanceModule } from './maintenance/maintenance.module';
+import { HealthModule } from './health/health.module';
 import { LoggerModule } from './logger/logger.module';
 import { HttpLoggingInterceptor } from './logger/http-logging.interceptor';
 
 @Module({
-  imports: [LoggerModule, AuthModule, ListsModule, TasksModule, DoneModule, MaintenanceModule],
+  imports: [LoggerModule, AuthModule, ListsModule, TasksModule, DoneModule, MaintenanceModule, HealthModule],
   controllers: [AppController],
   providers: [
     AppService,
