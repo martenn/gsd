@@ -6,11 +6,11 @@
 ## 📊 MVP Progress Overview
 
 ```
-Overall MVP Completion: ███████░░░░░░░░░ 32% (40/125 features)
+Overall MVP Completion: ███████░░░░░░░░░ 32% (40/124 features)
 
 Backend:  ████████████░░░░░░░░ 68% (23/34 features)
 Frontend: ██░░░░░░░░░░░░░░░░░░ 12% (9/73 features)
-Infra:    ████████████░░░░░░░░ 61% (11/18 features)
+Infra:    █████████████░░░░░░░ 65% (11/17 features)
 ```
 
 **Target MVP Completion:** TBD
@@ -52,7 +52,7 @@ Infra:    ████████████░░░░░░░░ 61% (11/1
 ## 🏗️ Phase 1: Foundation (Infrastructure)
 
 **Goal:** Core infrastructure for development
-**Progress:** ████████████░░░░░░░░ 61% (11/18)
+**Progress:** █████████████░░░░░░░ 65% (11/17)
 
 | Status | Feature                          | Est. | Notes                                    | Owner |
 | ------ | -------------------------------- | ---- | ---------------------------------------- | ----- |
@@ -72,7 +72,6 @@ Infra:    ████████████░░░░░░░░ 61% (11/1
 | ⚪     | Rate limiting                    | 0.5d | @nestjs/throttler (100 req/min, 5 auth)  | -     |
 | ⚪     | Content Security Policy (CSP)    | 1d   | Helmet middleware, strict directives     | -     |
 | ⚪     | HTTPS/HSTS setup                 | 0.5d | Strict-Transport-Security headers        | -     |
-| ⚪     | Swagger/OpenAPI docs             | 1d   | Auto-generated API docs                  | -     |
 | ✅     | CI/CD pipeline (GitHub Actions)  | -    | Lint, test, build workflow active        | ✅    |
 | ⚪     | Docker production images         | 1d   | Multi-stage builds                       | -     |
 
