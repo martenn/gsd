@@ -6,7 +6,7 @@ import type { Request } from 'express';
 export class CustomThrottlerGuard extends ThrottlerGuard {
   protected async getTracker(req: Record<string, any>): Promise<string> {
     const request = req as Request;
-    return request.ips.length > 0 ? request.ips[0] : request.ip;
+    return request.ips?.length > 0 ? request.ips[0] : request.ip;
   }
 
   protected throwThrottlingException(): void {
