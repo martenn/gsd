@@ -80,10 +80,7 @@ describe('CheckReadiness', () => {
 
       expect(result.status).toBe('not_ready');
       expect(result.checks.database).toBe('down');
-      expect(logger.error).toHaveBeenCalledWith(
-        'Readiness check failed: Unknown error',
-        undefined,
-      );
+      expect(logger.error).toHaveBeenCalledWith('Readiness check failed: Unknown error', undefined);
     });
   });
 });

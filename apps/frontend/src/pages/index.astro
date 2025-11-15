@@ -66,7 +66,7 @@ const apiUrl = import.meta.env.PUBLIC_API_URL || 'http://localhost:3000';
             console.log('User already authenticated, redirecting to app');
             window.location.href = '/app/plan';
           }
-        } catch (error) {
+        } catch {
           console.log('Not authenticated or error checking auth');
         }
       }

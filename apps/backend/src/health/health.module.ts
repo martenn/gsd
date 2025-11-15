@@ -8,13 +8,7 @@ import { CheckReadiness } from './use-cases/check-readiness';
 
 @Module({
   controllers: [HealthController],
-  providers: [
-    CheckLiveness,
-    CheckReadiness,
-    HealthRepository,
-    PrismaClient,
-    AppLogger,
-  ],
+  providers: [CheckLiveness, CheckReadiness, HealthRepository, PrismaClient, AppLogger],
   exports: [],
 })
 export class HealthModule {}
