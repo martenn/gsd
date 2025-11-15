@@ -83,6 +83,14 @@ Infra:    ██████████████░░░░░░ 71% (12/1
 **Phase Blockers:** None
 **Next Up:** Health endpoints, error handling, security hardening
 
+**Docker Production Images - Next Steps:**
+1. Set up Docker Hub account (if using docker.io registry) - See DOCKER-HUB-SETUP.md
+2. Add `DOCKERHUB_USERNAME` and `DOCKERHUB_TOKEN` secrets to GitHub repository
+3. Run workflow manually to test builds (Actions → "Build Docker Images")
+4. Verify image builds succeed and security scans pass
+5. Enable `push_images=true` when ready to publish to registry
+6. Test pulling and running images from registry
+
 ---
 
 ## 🔐 Phase 2: Authentication & Authorization
