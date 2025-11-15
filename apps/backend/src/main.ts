@@ -3,6 +3,9 @@ import { ValidationPipe } from '@nestjs/common';
 import cookieParser from 'cookie-parser';
 import { AppModule } from './app.module';
 import { getLoggerConfig } from './logger/logger.config';
+import { RequestIdMiddleware } from './common/middleware/request-id.middleware';
+import { HttpExceptionFilter } from './common/filters/http-exception.filter';
+import { AppLogger } from './logger/app-logger';
 
 async function bootstrap() {
   const loggerConfig = getLoggerConfig();
@@ -15,7 +18,13 @@ async function bootstrap() {
     app.set('trust proxy', 1);
   }
 
+  const logger = new AppLogger();
+  const requestIdMiddleware = new RequestIdMiddleware();
+
+  app.use(requestIdMiddleware.use.bind(requestIdMiddleware));
   app.use(cookieParser());
+
+  app.useGlobalFilters(new HttpExceptionFilter(logger));
 
   app.useGlobalPipes(
     new ValidationPipe({
