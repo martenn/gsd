@@ -69,7 +69,7 @@ Infra:    ██████████████░░░░░░ 71% (12/1
 | ✅     | CORS configuration               | -    | Implemented in main.ts, credentials enabled | ✅ |
 | ✅     | Health endpoints                 | -    | GET /health, /health/ready               | ✅    |
 | ⚪     | Error handling middleware        | 0.5d | Consistent error format                  | -     |
-| ⚪     | Rate limiting                    | 0.5d | @nestjs/throttler (100 req/min, 5 auth)  | -     |
+| ✅     | Rate limiting                    | -    | @nestjs/throttler, 100 req/min global, 5 auth, proxy trust | ✅ |
 | ⚪     | Content Security Policy (CSP)    | 1d   | Helmet middleware, strict directives     | -     |
 | ⚪     | HTTPS/HSTS setup                 | 0.5d | Strict-Transport-Security headers        | -     |
 | ✅     | CI/CD pipeline (GitHub Actions)  | -    | Lint, test, build workflow active        | ✅    |
@@ -773,6 +773,21 @@ Infra:    ██████████████░░░░░░ 71% (12/1
 
 ### 2025-11-15 (Morning)
 
+- ✅ **Rate Limiting Infrastructure Complete!** - Phase 1 now 71% complete (12/17 features)
+  - ✅ @nestjs/throttler package installed and configured
+  - ✅ Global rate limit: 100 requests/minute (protects all endpoints)
+  - ✅ Auth endpoints strict limit: 5 requests/minute (prevents credential attacks)
+  - ✅ Custom ThrottlerGuard with IP extraction (X-Forwarded-For support)
+  - ✅ Express proxy trust configuration (production ready)
+  - ✅ Rate limit headers in all responses (X-RateLimit-Limit, Remaining, Reset)
+  - ✅ Unit tests: 4/4 passing (CustomThrottlerGuard)
+  - ✅ E2E tests: Created (requires database setup to run)
+  - 📝 **Protected endpoints:**
+    - Global: All endpoints limited to 100 req/min
+    - Auth: /auth/google and /auth/google/callback limited to 5 req/min
+  - 📝 **Note:** Health endpoint lenient limits (300 req/min) pending - health endpoints don't exist yet
+  - 📊 Updated overall MVP completion: 32% → 33% (40/124 → 41/124 features)
+  - 📊 Updated infrastructure progress: 65% → 71% (11/17 → 12/17 features)
 - 📊 **Project Tracker Accuracy Audit Completed**
   - Audited all backend implementations against tracker
   - Audited all frontend implementations against tracker

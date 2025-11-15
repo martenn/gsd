@@ -1,5 +1,6 @@
 import { Controller, Get, Post, UseGuards, Res, HttpStatus } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
+import { Throttle } from '@nestjs/throttler';
 import * as express from 'express';
 import { JwtService } from '@nestjs/jwt';
 import type { User } from '@prisma/client';
@@ -11,6 +12,7 @@ import { SignOut } from '../use-cases/sign-out';
 import { JwtPayload } from '../dto/jwt-payload.dto';
 import type { JwtUser } from '../dto/jwt-user.dto';
 import { AppLogger } from '../../logger/app-logger';
+import { THROTTLER_AUTH } from '../../config/throttler.config';
 
 @Controller('auth')
 export class AuthController {
@@ -24,12 +26,14 @@ export class AuthController {
   }
 
   @Get('google')
+  @Throttle({ ttl: THROTTLER_AUTH.ttl * 1000, limit: THROTTLER_AUTH.limit })
   @UseGuards(AuthGuard('google'))
   googleAuth() {
     // Initiates Google OAuth flow - redirect handled by Passport
   }
 
   @Get('google/callback')
+  @Throttle({ ttl: THROTTLER_AUTH.ttl * 1000, limit: THROTTLER_AUTH.limit })
   @UseGuards(AuthGuard('google'))
   googleAuthCallback(@CurrentUser() user: User, @Res() response: express.Response) {
     try {
