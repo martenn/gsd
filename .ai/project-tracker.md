@@ -6,11 +6,11 @@
 ## 📊 MVP Progress Overview
 
 ```
-Overall MVP Completion: ███████░░░░░░░░░ 32% (40/124 features)
+Overall MVP Completion: ███████░░░░░░░░░ 33% (41/124 features)
 
 Backend:  ████████████░░░░░░░░ 68% (23/34 features)
 Frontend: ██░░░░░░░░░░░░░░░░░░ 12% (9/73 features)
-Infra:    █████████████░░░░░░░ 65% (11/17 features)
+Infra:    ██████████████░░░░░░ 71% (12/17 features)
 ```
 
 **Target MVP Completion:** TBD
@@ -52,7 +52,7 @@ Infra:    █████████████░░░░░░░ 65% (11/1
 ## 🏗️ Phase 1: Foundation (Infrastructure)
 
 **Goal:** Core infrastructure for development
-**Progress:** █████████████░░░░░░░ 65% (11/17)
+**Progress:** ██████████████░░░░░░ 71% (12/17)
 
 | Status | Feature                          | Est. | Notes                                    | Owner |
 | ------ | -------------------------------- | ---- | ---------------------------------------- | ----- |
@@ -73,7 +73,7 @@ Infra:    █████████████░░░░░░░ 65% (11/1
 | ⚪     | Content Security Policy (CSP)    | 1d   | Helmet middleware, strict directives     | -     |
 | ⚪     | HTTPS/HSTS setup                 | 0.5d | Strict-Transport-Security headers        | -     |
 | ✅     | CI/CD pipeline (GitHub Actions)  | -    | Lint, test, build workflow active        | ✅    |
-| ⚪     | Docker production images         | 1d   | Multi-stage builds                       | -     |
+| ✅     | Docker production images         | -    | Multi-stage builds, on-demand workflow   | ✅    |
 
 **Security Features:**
 - CSP directives: default-src 'self', script-src 'self', style-src 'self' 'unsafe-inline'
@@ -718,6 +718,35 @@ Infra:    █████████████░░░░░░░ 65% (11/1
 ---
 
 ## 📈 Change Log
+
+### 2025-11-15 (Evening)
+
+- ✅ **Docker Production Images Complete!** - Phase 1 now 71% complete (12/17 features)
+  - ✅ Created .dockerignore files for backend and frontend (exclude dev files)
+  - ✅ Backend Dockerfile: Multi-stage build (base → deps → build → production)
+    - Node 20 Alpine, pnpm 9.15.0
+    - Production dependencies only in final image
+    - Prisma client generation
+    - Non-root user (node) for security
+    - Health check on /health/ready
+    - Target: <200MB
+  - ✅ Frontend Dockerfile: Multi-stage build with Nginx Alpine
+    - Static files served via Nginx
+    - Custom nginx.conf with security headers, gzip, caching
+    - Health check configured
+    - Target: <100MB
+  - ✅ GitHub Actions workflow: On-demand Docker builds (.github/workflows/docker-build.yml)
+    - Manual trigger (workflow_dispatch) - no auto-push
+    - Trivy security scanning with SARIF reports
+    - Multi-registry support (ghcr.io, docker.io)
+    - Build caching for faster CI builds
+    - Flexible tagging (branch, SHA, custom)
+  - 📚 Documentation created:
+    - DOCKER-BUILD-GUIDE.md: Comprehensive local testing guide
+    - .github/workflows/README.md: Workflow usage instructions
+- 📊 **Progress Update:**
+  - Infra: 65% → 71% (11/17 → 12/17 features)
+  - Overall MVP: 32% → 33% (40/124 → 41/124 features)
 
 ### 2025-11-15
 
