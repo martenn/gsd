@@ -1,6 +1,6 @@
 import { Controller, Get, Res, HttpStatus } from '@nestjs/common';
 import type { Response } from 'express';
-import type { HealthStatus, ReadinessStatus } from '@gsd/types';
+import type { HealthStatus } from '@gsd/types';
 import { CheckLiveness } from '../use-cases/check-liveness';
 import { CheckReadiness } from '../use-cases/check-readiness';
 

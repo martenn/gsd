@@ -1,5 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
+import { ExpressAdapter } from '@nestjs/platform-express';
+import type { Express } from 'express';
 import cookieParser from 'cookie-parser';
 import { AppModule } from './app.module';
 import { getLoggerConfig } from './logger/logger.config';
@@ -16,7 +18,11 @@ async function bootstrap() {
 
   if (process.env.NODE_ENV === 'production') {
     // Enable trust proxy for production environments behind load balancers
-    (app as any).set('trust proxy', 1);
+    const httpAdapter = app.getHttpAdapter();
+    if (httpAdapter instanceof ExpressAdapter) {
+      const expressApp = httpAdapter.getInstance<Express>();
+      expressApp.set('trust proxy', 1);
+    }
   }
 
   const logger = new AppLogger();

@@ -1,14 +1,8 @@
 import { Injectable, NestMiddleware } from '@nestjs/common';
 import { Request, Response, NextFunction } from 'express';
 import { randomUUID } from 'crypto';
-
-declare global {
-  namespace Express {
-    interface Request {
-      id?: string;
-    }
-  }
-}
+// Import Express type augmentations (adds id and user properties to Request)
+import '../types/express';
 
 @Injectable()
 export class RequestIdMiddleware implements NestMiddleware {

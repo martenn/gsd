@@ -1023,6 +1023,9 @@ components:
       required:
         - statusCode
         - message
+        - error
+        - timestamp
+        - path
       properties:
         statusCode:
           type: integer
@@ -1036,18 +1039,40 @@ components:
           type: string
           description: Error type
           example: Bad Request
-        details:
+        timestamp:
+          type: string
+          format: date-time
+          description: ISO 8601 timestamp when the error occurred
+          example: '2024-01-15T10:30:00.000Z'
+        path:
+          type: string
+          description: Request path that caused the error
+          example: '/v1/lists'
+        requestId:
+          type: string
+          description: Unique request ID for tracing (optional)
+          example: '550e8400-e29b-41d4-a716-446655440000'
+        errors:
           type: array
-          description: Validation errors (if applicable)
+          description: Validation errors (only present for validation errors)
           items:
             type: object
+            required:
+              - field
+              - constraints
             properties:
               field:
                 type: string
+                description: Field name that failed validation
                 example: name
-              message:
-                type: string
-                example: name must be a string
+              constraints:
+                type: array
+                description: Array of constraint violation messages
+                items:
+                  type: string
+                example:
+                  - 'name should not be empty'
+                  - 'name must be a string'
 
   responses:
     BadRequest:
@@ -1100,7 +1125,6 @@ components:
       in: cookie
       name: jwt
       description: JWT token in HttpOnly cookie (set after Google OAuth)
-
 # Note: Auth endpoints (Google OAuth) intentionally excluded as per user request
 # Security will be added once auth is implemented
 # security:

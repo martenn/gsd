@@ -1,9 +1,6 @@
-import { Test, TestingModule } from '@nestjs/testing';
 import { HttpExceptionFilter } from './http-exception.filter';
 import { AppLogger } from '../../logger/app-logger';
 import {
-  HttpException,
-  HttpStatus,
   NotFoundException,
   BadRequestException,
   UnauthorizedException,
@@ -19,7 +16,7 @@ describe('HttpExceptionFilter', () => {
   let mockRequest: any;
   let mockResponse: any;
 
-  beforeEach(async () => {
+  beforeEach(() => {
     logger = {
       log: jest.fn(),
       error: jest.fn(),
@@ -28,15 +25,6 @@ describe('HttpExceptionFilter', () => {
       verbose: jest.fn(),
       setContext: jest.fn(),
     } as unknown as AppLogger;
-
-    const module: TestingModule = await Test.createTestingModule({
-      providers: [
-        {
-          provide: AppLogger,
-          useValue: logger,
-        },
-      ],
-    }).compile();
 
     filter = new HttpExceptionFilter(logger);
 

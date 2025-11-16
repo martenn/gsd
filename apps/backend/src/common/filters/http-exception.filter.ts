@@ -1,8 +1,11 @@
+// Import Express type augmentations first (adds id and user properties to Request)
+import '../types/express';
 import { ExceptionFilter, Catch, ArgumentsHost, HttpException, HttpStatus } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { AppLogger } from '../../logger/app-logger';
-import { ErrorResponse, ValidationErrorResponse } from '@gsd/types';
+import { ErrorResponse, ValidationErrorResponse, HttpExceptionResponse } from '@gsd/types';
 import { Prisma } from '@prisma/client';
+import type { JwtUser } from '../../auth/dto/jwt-user.dto';
 
 @Catch()
 export class HttpExceptionFilter implements ExceptionFilter {
@@ -29,17 +32,22 @@ export class HttpExceptionFilter implements ExceptionFilter {
 
       this.logError(exception, status, request);
 
-      if (this.isValidationError(exception)) {
-        const validationResponse = this.buildValidationErrorResponse(
-          exception as HttpException,
-          errorResponse,
-        );
-        response.status(status).json(validationResponse);
-      } else {
-        response.status(status).json(errorResponse);
+      if (exception instanceof HttpException) {
+        const httpException: HttpException = exception;
+        if (this.isValidationError(httpException)) {
+          const validationResponse = this.buildValidationErrorResponse(
+            httpException,
+            errorResponse,
+          );
+          response.status(status).json(validationResponse);
+          return;
+        }
       }
+
+      response.status(status).json(errorResponse);
     } catch (filterError) {
-      this.logger.error('Error in exception filter', filterError.stack);
+      const errorMessage = filterError instanceof Error ? filterError.stack : String(filterError);
+      this.logger.error('Error in exception filter', errorMessage);
       response.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
         statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
         message: 'Internal server error',
@@ -64,10 +72,18 @@ export class HttpExceptionFilter implements ExceptionFilter {
         };
       }
 
+      const responseObj = response as HttpExceptionResponse;
+      const message =
+        typeof responseObj.message === 'string'
+          ? responseObj.message
+          : Array.isArray(responseObj.message)
+            ? responseObj.message.join(', ')
+            : exception.message || 'An error occurred';
+
       return {
         status,
-        message: (response as any).message || exception.message || 'An error occurred',
-        error: (response as any).error || this.getHttpStatusText(status),
+        message,
+        error: responseObj.error || this.getHttpStatusText(status),
       };
     }
 
@@ -78,18 +94,15 @@ export class HttpExceptionFilter implements ExceptionFilter {
     return {
       status: HttpStatus.INTERNAL_SERVER_ERROR,
       message:
-        process.env.NODE_ENV === 'development'
-          ? (exception as Error).message
+        process.env.NODE_ENV === 'development' && exception instanceof Error
+          ? exception.message
           : 'Internal server error',
       error: 'Internal Server Error',
     };
   }
 
   private isPrismaError(exception: unknown): exception is Prisma.PrismaClientKnownRequestError {
-    return (
-      exception instanceof Prisma.PrismaClientKnownRequestError ||
-      (exception as any)?.name === 'PrismaClientKnownRequestError'
-    );
+    return exception instanceof Prisma.PrismaClientKnownRequestError;
   }
 
   private mapPrismaErrorToHttp(error: Prisma.PrismaClientKnownRequestError): {
@@ -138,25 +151,32 @@ export class HttpExceptionFilter implements ExceptionFilter {
     }
   }
 
-  private isValidationError(exception: unknown): boolean {
-    if (!(exception instanceof HttpException)) {
+  private isValidationError(exception: HttpException): boolean {
+    const response = exception.getResponse();
+    if (typeof response !== 'object' || response === null) {
       return false;
     }
 
-    const response = exception.getResponse();
-    return (
-      typeof response === 'object' && response !== null && Array.isArray((response as any).message)
-    );
+    const responseObj = response as HttpExceptionResponse;
+    return Array.isArray(responseObj.message);
   }
 
   private buildValidationErrorResponse(
     exception: HttpException,
     baseResponse: ErrorResponse,
   ): ValidationErrorResponse {
-    const response = exception.getResponse() as any;
-    const validationMessages = Array.isArray(response.message)
-      ? response.message
-      : [response.message];
+    const response = exception.getResponse() as HttpExceptionResponse;
+    const messages = response.message;
+
+    if (!messages) {
+      return {
+        ...baseResponse,
+        message: 'Validation failed',
+        errors: [],
+      };
+    }
+
+    const validationMessages: string[] = Array.isArray(messages) ? messages : [messages];
 
     const errors = validationMessages.map((msg: string) => {
       const parts = msg.split(' ');
@@ -180,18 +200,15 @@ export class HttpExceptionFilter implements ExceptionFilter {
       method: request.method,
       path: request.url,
       requestId: request.id,
-      userId: (request as any).user?.id || 'anonymous',
+      userId: (request.user as unknown as JwtUser | undefined)?.id || 'anonymous',
     };
 
     if (status >= 500) {
-      this.logger.error(
-        `Internal server error: ${JSON.stringify(errorInfo)}`,
-        exception instanceof Error ? exception.stack : JSON.stringify(exception),
-      );
+      const stackTrace = exception instanceof Error ? exception.stack : JSON.stringify(exception);
+      this.logger.error(`Internal server error: ${JSON.stringify(errorInfo)}`, stackTrace);
     } else if (status >= 400) {
-      this.logger.warn(
-        `Client error: ${JSON.stringify(errorInfo)} - ${exception instanceof Error ? exception.message : 'Unknown error'}`,
-      );
+      const errorMessage = exception instanceof Error ? exception.message : 'Unknown error';
+      this.logger.warn(`Client error: ${JSON.stringify(errorInfo)} - ${errorMessage}`);
     }
   }
 

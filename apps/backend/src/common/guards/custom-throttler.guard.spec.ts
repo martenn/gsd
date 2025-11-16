@@ -1,5 +1,5 @@
+import { ThrottlerException, ThrottlerLimitDetail } from '@nestjs/throttler';
 import { ExecutionContext } from '@nestjs/common';
-import { ThrottlerException } from '@nestjs/throttler';
 import { CustomThrottlerGuard } from './custom-throttler.guard';
 
 describe('CustomThrottlerGuard', () => {
@@ -13,7 +13,6 @@ describe('CustomThrottlerGuard', () => {
         ignoreUserAgents: [],
         skipIf: () => false,
       } as any,
-      {} as any,
       {} as any,
       {} as any,
     );
@@ -54,9 +53,23 @@ describe('CustomThrottlerGuard', () => {
   });
 
   describe('throwThrottlingException', () => {
-    it('should throw ThrottlerException with custom message', () => {
-      expect(() => guard['throwThrottlingException']()).toThrow(ThrottlerException);
-      expect(() => guard['throwThrottlingException']()).toThrow(
+    it('should throw ThrottlerException with custom message', async () => {
+      const mockContext = {} as ExecutionContext;
+      const mockLimitDetail: ThrottlerLimitDetail = {
+        totalHits: 11,
+        timeToExpire: 5000,
+        limit: 10,
+        ttl: 60000,
+        key: 'test-key',
+        tracker: 'test-tracker',
+        isBlocked: false,
+        timeToBlockExpire: 0,
+      };
+
+      await expect(guard['throwThrottlingException'](mockContext, mockLimitDetail)).rejects.toThrow(
+        ThrottlerException,
+      );
+      await expect(guard['throwThrottlingException'](mockContext, mockLimitDetail)).rejects.toThrow(
         'Too many requests, please try again later',
       );
     });

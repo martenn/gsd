@@ -1,23 +1,26 @@
+import type { ErrorResponse } from '@gsd/types';
+
 const API_BASE_URL: string = (import.meta.env.PUBLIC_API_URL as string) || 'http://localhost:3000';
 
 export class ApiError extends Error {
   constructor(
     message: string,
     public statusCode: number,
+    public errorResponse?: ErrorResponse,
   ) {
     super(message);
     this.name = 'ApiError';
   }
 }
 
-interface ErrorResponse {
-  message?: string;
-}
-
 async function handleResponse<T>(response: Response): Promise<T | null> {
   if (!response.ok) {
     const errorData = (await response.json().catch(() => ({}))) as ErrorResponse;
-    throw new ApiError(errorData.message || 'An error occurred', response.status);
+    throw new ApiError(
+      errorData.message || 'An error occurred',
+      errorData.statusCode || response.status,
+      errorData,
+    );
   }
 
   if (response.status === 204) {
