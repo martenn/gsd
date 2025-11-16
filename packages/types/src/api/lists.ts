@@ -19,3 +19,11 @@ export interface CreateListRequest {
   isBacklog?: boolean;
   color?: string;
 }
+
+export interface UpdateListRequest {
+  name: string;
+}
+
+export interface UpdateListResponseDto {
+  list: ListDto;
+}
