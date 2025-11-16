@@ -19,3 +19,24 @@ export interface CreateListRequest {
   isBacklog?: boolean;
   color?: string;
 }
+
+export interface UpdateListRequest {
+  name: string;
+}
+
+export interface UpdateListResponseDto {
+  list: ListDto;
+}
+
+export interface ToggleBacklogResponseDto {
+  list: ListDto;
+}
+
+export interface ReorderListRequest {
+  newOrderIndex?: number;
+  afterListId?: string;
+}
+
+export interface ReorderListResponseDto {
+  list: ListDto;
+}

@@ -1,14 +1,14 @@
 # GSD Project Tracker
 
-**Last Updated:** 2025-11-15 (Infrastructure Complete)
+**Last Updated:** 2025-11-16 (Lists Management Complete!)
 **Current Sprint:** Core Features & Frontend Prep
 
 ## 📊 MVP Progress Overview
 
 ```
-Overall MVP Completion: █████████░░░░░░░ 35% (43/124 features)
+Overall MVP Completion: █████████░░░░░░░ 37% (46/124 features)
 
-Backend:  ████████████░░░░░░░░ 68% (23/34 features)
+Backend:  ███████████████░░░░░ 76% (26/34 features)
 Frontend: ██░░░░░░░░░░░░░░░░░░ 12% (9/73 features)
 Infra:    ███████████████░░░░░ 82% (14/17 features)
 ```
@@ -133,29 +133,38 @@ Infra:    ███████████████░░░░░ 82% (14/1
 ## 📝 Phase 3: Lists Management (Core CRUD)
 
 **Goal:** Complete list management functionality
-**Progress:** ███████░░░░░░░░░░░░░ 33% (3/9)
+**Progress:** ████████████████████ 100% (9/9) ✅ COMPLETE
 
-| Status | Feature                           | Est. | Notes                        | PRD Ref | Owner |
-| ------ | --------------------------------- | ---- | ---------------------------- | ------- | ----- |
-| ✅     | GET /v1/lists                     | -    | Fetch user lists             | US-001  | ✅    |
-| ✅     | POST /v1/lists                    | -    | Create list with color       | US-001  | ✅    |
-| ✅     | DELETE /v1/lists/:id              | -    | With task destination        | US-003  | ✅    |
-| ❌     | PATCH /v1/lists/:id               | 0.5d | Rename list                  | US-002  | -     |
-| ❌     | POST /v1/lists/:id/reorder        | 1d   | Change position (orderIndex) | US-004  | -     |
-| ❌     | POST /v1/lists/:id/toggle-backlog | 1d   | Mark/unmark backlog          | US-001A | -     |
-| ⚪     | Backlog constraint validation     | -    | Part of delete/toggle logic  | US-003A | -     |
-| ⚪     | List limit enforcement (10)       | -    | Enforced in create           | 3.1     | -     |
-| ⚪     | Color assignment system           | -    | Auto-assign backlog colors   | 3.1     | -     |
+| Status | Feature                           | Est. | Notes                                    | PRD Ref | Owner |
+| ------ | --------------------------------- | ---- | ---------------------------------------- | ------- | ----- |
+| ✅     | GET /v1/lists                     | -    | Fetch user lists                         | US-001  | ✅    |
+| ✅     | POST /v1/lists                    | -    | Create list with color                   | US-001  | ✅    |
+| ✅     | DELETE /v1/lists/:id              | -    | With task destination                    | US-003  | ✅    |
+| ✅     | PATCH /v1/lists/:id               | -    | Rename list, prevents Done modification  | US-002  | ✅    |
+| ✅     | POST /v1/lists/:id/reorder        | -    | Fractional indexing, afterListId support | US-004  | ✅    |
+| ✅     | POST /v1/lists/:id/toggle-backlog | -    | Enforces at least one backlog constraint | US-001A | ✅    |
+| ✅     | Backlog constraint validation     | -    | Implemented in delete/toggle logic       | US-003A | ✅    |
+| ✅     | List limit enforcement (10)       | -    | Enforced in create                       | 3.1     | ✅    |
+| ✅     | Color assignment system           | -    | Auto-assign backlog colors               | 3.1     | ✅    |
 
 **Business Rules Implemented:**
 
-- ✅ At least one backlog must exist
+- ✅ At least one backlog must exist (enforced in toggle-backlog and delete)
 - ✅ Max 10 non-Done lists per user
 - ✅ Delete with task destination
-- ❌ Backlog auto-promotion on delete
+- ✅ Cannot rename/reorder/toggle Done list
+- ✅ Fractional indexing for reordering (prevents database churn)
+- ✅ Backlog auto-promotion on delete (if last backlog deleted)
 
-**Phase Blockers:** Authentication (for real user IDs)
-**Next Up:** UpdateList (rename)
+**Implementation Details:**
+- UpdateList: Name validation, trim whitespace, user ownership checks
+- ToggleBacklog: Count-based constraint validation, atomic toggle
+- ReorderList: Dual strategy (explicit newOrderIndex or relative afterListId)
+- Fractional indexing: Calculates midpoint, handles edge cases (no next list)
+- Comprehensive unit tests: 16 test cases across 3 new features
+
+**Phase Blockers:** None
+**Status:** 🟢 Complete - All CRUD operations implemented!
 
 ---
 
@@ -726,6 +735,66 @@ Infra:    ███████████████░░░░░ 82% (14/1
 ---
 
 ## 📈 Change Log
+
+### 2025-11-16 (Lists Management Phase Complete!)
+
+- 🎉 **Lists Management Module 100% Complete!** - Phase 3 now COMPLETE (9/9 features)
+  - ✅ **PATCH /v1/lists/:id - Update List (Rename)**
+    - Created UpdateList use case with business logic
+    - Validates list exists and belongs to user
+    - Prevents renaming Done list
+    - Name validation: 1-100 chars, trimmed whitespace
+    - Unit tests: 4 test cases (successful update, NotFound, Done list protection, backlog update)
+    - Files: `update-list.ts`, `update-list.spec.ts`, `update-list.dto.ts`
+  - ✅ **POST /v1/lists/:id/toggle-backlog - Toggle Backlog Status**
+    - Created ToggleBacklog use case with constraint enforcement
+    - Enforces "at least one backlog must exist" rule
+    - Count-based validation prevents unmarking last backlog
+    - Atomic toggle operation
+    - Prevents toggling Done list
+    - Unit tests: 5 test cases (toggle on, toggle off with multiple backlogs, last backlog protection, Done list protection, NotFound)
+    - Files: `toggle-backlog.ts`, `toggle-backlog.spec.ts`
+  - ✅ **POST /v1/lists/:id/reorder - Reorder Lists**
+    - Created ReorderList use case with fractional indexing
+    - Dual reordering strategies:
+      - Explicit: `newOrderIndex` for direct positioning
+      - Relative: `afterListId` with fractional indexing
+    - Fractional indexing algorithm:
+      - Calculates midpoint: `(targetList.orderIndex + nextList.orderIndex) / 2`
+      - Handles edge case when no next list: `targetList.orderIndex + 1`
+    - Custom DTO validation: ensures either newOrderIndex OR afterListId provided
+    - Prevents reordering Done list
+    - Unit tests: 7 test cases (explicit orderIndex, fractional indexing, edge cases, validation, error handling)
+    - Files: `reorder-list.ts`, `reorder-list.spec.ts`, `reorder-list.dto.ts`
+  - 📝 **Shared Types Added:**
+    - `UpdateListRequest`, `UpdateListResponseDto`
+    - `ToggleBacklogResponseDto`
+    - `ReorderListRequest`, `ReorderListResponseDto`
+  - 📝 **Repository Extended:**
+    - Added `update()` method to ListsRepository for atomic updates
+    - Uses existing `countBacklogs()` for constraint validation
+  - 📝 **Module Integration:**
+    - All 3 use cases registered in ListsModule providers and exports
+    - Controller endpoints integrated with proper HTTP handling
+    - JWT authentication on all endpoints
+  - 📊 **Testing Summary:**
+    - Total unit tests: 16 test cases across 3 features
+    - Coverage: Business logic, error paths, edge cases, constraints
+    - All tests follow existing patterns from create/delete features
+  - 🏗️ **Architecture Consistency:**
+    - Clean architecture: Adapters → Use Cases → Infrastructure
+    - Repository pattern for all database operations
+    - AppLogger integration with context and error tracking
+    - Type safety with shared DTOs between frontend/backend
+- 📊 **Progress Update:**
+  - Backend: 68% → 76% (23/34 → 26/34 features)
+  - Overall MVP: 35% → 37% (43/124 → 46/124 features)
+  - **Phase 3 (Lists Management): 33% → 100% (3/9 → 9/9 features) COMPLETE!**
+- 🎯 **What's Next:**
+  - Lists Management module fully functional with complete CRUD
+  - All business rules enforced (constraints, limits, validations)
+  - Ready for frontend integration
+  - Remaining backend work: Metrics module (Phase 6)
 
 ### 2025-11-15 (Infrastructure Phase Complete)
 
