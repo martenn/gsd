@@ -137,7 +137,11 @@ export class ListsRepository {
     });
   }
 
-  async update(id: string, userId: string, data: Partial<Omit<List, 'id' | 'userId' | 'createdAt'>>): Promise<List> {
+  async update(
+    id: string,
+    userId: string,
+    data: Partial<Omit<List, 'id' | 'userId' | 'createdAt'>>,
+  ): Promise<List> {
     return this.prisma.list.update({
       where: {
         id,

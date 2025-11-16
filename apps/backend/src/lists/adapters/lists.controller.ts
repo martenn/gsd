@@ -11,7 +11,13 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
-import { GetListsResponseDto, ListDto, UpdateListResponseDto, ToggleBacklogResponseDto, ReorderListResponseDto } from '@gsd/types';
+import {
+  GetListsResponseDto,
+  ListDto,
+  UpdateListResponseDto,
+  ToggleBacklogResponseDto,
+  ReorderListResponseDto,
+} from '@gsd/types';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../../auth/decorators/current-user.decorator';
 import type { JwtUser } from '../../auth/dto/jwt-user.dto';
