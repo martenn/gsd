@@ -6,6 +6,6 @@ export class UpdateListDto implements UpdateListRequest {
   @IsString()
   @MinLength(1)
   @MaxLength(100)
-  @Transform(({ value }) => value?.trim())
+  @Transform(({ value }: { value: unknown }) => (typeof value === 'string' ? value.trim() : value))
   name: string;
 }
