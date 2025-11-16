@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import type { UserMenuProps } from '../../types/app-shell';
 
-export function UserMenu({ user, onLogout }: UserMenuProps) {
+export function UserMenu({ user }: UserMenuProps) {
   const [isOpen, setIsOpen] = useState(false);
 
   const handleLogout = () => {

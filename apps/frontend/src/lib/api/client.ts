@@ -1,5 +1,4 @@
-const API_BASE_URL: string =
-  (import.meta.env.PUBLIC_API_URL as string) || 'http://localhost:3000';
+const API_BASE_URL: string = (import.meta.env.PUBLIC_API_URL as string) || 'http://localhost:3000';
 
 export class ApiError extends Error {
   constructor(
@@ -17,9 +16,7 @@ interface ErrorResponse {
 
 async function handleResponse<T>(response: Response): Promise<T | null> {
   if (!response.ok) {
-    const errorData = (await response
-      .json()
-      .catch(() => ({}))) as ErrorResponse;
+    const errorData = (await response.json().catch(() => ({}))) as ErrorResponse;
     throw new ApiError(errorData.message || 'An error occurred', response.status);
   }
 

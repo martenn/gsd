@@ -96,9 +96,7 @@ describe('Error Handling (e2e)', () => {
     });
 
     it('should return 404 for non-existent route', async () => {
-      const response = await request(app.getHttpServer())
-        .get('/non-existent-route')
-        .expect(404);
+      const response = await request(app.getHttpServer()).get('/non-existent-route').expect(404);
 
       expect(response.body).toMatchObject({
         statusCode: 404,
@@ -109,9 +107,7 @@ describe('Error Handling (e2e)', () => {
 
   describe('Unauthorized errors (401)', () => {
     it('should return 401 for missing JWT on protected route', async () => {
-      const response = await request(app.getHttpServer())
-        .get('/v1/lists')
-        .expect(401);
+      const response = await request(app.getHttpServer()).get('/v1/lists').expect(401);
 
       expect(response.body).toMatchObject({
         statusCode: 401,
@@ -146,9 +142,7 @@ describe('Error Handling (e2e)', () => {
 
   describe('Error response format', () => {
     it('should include all required fields in error response', async () => {
-      const response = await request(app.getHttpServer())
-        .get('/non-existent')
-        .expect(404);
+      const response = await request(app.getHttpServer()).get('/non-existent').expect(404);
 
       expect(response.body).toHaveProperty('statusCode');
       expect(response.body).toHaveProperty('message');
@@ -159,19 +153,13 @@ describe('Error Handling (e2e)', () => {
     });
 
     it('should return ISO 8601 timestamp', async () => {
-      const response = await request(app.getHttpServer())
-        .get('/non-existent')
-        .expect(404);
+      const response = await request(app.getHttpServer()).get('/non-existent').expect(404);
 
-      expect(response.body.timestamp).toMatch(
-        /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/,
-      );
+      expect(response.body.timestamp).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/);
     });
 
     it('should include correct path in error response', async () => {
-      const response = await request(app.getHttpServer())
-        .get('/v1/lists/123')
-        .expect(404);
+      const response = await request(app.getHttpServer()).get('/v1/lists/123').expect(404);
 
       expect(response.body.path).toBe('/v1/lists/123');
     });
@@ -189,13 +177,9 @@ describe('Error Handling (e2e)', () => {
 
   describe('Request ID correlation', () => {
     it('should assign unique request IDs to different requests', async () => {
-      const response1 = await request(app.getHttpServer())
-        .get('/non-existent-1')
-        .expect(404);
+      const response1 = await request(app.getHttpServer()).get('/non-existent-1').expect(404);
 
-      const response2 = await request(app.getHttpServer())
-        .get('/non-existent-2')
-        .expect(404);
+      const response2 = await request(app.getHttpServer()).get('/non-existent-2').expect(404);
 
       expect(response1.body.requestId).toBeDefined();
       expect(response2.body.requestId).toBeDefined();
@@ -208,9 +192,7 @@ describe('Error Handling (e2e)', () => {
       const originalEnv = process.env.NODE_ENV;
       process.env.NODE_ENV = 'production';
 
-      const response = await request(app.getHttpServer())
-        .get('/cause-server-error')
-        .expect(404);
+      const response = await request(app.getHttpServer()).get('/cause-server-error').expect(404);
 
       expect(response.body).not.toHaveProperty('stack');
       expect(response.body).not.toHaveProperty('stackTrace');
@@ -222,9 +204,7 @@ describe('Error Handling (e2e)', () => {
       const originalEnv = process.env.NODE_ENV;
       process.env.NODE_ENV = 'production';
 
-      const response = await request(app.getHttpServer())
-        .get('/non-existent')
-        .expect(404);
+      const response = await request(app.getHttpServer()).get('/non-existent').expect(404);
 
       expect(response.body.message).not.toContain('database');
       expect(response.body.message).not.toContain('prisma');

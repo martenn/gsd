@@ -1,10 +1,4 @@
-import {
-  ExceptionFilter,
-  Catch,
-  ArgumentsHost,
-  HttpException,
-  HttpStatus,
-} from '@nestjs/common';
+import { ExceptionFilter, Catch, ArgumentsHost, HttpException, HttpStatus } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { AppLogger } from '../../logger/app-logger';
 import { ErrorResponse, ValidationErrorResponse } from '@gsd/types';
@@ -72,8 +66,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
 
       return {
         status,
-        message:
-          (response as any).message || exception.message || 'An error occurred',
+        message: (response as any).message || exception.message || 'An error occurred',
         error: (response as any).error || this.getHttpStatusText(status),
       };
     }
@@ -92,18 +85,18 @@ export class HttpExceptionFilter implements ExceptionFilter {
     };
   }
 
-  private isPrismaError(
-    exception: unknown,
-  ): exception is Prisma.PrismaClientKnownRequestError {
+  private isPrismaError(exception: unknown): exception is Prisma.PrismaClientKnownRequestError {
     return (
       exception instanceof Prisma.PrismaClientKnownRequestError ||
       (exception as any)?.name === 'PrismaClientKnownRequestError'
     );
   }
 
-  private mapPrismaErrorToHttp(
-    error: Prisma.PrismaClientKnownRequestError,
-  ): { status: number; message: string; error: string } {
+  private mapPrismaErrorToHttp(error: Prisma.PrismaClientKnownRequestError): {
+    status: number;
+    message: string;
+    error: string;
+  } {
     switch (error.code) {
       case 'P2002':
         return {
@@ -152,9 +145,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
 
     const response = exception.getResponse();
     return (
-      typeof response === 'object' &&
-      response !== null &&
-      Array.isArray((response as any).message)
+      typeof response === 'object' && response !== null && Array.isArray((response as any).message)
     );
   }
 

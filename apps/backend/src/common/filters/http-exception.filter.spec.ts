@@ -157,13 +157,10 @@ describe('HttpExceptionFilter', () => {
 
   describe('Prisma error handling', () => {
     it('should map Prisma P2002 to 409 Conflict', () => {
-      const prismaError = new Prisma.PrismaClientKnownRequestError(
-        'Unique constraint violation',
-        {
-          code: 'P2002',
-          clientVersion: '5.0.0',
-        },
-      );
+      const prismaError = new Prisma.PrismaClientKnownRequestError('Unique constraint violation', {
+        code: 'P2002',
+        clientVersion: '5.0.0',
+      });
 
       filter.catch(prismaError, mockArgumentsHost);
 
@@ -178,13 +175,10 @@ describe('HttpExceptionFilter', () => {
     });
 
     it('should map Prisma P2025 to 404 Not Found', () => {
-      const prismaError = new Prisma.PrismaClientKnownRequestError(
-        'Record not found',
-        {
-          code: 'P2025',
-          clientVersion: '5.0.0',
-        },
-      );
+      const prismaError = new Prisma.PrismaClientKnownRequestError('Record not found', {
+        code: 'P2025',
+        clientVersion: '5.0.0',
+      });
 
       filter.catch(prismaError, mockArgumentsHost);
 
@@ -220,13 +214,10 @@ describe('HttpExceptionFilter', () => {
     });
 
     it('should map Prisma P1001 to 503 Service Unavailable', () => {
-      const prismaError = new Prisma.PrismaClientKnownRequestError(
-        'Cannot reach database',
-        {
-          code: 'P1001',
-          clientVersion: '5.0.0',
-        },
-      );
+      const prismaError = new Prisma.PrismaClientKnownRequestError('Cannot reach database', {
+        code: 'P1001',
+        clientVersion: '5.0.0',
+      });
 
       filter.catch(prismaError, mockArgumentsHost);
 
@@ -241,13 +232,10 @@ describe('HttpExceptionFilter', () => {
     });
 
     it('should map unknown Prisma errors to 500 Internal Server Error', () => {
-      const prismaError = new Prisma.PrismaClientKnownRequestError(
-        'Unknown error',
-        {
-          code: 'P9999',
-          clientVersion: '5.0.0',
-        },
-      );
+      const prismaError = new Prisma.PrismaClientKnownRequestError('Unknown error', {
+        code: 'P9999',
+        clientVersion: '5.0.0',
+      });
 
       filter.catch(prismaError, mockArgumentsHost);
 
@@ -336,9 +324,7 @@ describe('HttpExceptionFilter', () => {
 
       filter.catch(exception, mockArgumentsHost);
 
-      expect(logger.warn).toHaveBeenCalledWith(
-        expect.stringContaining('Client error'),
-      );
+      expect(logger.warn).toHaveBeenCalledWith(expect.stringContaining('Client error'));
     });
 
     it('should log 5xx errors with error level and stack trace', () => {
@@ -357,9 +343,7 @@ describe('HttpExceptionFilter', () => {
 
       filter.catch(exception, mockArgumentsHost);
 
-      expect(logger.warn).toHaveBeenCalledWith(
-        expect.stringContaining('test-user-id'),
-      );
+      expect(logger.warn).toHaveBeenCalledWith(expect.stringContaining('test-user-id'));
     });
 
     it('should use "anonymous" when user is not authenticated', () => {
@@ -368,9 +352,7 @@ describe('HttpExceptionFilter', () => {
 
       filter.catch(exception, mockArgumentsHost);
 
-      expect(logger.warn).toHaveBeenCalledWith(
-        expect.stringContaining('anonymous'),
-      );
+      expect(logger.warn).toHaveBeenCalledWith(expect.stringContaining('anonymous'));
     });
   });
 
@@ -383,10 +365,7 @@ describe('HttpExceptionFilter', () => {
 
       filter.catch(exception, mockArgumentsHost);
 
-      expect(logger.error).toHaveBeenCalledWith(
-        'Error in exception filter',
-        expect.any(String),
-      );
+      expect(logger.error).toHaveBeenCalledWith('Error in exception filter', expect.any(String));
     });
   });
 
@@ -397,9 +376,7 @@ describe('HttpExceptionFilter', () => {
       filter.catch(exception, mockArgumentsHost);
 
       const response = mockResponse.json.mock.calls[0][0];
-      expect(response.timestamp).toMatch(
-        /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/,
-      );
+      expect(response.timestamp).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/);
     });
   });
 });

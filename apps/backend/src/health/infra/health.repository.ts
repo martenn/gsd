@@ -7,9 +7,7 @@ export class HealthRepository {
 
   async pingDatabase(): Promise<boolean> {
     try {
-      await this.prisma.$queryRaw<[{ result: number }]>(
-        Prisma.sql`SELECT 1 as result`,
-      );
+      await this.prisma.$queryRaw<[{ result: number }]>(Prisma.sql`SELECT 1 as result`);
       return true;
     } catch {
       return false;

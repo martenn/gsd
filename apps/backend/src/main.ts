@@ -15,7 +15,8 @@ async function bootstrap() {
   });
 
   if (process.env.NODE_ENV === 'production') {
-    app.set('trust proxy', 1);
+    // Enable trust proxy for production environments behind load balancers
+    (app as any).set('trust proxy', 1);
   }
 
   const logger = new AppLogger();

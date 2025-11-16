@@ -3,10 +3,7 @@ import { ModeButton } from './ModeButton';
 
 const MODES: Mode[] = ['plan', 'work', 'done'];
 
-export function ModeNavigation({
-  currentMode,
-  onModeChange,
-}: ModeNavigationProps) {
+export function ModeNavigation({ currentMode, onModeChange }: ModeNavigationProps) {
   return (
     <nav className="flex gap-2">
       {MODES.map((mode) => (
