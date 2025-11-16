@@ -136,10 +136,11 @@ describe('ReorderList', () => {
       updatedAt: new Date(),
     };
 
-    jest.spyOn(repository, 'findById').mockImplementation(async (id: string) => {
-      if (id === listId) return listToMove;
-      if (id === targetListId) return targetList;
-      return null;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    jest.spyOn(repository, 'findById').mockImplementation((id: string, _userId: string) => {
+      if (id === listId) return Promise.resolve(listToMove);
+      if (id === targetListId) return Promise.resolve(targetList);
+      return Promise.resolve(null);
     });
     jest.spyOn(repository, 'findManyByUserId').mockResolvedValue(allLists);
     jest.spyOn(repository, 'update').mockResolvedValue(reorderedList);
@@ -193,10 +194,11 @@ describe('ReorderList', () => {
       updatedAt: new Date(),
     };
 
-    jest.spyOn(repository, 'findById').mockImplementation(async (id: string) => {
-      if (id === listId) return listToMove;
-      if (id === targetListId) return lastList;
-      return null;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    jest.spyOn(repository, 'findById').mockImplementation((id: string, _userId: string) => {
+      if (id === listId) return Promise.resolve(listToMove);
+      if (id === targetListId) return Promise.resolve(lastList);
+      return Promise.resolve(null);
     });
     jest.spyOn(repository, 'findManyByUserId').mockResolvedValue(allLists);
     jest.spyOn(repository, 'update').mockResolvedValue(reorderedList);
@@ -230,7 +232,9 @@ describe('ReorderList', () => {
     jest.spyOn(repository, 'findById').mockResolvedValue(doneList);
 
     await expect(useCase.execute(userId, listId, reorderDto)).rejects.toThrow(BadRequestException);
-    await expect(useCase.execute(userId, listId, reorderDto)).rejects.toThrow('Cannot reorder the Done list');
+    await expect(useCase.execute(userId, listId, reorderDto)).rejects.toThrow(
+      'Cannot reorder the Done list',
+    );
 
     expect(repository.update).not.toHaveBeenCalled();
   });
@@ -271,9 +275,10 @@ describe('ReorderList', () => {
       updatedAt: now,
     };
 
-    jest.spyOn(repository, 'findById').mockImplementation(async (id: string) => {
-      if (id === listId) return existingList;
-      return null;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    jest.spyOn(repository, 'findById').mockImplementation((id: string, _userId: string) => {
+      if (id === listId) return Promise.resolve(existingList);
+      return Promise.resolve(null);
     });
 
     await expect(useCase.execute(userId, listId, reorderDto)).rejects.toThrow(NotFoundException);
