@@ -11,13 +11,14 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
-import { GetListsResponseDto, ListDto, UpdateListResponseDto } from '@gsd/types';
+import { GetListsResponseDto, ListDto, UpdateListResponseDto, ToggleBacklogResponseDto } from '@gsd/types';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../../auth/decorators/current-user.decorator';
 import type { JwtUser } from '../../auth/dto/jwt-user.dto';
 import { GetLists } from '../use-cases/get-lists';
 import { CreateList } from '../use-cases/create-list';
 import { UpdateList } from '../use-cases/update-list';
+import { ToggleBacklog } from '../use-cases/toggle-backlog';
 import { DeleteList } from '../use-cases/delete-list';
 import { CreateListDto } from '../dto/create-list.dto';
 import { UpdateListDto } from '../dto/update-list.dto';
@@ -29,6 +30,7 @@ export class ListsController {
     private readonly getListsUseCase: GetLists,
     private readonly createListUseCase: CreateList,
     private readonly updateListUseCase: UpdateList,
+    private readonly toggleBacklogUseCase: ToggleBacklog,
     private readonly deleteListUseCase: DeleteList,
   ) {}
 
@@ -54,6 +56,15 @@ export class ListsController {
     @Body() updateListDto: UpdateListDto,
   ): Promise<UpdateListResponseDto> {
     const list = await this.updateListUseCase.execute(user.id, id, updateListDto);
+    return { list };
+  }
+
+  @Post(':id/toggle-backlog')
+  async toggleBacklog(
+    @CurrentUser() user: JwtUser,
+    @Param('id') id: string,
+  ): Promise<ToggleBacklogResponseDto> {
+    const list = await this.toggleBacklogUseCase.execute(user.id, id);
     return { list };
   }
 
