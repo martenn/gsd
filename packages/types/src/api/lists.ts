@@ -27,3 +27,7 @@ export interface UpdateListRequest {
 export interface UpdateListResponseDto {
   list: ListDto;
 }
+
+export interface ToggleBacklogResponseDto {
+  list: ListDto;
+}
