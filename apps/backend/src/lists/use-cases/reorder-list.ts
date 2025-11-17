@@ -43,7 +43,10 @@ export class ReorderList {
       this.logger.log(`Successfully reordered list ${listId} to orderIndex ${newOrderIndex}`);
       return this.toDto(updated);
     } catch (error) {
-      this.logger.error(`Failed to reorder list ${listId}`, error instanceof Error ? error.stack : undefined);
+      this.logger.error(
+        `Failed to reorder list ${listId}`,
+        error instanceof Error ? error.stack : undefined,
+      );
       throw error;
     }
   }

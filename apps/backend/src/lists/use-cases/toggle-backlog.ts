@@ -30,16 +30,23 @@ export class ToggleBacklog {
       if (list.isBacklog) {
         const backlogCount = await this.repository.countBacklogs(userId);
         if (backlogCount === 1) {
-          throw new BadRequestException('Cannot unmark the last backlog. At least one backlog must exist.');
+          throw new BadRequestException(
+            'Cannot unmark the last backlog. At least one backlog must exist.',
+          );
         }
       }
 
       const updated = await this.repository.update(listId, userId, { isBacklog: !list.isBacklog });
 
-      this.logger.log(`Successfully toggled backlog status for list ${listId} to ${!list.isBacklog}`);
+      this.logger.log(
+        `Successfully toggled backlog status for list ${listId} to ${!list.isBacklog}`,
+      );
       return this.toDto(updated);
     } catch (error) {
-      this.logger.error(`Failed to toggle backlog for list ${listId}`, error instanceof Error ? error.stack : undefined);
+      this.logger.error(
+        `Failed to toggle backlog for list ${listId}`,
+        error instanceof Error ? error.stack : undefined,
+      );
       throw error;
     }
   }

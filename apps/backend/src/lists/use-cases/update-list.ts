@@ -33,7 +33,10 @@ export class UpdateList {
       this.logger.log(`Successfully updated list ${listId}`);
       return this.toDto(updated);
     } catch (error) {
-      this.logger.error(`Failed to update list ${listId}`, error instanceof Error ? error.stack : undefined);
+      this.logger.error(
+        `Failed to update list ${listId}`,
+        error instanceof Error ? error.stack : undefined,
+      );
       throw error;
     }
   }

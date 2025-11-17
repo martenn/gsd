@@ -120,7 +120,9 @@ describe('UpdateList', () => {
     jest.spyOn(repository, 'findById').mockResolvedValue(doneList);
 
     await expect(useCase.execute(userId, listId, updateDto)).rejects.toThrow(BadRequestException);
-    await expect(useCase.execute(userId, listId, updateDto)).rejects.toThrow('Cannot rename the Done list');
+    await expect(useCase.execute(userId, listId, updateDto)).rejects.toThrow(
+      'Cannot rename the Done list',
+    );
 
     expect(repository.update).not.toHaveBeenCalled();
   });
