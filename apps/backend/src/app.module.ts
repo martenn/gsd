@@ -9,6 +9,7 @@ import { TasksModule } from './tasks/tasks.module';
 import { DoneModule } from './done/done.module';
 import { MaintenanceModule } from './maintenance/maintenance.module';
 import { HealthModule } from './health/health.module';
+import { MetricsModule } from './metrics/metrics.module';
 import { LoggerModule } from './logger/logger.module';
 import { HttpLoggingInterceptor } from './logger/http-logging.interceptor';
 import { THROTTLER_GLOBAL } from './config/throttler.config';
@@ -29,6 +30,7 @@ import { CustomThrottlerGuard } from './common/guards/custom-throttler.guard';
     DoneModule,
     MaintenanceModule,
     HealthModule,
+    MetricsModule,
   ],
   controllers: [AppController],
   providers: [
