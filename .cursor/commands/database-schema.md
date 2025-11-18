@@ -11,14 +11,15 @@ Your task is to help design, review, and implement database schema changes for G
 Review the project structure:
 
 1. **Core Domain Model:**
-@CLAUDE.md
+   @CLAUDE.md
 
 2. **Database Configuration:**
-@CLAUDE.md
+   @CLAUDE.md
 
 ## Database Constraints
 
 Current requirements:
+
 - Engine: PostgreSQL 16
 - Indexes: user_id, list_id, completed_at, order_index
 - Transactions: Via Prisma $transaction
@@ -28,6 +29,7 @@ Current requirements:
 ## Schema Review Checklist
 
 ### 1. Correctness
+
 - [ ] All required fields present
 - [ ] Data types appropriate
 - [ ] Constraints properly defined
@@ -35,18 +37,21 @@ Current requirements:
 - [ ] Foreign keys with correct cascade behavior
 
 ### 2. Performance
+
 - [ ] Indexes on: user_id, list_id, completed_at, order_index
 - [ ] No N+1 queries expected
 - [ ] Query patterns optimized
 - [ ] Soft deletes vs hard deletes decision made
 
 ### 3. Data Integrity
+
 - [ ] NOT NULL constraints where needed
 - [ ] Unique constraints defined
 - [ ] Foreign key constraints enforced
 - [ ] Check constraints for business rules
 
 ### 4. Scalability
+
 - [ ] Partition strategy if needed
 - [ ] Archive strategy for old data (500 task retention)
 - [ ] Index maintenance considerations
@@ -64,6 +69,7 @@ For schema changes:
 ## Common Operations
 
 ### Adding a new column
+
 ```typescript
 // In schema.prisma
 model Task {
@@ -73,6 +79,7 @@ model Task {
 ```
 
 ### Creating indexes
+
 ```typescript
 // In schema.prisma
 model Task {
@@ -84,6 +91,7 @@ model Task {
 ```
 
 ### Retention & Cleanup
+
 - Keep last 500 completed tasks per user
 - Delete oldest first when limit exceeded
 - Use maintenance cron jobs via @nestjs/schedule
@@ -96,26 +104,33 @@ Document schema changes as:
 # Database Migration: [Description]
 
 ## Purpose
+
 [Why this change is needed]
 
 ## Current Schema
+
 [Relevant current schema]
 
 ## Proposed Schema
+
 [New schema with changes]
 
 ## Migration Steps
+
 1. Add new field/table
 2. Migrate existing data
 3. Remove old field/table
 
 ## Performance Impact
+
 [Indexes added, query improvements]
 
 ## Data Integrity
+
 [How data consistency is maintained]
 
 ## Rollback Strategy
+
 [How to revert if needed]
 ```
 

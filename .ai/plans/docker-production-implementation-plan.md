@@ -16,19 +16,23 @@ The production images will be deployable to any container orchestration platform
 ## 2. Inputs
 
 ### Build Context
+
 - Source code from monorepo: `apps/backend/`, `apps/frontend/`, `packages/`
 - Dependencies: `package.json`, `pnpm-lock.yaml`
 - Configuration files: `.env.example`, `tsconfig.json`, Prisma schema
 - Build artifacts: Compiled TypeScript, bundled frontend assets
 
 ### Build Arguments
+
 - `NODE_VERSION`: Node.js version (default: 20-alpine)
 - `PNPM_VERSION`: pnpm version (default: 8.15.0)
 - `PORT`: Application port (backend: 3000, frontend: 4321)
 - Build-time secrets: None (use runtime environment variables)
 
 ### Environment Variables (Runtime)
+
 **Backend:**
+
 - `NODE_ENV=production`
 - `PORT=3000`
 - `DATABASE_URL` (PostgreSQL connection string)
@@ -40,6 +44,7 @@ The production images will be deployable to any container orchestration platform
 - `FRONTEND_URL`
 
 **Frontend:**
+
 - `NODE_ENV=production`
 - `PORT=4321`
 - `PUBLIC_API_URL` (backend API URL)
@@ -47,23 +52,28 @@ The production images will be deployable to any container orchestration platform
 ## 3. Used Files
 
 ### Backend Dockerfile
+
 - `apps/backend/Dockerfile`
 - `apps/backend/.dockerignore`
 
 ### Frontend Dockerfile
+
 - `apps/frontend/Dockerfile`
 - `apps/frontend/.dockerignore`
 
 ### Docker Compose
+
 - `docker-compose.yml` (development - already exists)
 - `docker-compose.prod.yml` (production)
 
 ### CI/CD
+
 - `.github/workflows/docker-build.yml` (build and push images)
 
 ## 4. Outputs
 
 ### Backend Docker Image
+
 - **Image name:** `gsd-backend:latest`
 - **Size target:** <200MB (Alpine-based)
 - **Exposed port:** 3000
@@ -72,6 +82,7 @@ The production images will be deployable to any container orchestration platform
 - **Registry:** GitHub Container Registry (ghcr.io) or Docker Hub
 
 ### Frontend Docker Image
+
 - **Image name:** `gsd-frontend:latest`
 - **Size target:** <100MB (Nginx + static files)
 - **Exposed port:** 80 (Nginx) or 4321 (Node SSR)
@@ -80,6 +91,7 @@ The production images will be deployable to any container orchestration platform
 - **Registry:** GitHub Container Registry (ghcr.io) or Docker Hub
 
 ### Image Tags
+
 - `latest` - Latest production build
 - `{git-sha}` - Specific commit (e.g., `abc123f`)
 - `{version}` - Semantic version (e.g., `v1.0.0`)
@@ -89,6 +101,7 @@ The production images will be deployable to any container orchestration platform
 ### Build Process Flow
 
 #### Backend Image Build
+
 1. **Stage 1 (base):** Install pnpm and setup base dependencies
 2. **Stage 2 (dependencies):** Install production dependencies only
 3. **Stage 3 (build):** Install all dependencies, build TypeScript
@@ -99,6 +112,7 @@ The production images will be deployable to any container orchestration platform
 8. Set entrypoint and command
 
 #### Frontend Image Build
+
 1. **Stage 1 (base):** Install pnpm and setup base dependencies
 2. **Stage 2 (dependencies):** Install production dependencies only
 3. **Stage 3 (build):** Install all dependencies, build Astro site
@@ -108,6 +122,7 @@ The production images will be deployable to any container orchestration platform
 7. Set entrypoint and command
 
 ### Deployment Flow
+
 1. Build Docker images locally or in CI/CD
 2. Push images to container registry
 3. Pull images on target environment
@@ -120,44 +135,52 @@ The production images will be deployable to any container orchestration platform
 ### Image Security Best Practices
 
 #### Use Minimal Base Images
+
 - **Alpine Linux:** Smallest attack surface, minimal packages
 - Avoid full Ubuntu/Debian images (too large, unnecessary packages)
 - Use official Node.js Alpine images: `node:20-alpine`
 
 #### Non-Root User
+
 - Never run containers as root
 - Create and use dedicated user (e.g., `node`, `nginx`)
 - Set user in Dockerfile: `USER node`
 - Ensure file permissions allow non-root access
 
 #### Multi-Stage Builds
+
 - Separate build tools from runtime
 - Only include production dependencies in final image
 - Reduces image size and attack surface
 
 #### Secret Management
+
 - **Never** hardcode secrets in Dockerfile or image
 - Use runtime environment variables
 - Consider secret management tools (Vault, AWS Secrets Manager)
 - Use `.dockerignore` to prevent secret leakage
 
 #### Vulnerability Scanning
+
 - Scan images for vulnerabilities: `docker scan` or Trivy
 - Fix high/critical vulnerabilities before deployment
 - Automate scanning in CI/CD pipeline
 - Monitor base image updates
 
 #### Read-Only Filesystem
+
 - Run containers with read-only root filesystem (where possible)
 - Use volumes for writable data (logs, uploads)
 - Reduces attack surface (prevents runtime tampering)
 
 #### Network Security
+
 - Expose only necessary ports
 - Use internal networks for service-to-service communication
 - Never expose database directly
 
 ### Dockerfile Security Checklist
+
 - ✅ Use official base images
 - ✅ Specify exact image versions (avoid `latest` tag in production)
 - ✅ Run as non-root user
@@ -173,24 +196,25 @@ The production images will be deployable to any container orchestration platform
 
 ### Build Failures
 
-| Error Scenario | Cause | Solution |
-|----------------|-------|----------|
-| Dependency installation fails | Network issue, invalid package | Check pnpm-lock.yaml, retry build |
-| TypeScript compilation errors | Type errors in code | Fix TypeScript errors, rebuild |
+| Error Scenario                 | Cause                                | Solution                                        |
+| ------------------------------ | ------------------------------------ | ----------------------------------------------- |
+| Dependency installation fails  | Network issue, invalid package       | Check pnpm-lock.yaml, retry build               |
+| TypeScript compilation errors  | Type errors in code                  | Fix TypeScript errors, rebuild                  |
 | Prisma client generation fails | Invalid schema, missing DATABASE_URL | Ensure schema is valid, provide placeholder URL |
-| Out of disk space | Large build artifacts | Clean Docker build cache, increase disk |
-| Build timeout | Slow network, large dependencies | Increase timeout, use build cache |
+| Out of disk space              | Large build artifacts                | Clean Docker build cache, increase disk         |
+| Build timeout                  | Slow network, large dependencies     | Increase timeout, use build cache               |
 
 ### Runtime Failures
 
-| Error Scenario | Cause | Solution |
-|----------------|-------|----------|
-| Container exits immediately | Missing env vars, startup error | Check logs, verify env vars |
-| Health check fails | App not ready, DB unreachable | Check health endpoint, DB connectivity |
-| Permission denied | File permissions, non-root user | Fix file ownership in Dockerfile |
-| Port already in use | Port conflict | Change exposed port or stop conflicting container |
+| Error Scenario              | Cause                           | Solution                                          |
+| --------------------------- | ------------------------------- | ------------------------------------------------- |
+| Container exits immediately | Missing env vars, startup error | Check logs, verify env vars                       |
+| Health check fails          | App not ready, DB unreachable   | Check health endpoint, DB connectivity            |
+| Permission denied           | File permissions, non-root user | Fix file ownership in Dockerfile                  |
+| Port already in use         | Port conflict                   | Change exposed port or stop conflicting container |
 
 ### Debugging Strategies
+
 - Run container interactively: `docker run -it --entrypoint sh gsd-backend`
 - Check container logs: `docker logs <container-id>`
 - Inspect environment: `docker exec <container-id> env`
@@ -201,11 +225,13 @@ The production images will be deployable to any container orchestration platform
 ### Image Size Optimization
 
 **Target Sizes:**
+
 - Backend: <200MB
 - Frontend (static): <100MB
 - Frontend (SSR): <150MB
 
 **Optimization Techniques:**
+
 - Multi-stage builds (exclude build tools)
 - Production dependencies only (`pnpm install --prod`)
 - Remove unnecessary files (docs, tests, dev configs)
@@ -215,10 +241,12 @@ The production images will be deployable to any container orchestration platform
 ### Build Time Optimization
 
 **Target Build Times:**
+
 - Backend: <5 minutes
 - Frontend: <3 minutes
 
 **Optimization Techniques:**
+
 - Layer caching (order Dockerfile commands for best caching)
 - Cache dependencies layer (copy package.json before source code)
 - Use BuildKit for parallel builds
@@ -226,12 +254,14 @@ The production images will be deployable to any container orchestration platform
 - Pre-build base images with common dependencies
 
 ### Runtime Performance
+
 - Use Alpine Linux (smaller, faster container startup)
 - Enable production mode optimizations (NODE_ENV=production)
 - Use process managers (PM2, or native Node clustering) if needed
 - Configure resource limits (memory, CPU) in orchestrator
 
 ### Build Cache Strategy
+
 1. Copy `package.json` and `pnpm-lock.yaml` first (least frequently changed)
 2. Install dependencies (cached if lock file unchanged)
 3. Copy source code (most frequently changed)
@@ -241,6 +271,7 @@ The production images will be deployable to any container orchestration platform
 ## 9. Implementation Steps
 
 ### Step 1: Create .dockerignore files
+
 1. Create `apps/backend/.dockerignore`:
    ```
    node_modules
@@ -269,6 +300,7 @@ The production images will be deployable to any container orchestration platform
    ```
 
 ### Step 2: Create backend Dockerfile
+
 1. Create `apps/backend/Dockerfile`:
    - **Stage 1 (base):** FROM node:20-alpine, install pnpm globally
    - **Stage 2 (dependencies):** Copy package files, install prod deps
@@ -285,6 +317,7 @@ The production images will be deployable to any container orchestration platform
 2. Optimize layer caching (package.json before source code)
 
 ### Step 3: Create frontend Dockerfile (Static Option)
+
 1. Create `apps/frontend/Dockerfile`:
    - **Stage 1 (build):** Build Astro static site
    - **Stage 2 (production):** FROM nginx:alpine
@@ -298,7 +331,9 @@ The production images will be deployable to any container orchestration platform
    - Gzip compression
 
 ### Step 4: Create frontend Dockerfile (SSR Option)
+
 Alternative for server-side rendering:
+
 1. Similar multi-stage build
 2. Final stage: FROM node:20-alpine
 3. Copy node_modules and built server
@@ -306,6 +341,7 @@ Alternative for server-side rendering:
 5. CMD ["node", "./dist/server/entry.mjs"]
 
 ### Step 5: Test Docker builds locally
+
 1. Build backend: `docker build -t gsd-backend:test ./apps/backend`
 2. Build frontend: `docker build -t gsd-frontend:test ./apps/frontend`
 3. Verify image sizes: `docker images | grep gsd`
@@ -317,6 +353,7 @@ Alternative for server-side rendering:
 5. Test health endpoints and basic functionality
 
 ### Step 6: Create production Docker Compose file
+
 1. Create `docker-compose.prod.yml`:
    - Backend service (from built image)
    - Frontend service (from built image)
@@ -330,12 +367,14 @@ Alternative for server-side rendering:
 2. Test: `docker-compose -f docker-compose.prod.yml up`
 
 ### Step 7: Optimize Dockerfiles for caching
+
 1. Ensure package.json copied before source code
 2. Use --mount=type=cache for pnpm store (BuildKit)
 3. Order layers from least to most frequently changed
 4. Verify cache effectiveness: rebuild with single file change
 
 ### Step 8: Add health checks to Dockerfiles
+
 1. Backend health check:
    ```dockerfile
    HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
@@ -348,6 +387,7 @@ Alternative for server-side rendering:
    ```
 
 ### Step 9: Security hardening
+
 1. Run as non-root user (USER directive)
 2. Scan images for vulnerabilities:
    ```bash
@@ -359,6 +399,7 @@ Alternative for server-side rendering:
 5. Minimize installed packages
 
 ### Step 10: Create GitHub Actions workflow for Docker builds
+
 1. Create `.github/workflows/docker-build.yml`:
    - Trigger: On push to main, on pull requests
    - Jobs:
@@ -374,6 +415,7 @@ Alternative for server-side rendering:
    - Push images to ghcr.io/martenn/gsd-backend:latest
 
 ### Step 11: Test production images
+
 1. Pull images from registry
 2. Run with production-like environment:
    - Production DATABASE_URL
@@ -390,6 +432,7 @@ Alternative for server-side rendering:
    - Verify performance under load
 
 ### Step 12: Write deployment documentation
+
 1. Create `docs/deployment.md`:
    - How to build images
    - How to run containers locally
@@ -401,6 +444,7 @@ Alternative for server-side rendering:
 3. Document container registry locations
 
 ### Step 13: Update project tracker
+
 1. Mark "Docker production images" as ✅
 2. Update infrastructure progress percentage
 3. Add notes about registry location and build workflow
@@ -510,7 +554,7 @@ services:
     image: ghcr.io/martenn/gsd-backend:latest
     container_name: gsd-backend
     ports:
-      - "3000:3000"
+      - '3000:3000'
     environment:
       NODE_ENV: production
       DATABASE_URL: postgresql://gsd:${DB_PASSWORD}@db:5432/gsd
@@ -525,7 +569,7 @@ services:
       - backend-network
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3000/health/ready')"]
+      test: ['CMD', 'node', '-e', "require('http').get('http://localhost:3000/health/ready')"]
       interval: 30s
       timeout: 5s
       retries: 3
@@ -535,7 +579,7 @@ services:
     image: ghcr.io/martenn/gsd-frontend:latest
     container_name: gsd-frontend
     ports:
-      - "80:80"
+      - '80:80'
     environment:
       PUBLIC_API_URL: ${API_URL}
     depends_on:
@@ -557,7 +601,7 @@ services:
       - backend-network
     restart: unless-stopped
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U gsd"]
+      test: ['CMD-SHELL', 'pg_isready -U gsd']
       interval: 10s
       timeout: 5s
       retries: 5
@@ -686,6 +730,7 @@ jobs:
 ---
 
 ## Notes
+
 - Docker production images are critical for deployment readiness
 - Multi-stage builds significantly reduce image size (50-70% smaller)
 - Security scanning should be part of CI/CD pipeline

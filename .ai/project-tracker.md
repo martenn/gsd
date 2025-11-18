@@ -1,6 +1,6 @@
 # GSD Project Tracker
 
-**Last Updated:** 2025-11-16 (Lists Management Complete!)
+**Last Updated:** 2025-11-18 (Lists Management Complete!)
 **Current Sprint:** Core Features & Frontend Prep
 
 ## 📊 MVP Progress Overview
@@ -54,28 +54,29 @@ Infra:    ███████████████░░░░░ 82% (14/1
 **Goal:** Core infrastructure for development
 **Progress:** ███████████████░░░░░ 82% (14/17)
 
-| Status | Feature                          | Est. | Notes                                    | Owner |
-| ------ | -------------------------------- | ---- | ---------------------------------------- | ----- |
-| ✅     | Monorepo setup (pnpm workspaces) | -    | Completed                                | -     |
-| ✅     | NestJS backend bootstrap         | -    | Basic structure                          | -     |
-| ✅     | Astro frontend bootstrap         | -    | Basic structure                          | -     |
-| ✅     | TypeScript configuration         | -    | Strict mode enabled                      | -     |
-| ✅     | ESLint + Prettier (backend)      | -    | Backend linting configured               | -     |
-| ✅     | ESLint + Prettier (frontend)     | -    | Frontend linting configured              | -     |
-| ✅     | Prisma schema + migrations       | -    | User, List, Task models                  | -     |
-| ✅     | Docker Compose (PostgreSQL)      | -    | Local dev DB                             | -     |
-| ✅     | Repository pattern architecture  | -    | Lists, Tasks repos                       | -     |
-| ✅     | Logging infrastructure           | -    | AppLogger + HTTP interceptor             | -     |
-| ✅     | CORS configuration               | -    | Implemented in main.ts, credentials enabled | ✅ |
-| ✅     | Health endpoints                 | -    | GET /health, /health/ready               | ✅    |
-| ✅     | Error handling middleware        | -    | Global filter, Prisma mapping, unit & E2E tests | ✅ |
-| ✅     | Rate limiting                    | -    | @nestjs/throttler, 100 req/min global, 5 auth, proxy trust | ✅ |
-| ⚪     | Content Security Policy (CSP)    | 1d   | Helmet middleware, strict directives     | -     |
-| ⚪     | HTTPS/HSTS setup                 | 0.5d | Strict-Transport-Security headers        | -     |
-| ✅     | CI/CD pipeline (GitHub Actions)  | -    | Lint, test, build workflow active        | ✅    |
-| ✅     | Docker production images         | -    | Multi-stage builds, on-demand workflow   | ✅    |
+| Status | Feature                          | Est. | Notes                                                      | Owner |
+| ------ | -------------------------------- | ---- | ---------------------------------------------------------- | ----- |
+| ✅     | Monorepo setup (pnpm workspaces) | -    | Completed                                                  | -     |
+| ✅     | NestJS backend bootstrap         | -    | Basic structure                                            | -     |
+| ✅     | Astro frontend bootstrap         | -    | Basic structure                                            | -     |
+| ✅     | TypeScript configuration         | -    | Strict mode enabled                                        | -     |
+| ✅     | ESLint + Prettier (backend)      | -    | Backend linting configured                                 | -     |
+| ✅     | ESLint + Prettier (frontend)     | -    | Frontend linting configured                                | -     |
+| ✅     | Prisma schema + migrations       | -    | User, List, Task models                                    | -     |
+| ✅     | Docker Compose (PostgreSQL)      | -    | Local dev DB                                               | -     |
+| ✅     | Repository pattern architecture  | -    | Lists, Tasks repos                                         | -     |
+| ✅     | Logging infrastructure           | -    | AppLogger + HTTP interceptor                               | -     |
+| ✅     | CORS configuration               | -    | Implemented in main.ts, credentials enabled                | ✅    |
+| ✅     | Health endpoints                 | -    | GET /health, /health/ready                                 | ✅    |
+| ✅     | Error handling middleware        | -    | Global filter, Prisma mapping, unit & E2E tests            | ✅    |
+| ✅     | Rate limiting                    | -    | @nestjs/throttler, 100 req/min global, 5 auth, proxy trust | ✅    |
+| ⚪     | Content Security Policy (CSP)    | 1d   | Helmet middleware, strict directives                       | -     |
+| ⚪     | HTTPS/HSTS setup                 | 0.5d | Strict-Transport-Security headers                          | -     |
+| ✅     | CI/CD pipeline (GitHub Actions)  | -    | Lint, test, build workflow active                          | ✅    |
+| ✅     | Docker production images         | -    | Multi-stage builds, on-demand workflow                     | ✅    |
 
 **Security Features:**
+
 - CSP directives: default-src 'self', script-src 'self', style-src 'self' 'unsafe-inline'
 - Rate limits: 100 req/min global, 5 req/min auth endpoints
 - CORS: Frontend origin only, no wildcards in production
@@ -84,6 +85,7 @@ Infra:    ███████████████░░░░░ 82% (14/1
 **Next Up:** Health endpoints, error handling, security hardening
 
 **Docker Production Images - Next Steps:**
+
 1. Set up Docker Hub account (if using docker.io registry) - See DOCKER-HUB-SETUP.md
 2. Add `DOCKERHUB_USERNAME` and `DOCKERHUB_TOKEN` secrets to GitHub repository
 3. Run workflow manually to test builds (Actions → "Build Docker Images")
@@ -99,16 +101,16 @@ Infra:    ███████████████░░░░░ 82% (14/1
 **Progress:** ██████████████████░░ 88% (7/8)
 **Status:** 🟢 Core Complete (1 optional feature remaining)
 
-| Status | Feature                      | Est. | Notes                                      | PRD Ref | Owner |
-| ------ | ---------------------------- | ---- | ------------------------------------------ | ------- | ----- |
-| ✅     | Google OAuth setup           | -    | Google Cloud Console configured            | 3.7     | ✅    |
-| ✅     | AuthModule + OAuth flow      | -    | @nestjs/passport + passport-google-oauth20 | 3.7     | ✅    |
-| ✅     | JWT session management       | -    | HttpOnly cookie, 7d expiration             | 3.7     | ✅    |
-| ✅     | Cookie security attributes   | -    | HttpOnly, Secure, SameSite=Strict          | 3.7     | ✅    |
-| ✅     | Auth guards                  | -    | JwtAuthGuard implemented                   | 3.7     | ✅    |
-| ✅     | User model & creation        | -    | On first OAuth login with onboarding       | 3.7     | ✅    |
-| ✅     | Replace mock userId          | -    | JWT auth on all Lists/Tasks/Done endpoints | -       | ✅    |
-| ⚪     | Audit logging (auth events)  | 1d   | Login, logout, failed attempts (optional)  | -       | -     |
+| Status | Feature                     | Est. | Notes                                      | PRD Ref | Owner |
+| ------ | --------------------------- | ---- | ------------------------------------------ | ------- | ----- |
+| ✅     | Google OAuth setup          | -    | Google Cloud Console configured            | 3.7     | ✅    |
+| ✅     | AuthModule + OAuth flow     | -    | @nestjs/passport + passport-google-oauth20 | 3.7     | ✅    |
+| ✅     | JWT session management      | -    | HttpOnly cookie, 7d expiration             | 3.7     | ✅    |
+| ✅     | Cookie security attributes  | -    | HttpOnly, Secure, SameSite=Strict          | 3.7     | ✅    |
+| ✅     | Auth guards                 | -    | JwtAuthGuard implemented                   | 3.7     | ✅    |
+| ✅     | User model & creation       | -    | On first OAuth login with onboarding       | 3.7     | ✅    |
+| ✅     | Replace mock userId         | -    | JWT auth on all Lists/Tasks/Done endpoints | -       | ✅    |
+| ⚪     | Audit logging (auth events) | 1d   | Login, logout, failed attempts (optional)  | -       | -     |
 
 **Endpoints:**
 
@@ -118,6 +120,7 @@ Infra:    ███████████████░░░░░ 82% (14/1
 - `GET /auth/me` - Current user info
 
 **Security Requirements:**
+
 - Cookie attributes: HttpOnly, Secure, SameSite=Strict
 - JWT expiration: 7 days (configurable)
 - Silent refresh on 401 responses
@@ -157,6 +160,7 @@ Infra:    ███████████████░░░░░ 82% (14/1
 - ✅ Backlog auto-promotion on delete (if last backlog deleted)
 
 **Implementation Details:**
+
 - UpdateList: Name validation, trim whitespace, user ownership checks
 - ToggleBacklog: Count-based constraint validation, atomic toggle
 - ReorderList: Dual strategy (explicit newOrderIndex or relative afterListId)
@@ -173,18 +177,18 @@ Infra:    ███████████████░░░░░ 82% (14/1
 **Goal:** Complete task CRUD and basic operations
 **Progress:** ██████████████████ 90% (9/10)
 
-| Status | Feature                           | Est. | Notes                                      | PRD Ref        | Owner |
-| ------ | --------------------------------- | ---- | ------------------------------------------ | -------------- | ----- |
-| ✅     | GET /v1/tasks                     | -    | With list filter, pagination               | US-005         | ✅    |
-| ✅     | POST /v1/tasks                    | -    | Create in list (top position)              | US-005         | ✅    |
-| ✅     | PATCH /v1/tasks/:id               | -    | Update title/description                   | US-006         | ✅    |
-| ✅     | DELETE /v1/tasks/:id              | -    | Hard delete                                | US-007         | ✅    |
-| ✅     | POST /v1/tasks/:id/move           | 1d   | Move between lists, endpoint implemented   | US-008         | ✅    |
-| ✅     | POST /v1/tasks/:id/reorder        | 1d   | Reorder within list, endpoint implemented   | US-009         | ✅    |
-| ✅     | POST /v1/tasks/:id/complete       | 1d   | Mark as done, moves to Done list           | US-010, US-011 | ✅    |
-| ❌     | POST /v1/tasks/bulk-add           | 1d   | Dump mode (max 10)                         | US-014         | -     |
-| ✅     | Task limit enforcement (100/list) | -    | In create/move validation                  | 3.2            | ✅    |
-| ✅     | Order index management            | -    | Insert at top strategy, reorder support    | 3.2            | ✅    |
+| Status | Feature                           | Est. | Notes                                     | PRD Ref        | Owner |
+| ------ | --------------------------------- | ---- | ----------------------------------------- | -------------- | ----- |
+| ✅     | GET /v1/tasks                     | -    | With list filter, pagination              | US-005         | ✅    |
+| ✅     | POST /v1/tasks                    | -    | Create in list (top position)             | US-005         | ✅    |
+| ✅     | PATCH /v1/tasks/:id               | -    | Update title/description                  | US-006         | ✅    |
+| ✅     | DELETE /v1/tasks/:id              | -    | Hard delete                               | US-007         | ✅    |
+| ✅     | POST /v1/tasks/:id/move           | 1d   | Move between lists, endpoint implemented  | US-008         | ✅    |
+| ✅     | POST /v1/tasks/:id/reorder        | 1d   | Reorder within list, endpoint implemented | US-009         | ✅    |
+| ✅     | POST /v1/tasks/:id/complete       | 1d   | Mark as done, moves to Done list          | US-010, US-011 | ✅    |
+| ❌     | POST /v1/tasks/bulk-add           | 1d   | Dump mode (max 10)                        | US-014         | -     |
+| ✅     | Task limit enforcement (100/list) | -    | In create/move validation                 | 3.2            | ✅    |
+| ✅     | Order index management            | -    | Insert at top strategy, reorder support   | 3.2            | ✅    |
 
 **Business Rules Implemented:**
 
@@ -207,18 +211,19 @@ Infra:    ███████████████░░░░░ 82% (14/1
 **Goal:** Completed tasks view and retention management
 **Progress:** ████████████████████ 100% (4/4) ✅ COMPLETE
 
-| Status | Feature                      | Est. | Notes                                       | PRD Ref | Owner |
-| ------ | ---------------------------- | ---- | ------------------------------------------- | ------- | ----- |
-| ✅     | DoneModule setup             | -    | Module with repository and use case         | 3.5     | ✅    |
-| ✅     | GET /v1/done                 | -    | Paginated (limit/offset), JWT protected     | US-015  | ✅    |
-| ✅     | Retention job                | -    | Cron job (daily 2 AM UTC), keeps 500/user   | 3.5     | ✅    |
-| ✅     | @nestjs/schedule integration | -    | Integrated with RetentionJob                | -       | ✅    |
+| Status | Feature                      | Est. | Notes                                     | PRD Ref | Owner |
+| ------ | ---------------------------- | ---- | ----------------------------------------- | ------- | ----- |
+| ✅     | DoneModule setup             | -    | Module with repository and use case       | 3.5     | ✅    |
+| ✅     | GET /v1/done                 | -    | Paginated (limit/offset), JWT protected   | US-015  | ✅    |
+| ✅     | Retention job                | -    | Cron job (daily 2 AM UTC), keeps 500/user | 3.5     | ✅    |
+| ✅     | @nestjs/schedule integration | -    | Integrated with RetentionJob              | -       | ✅    |
 
 **Endpoints:**
 
 - `GET /v1/done?limit=50&offset=0` (completed ✅)
 
 **Implementation Details:**
+
 - DoneRepository with Prisma queries (findCompletedTasks, countCompletedTasks)
 - GetDoneTasks use case with pagination defaults (limit=50, offset=0, max=100)
 - JWT authentication required
@@ -275,172 +280,178 @@ Infra:    ███████████████░░░░░ 82% (14/1
 
 ### 7.0 Static Pages & Infrastructure (Astro)
 
-| Status | Feature                     | Est. | Notes                                | PRD Ref | Owner |
-| ------ | --------------------------- | ---- | ------------------------------------ | ------- | ----- |
-| ✅     | Landing page                | -    | Google OAuth CTA implemented         | 3.7     | ✅    |
-| ✅     | Auth callback handler       | -    | Success page with session info       | 3.7     | ✅    |
-| ✅     | Privacy Policy page         | -    | Placeholder page created             | -       | ✅    |
-| ✅     | Terms of Service page       | -    | Placeholder page created             | -       | ✅    |
-| ⚪     | 404 error page              | 0.5d | Not found with navigation            | -       | -     |
-| ⚪     | 500 error page              | 0.5d | Server error with recovery options   | -       | -     |
-| ⚪     | Astro middleware (auth)     | 1d   | Check JWT, redirect if unauthorized  | 3.7     | -     |
+| Status | Feature                 | Est. | Notes                               | PRD Ref | Owner |
+| ------ | ----------------------- | ---- | ----------------------------------- | ------- | ----- |
+| ✅     | Landing page            | -    | Google OAuth CTA implemented        | 3.7     | ✅    |
+| ✅     | Auth callback handler   | -    | Success page with session info      | 3.7     | ✅    |
+| ✅     | Privacy Policy page     | -    | Placeholder page created            | -       | ✅    |
+| ✅     | Terms of Service page   | -    | Placeholder page created            | -       | ✅    |
+| ⚪     | 404 error page          | 0.5d | Not found with navigation           | -       | -     |
+| ⚪     | 500 error page          | 0.5d | Server error with recovery options  | -       | -     |
+| ⚪     | Astro middleware (auth) | 1d   | Check JWT, redirect if unauthorized | 3.7     | -     |
 
 ### 7.1 Core Layout & Navigation (React SPA)
 
-| Status | Feature                          | Est. | Notes                                    | PRD Ref | Owner |
-| ------ | -------------------------------- | ---- | ---------------------------------------- | ------- | ----- |
-| ✅     | AppShell component               | -    | Auth check, layout structure implemented | -       | ✅    |
-| ✅     | AppHeader component              | -    | Mode nav + user menu implemented         | -       | ✅    |
-| ✅     | ModeSwitcher component           | -    | ModeNavigation with plan/work/done tabs  | -       | ✅    |
-| ✅     | UserMenu component               | -    | User info + logout dropdown              | 3.7     | ✅    |
-| 🟡     | React Router setup               | -    | Basic Astro page routing (not full SPA)  | -       | 🟡    |
-| 🟡     | Protected route guards           | -    | Auth check in AppShell (partial)         | 3.7     | 🟡    |
+| Status | Feature                | Est. | Notes                                    | PRD Ref | Owner |
+| ------ | ---------------------- | ---- | ---------------------------------------- | ------- | ----- |
+| ✅     | AppShell component     | -    | Auth check, layout structure implemented | -       | ✅    |
+| ✅     | AppHeader component    | -    | Mode nav + user menu implemented         | -       | ✅    |
+| ✅     | ModeSwitcher component | -    | ModeNavigation with plan/work/done tabs  | -       | ✅    |
+| ✅     | UserMenu component     | -    | User info + logout dropdown              | 3.7     | ✅    |
+| 🟡     | React Router setup     | -    | Basic Astro page routing (not full SPA)  | -       | 🟡    |
+| 🟡     | Protected route guards | -    | Auth check in AppShell (partial)         | 3.7     | 🟡    |
 
 ### 7.2 State Management & API Client
 
-| Status | Feature                          | Est. | Notes                                    | PRD Ref | Owner |
-| ------ | -------------------------------- | ---- | ---------------------------------------- | ------- | ----- |
-| ✅     | TanStack Query setup             | -    | QueryProvider with config                | -       | ✅    |
-| ⚪     | API client (fetch wrapper)       | 1d   | Typed DTOs, error handling               | -       | -     |
-| ⚪     | KeyboardNavigationProvider       | 1d   | Context for selection state              | 3.3     | -     |
-| 🟡     | Custom hooks: useAuth            | -    | Auth hook implemented, useMe endpoint    | -       | 🟡    |
-| ⚪     | Custom hooks: useListsQuery      | 0.5d | Fetch lists with caching                 | -       | -     |
-| ⚪     | Custom hooks: useTasksQuery      | 0.5d | Fetch tasks (filtered by list)           | -       | -     |
-| ⚪     | Custom hooks: useDoneQuery       | 0.5d | Paginated completed tasks                | -       | -     |
-| ⚪     | Custom hooks: useMetricsQuery    | 0.5d | Daily/weekly metrics                     | -       | -     |
-| ⚪     | Mutation hooks (create/update)   | 1d   | Optimistic updates, cache invalidation   | -       | -     |
+| Status | Feature                        | Est. | Notes                                  | PRD Ref | Owner |
+| ------ | ------------------------------ | ---- | -------------------------------------- | ------- | ----- |
+| ✅     | TanStack Query setup           | -    | QueryProvider with config              | -       | ✅    |
+| ⚪     | API client (fetch wrapper)     | 1d   | Typed DTOs, error handling             | -       | -     |
+| ⚪     | KeyboardNavigationProvider     | 1d   | Context for selection state            | 3.3     | -     |
+| 🟡     | Custom hooks: useAuth          | -    | Auth hook implemented, useMe endpoint  | -       | 🟡    |
+| ⚪     | Custom hooks: useListsQuery    | 0.5d | Fetch lists with caching               | -       | -     |
+| ⚪     | Custom hooks: useTasksQuery    | 0.5d | Fetch tasks (filtered by list)         | -       | -     |
+| ⚪     | Custom hooks: useDoneQuery     | 0.5d | Paginated completed tasks              | -       | -     |
+| ⚪     | Custom hooks: useMetricsQuery  | 0.5d | Daily/weekly metrics                   | -       | -     |
+| ⚪     | Mutation hooks (create/update) | 1d   | Optimistic updates, cache invalidation | -       | -     |
 
 ### 7.3 Plan Mode Components
 
 #### Layout Components
-| Status | Feature                          | Est. | Notes                                    | PRD Ref | Owner |
-| ------ | -------------------------------- | ---- | ---------------------------------------- | ------- | ----- |
-| ⚪     | PlanModeLayout                   | 1d   | Two-column layout (backlogs + lists)     | 3.3     | -     |
-| ⚪     | BoardLayout component            | 1d   | Backlog column + horizontal scroll       | 3.3     | -     |
-| ⚪     | BacklogColumn component          | 1d   | Fixed-width left column (280px)          | 3.1     | -     |
-| ⚪     | IntermediateListsContainer       | 1d   | Horizontal scrollable area               | 3.3     | -     |
+
+| Status | Feature                    | Est. | Notes                                | PRD Ref | Owner |
+| ------ | -------------------------- | ---- | ------------------------------------ | ------- | ----- |
+| ⚪     | PlanModeLayout             | 1d   | Two-column layout (backlogs + lists) | 3.3     | -     |
+| ⚪     | BoardLayout component      | 1d   | Backlog column + horizontal scroll   | 3.3     | -     |
+| ⚪     | BacklogColumn component    | 1d   | Fixed-width left column (280px)      | 3.1     | -     |
+| ⚪     | IntermediateListsContainer | 1d   | Horizontal scrollable area           | 3.3     | -     |
 
 #### List Components
-| Status | Feature                          | Est. | Notes                                    | PRD Ref | Owner |
-| ------ | -------------------------------- | ---- | ---------------------------------------- | ------- | ----- |
-| ⚪     | ListColumn component             | 1d   | Individual list container (280px)        | 3.3     | -     |
-| ⚪     | ListHeader component             | 1d   | Name, count badge, actions menu          | 3.1     | -     |
-| ⚪     | EditableListName component       | 0.5d | Inline editable list title               | 3.1     | -     |
-| ⚪     | TaskCountBadge component         | 0.5d | Count with color coding (80%, 100%)      | 3.1     | -     |
-| ⚪     | ListActionsMenu component        | 1d   | Rename, delete, toggle backlog, reorder  | 3.1     | -     |
-| ⚪     | CreateListButton component       | 0.5d | Disabled at 10 lists                     | 3.1     | -     |
-| ⚪     | TaskListContainer component      | 1d   | Scrollable task container                | 3.2     | -     |
-| ⚪     | EmptyListState component         | 0.5d | Placeholder when list has no tasks       | -       | -     |
+
+| Status | Feature                     | Est. | Notes                                   | PRD Ref | Owner |
+| ------ | --------------------------- | ---- | --------------------------------------- | ------- | ----- |
+| ⚪     | ListColumn component        | 1d   | Individual list container (280px)       | 3.3     | -     |
+| ⚪     | ListHeader component        | 1d   | Name, count badge, actions menu         | 3.1     | -     |
+| ⚪     | EditableListName component  | 0.5d | Inline editable list title              | 3.1     | -     |
+| ⚪     | TaskCountBadge component    | 0.5d | Count with color coding (80%, 100%)     | 3.1     | -     |
+| ⚪     | ListActionsMenu component   | 1d   | Rename, delete, toggle backlog, reorder | 3.1     | -     |
+| ⚪     | CreateListButton component  | 0.5d | Disabled at 10 lists                    | 3.1     | -     |
+| ⚪     | TaskListContainer component | 1d   | Scrollable task container               | 3.2     | -     |
+| ⚪     | EmptyListState component    | 0.5d | Placeholder when list has no tasks      | -       | -     |
 
 #### Task Components
-| Status | Feature                          | Est. | Notes                                    | PRD Ref | Owner |
-| ------ | -------------------------------- | ---- | ---------------------------------------- | ------- | ----- |
-| ⚪     | TaskRow component                | 1d   | Task card with selection state           | 3.2     | -     |
-| ⚪     | TaskEditForm component           | 1d   | Inline editable form (react-hook-form)   | 3.2     | -     |
-| ⚪     | TaskColorIndicator component     | 0.5d | 4px left border with origin color        | 3.1     | -     |
-| ⚪     | TaskActionsMenu component        | 1d   | Edit, delete, move, complete             | 3.2     | -     |
-| ⚪     | InlineTaskCreator component      | 1d   | Appears at top on 'n' key press          | 3.2     | -     |
+
+| Status | Feature                      | Est. | Notes                                  | PRD Ref | Owner |
+| ------ | ---------------------------- | ---- | -------------------------------------- | ------- | ----- |
+| ⚪     | TaskRow component            | 1d   | Task card with selection state         | 3.2     | -     |
+| ⚪     | TaskEditForm component       | 1d   | Inline editable form (react-hook-form) | 3.2     | -     |
+| ⚪     | TaskColorIndicator component | 0.5d | 4px left border with origin color      | 3.1     | -     |
+| ⚪     | TaskActionsMenu component    | 1d   | Edit, delete, move, complete           | 3.2     | -     |
+| ⚪     | InlineTaskCreator component  | 1d   | Appears at top on 'n' key press        | 3.2     | -     |
 
 #### Keyboard Navigation
-| Status | Feature                          | Est. | Notes                                    | PRD Ref | Owner |
-| ------ | -------------------------------- | ---- | ---------------------------------------- | ------- | ----- |
-| ⚪     | Keyboard navigation logic        | 2d   | Arrow keys + vim-style (h/j/k/l)         | 3.3     | -     |
-| ⚪     | Selection state management       | 1d   | Visual focus ring, persist in session    | 3.3     | -     |
-| ⚪     | Keyboard shortcuts: actions      | 2d   | n, e, l, m, Space, Delete, Cmd+arrows    | 3.3     | -     |
+
+| Status | Feature                     | Est. | Notes                                 | PRD Ref | Owner |
+| ------ | --------------------------- | ---- | ------------------------------------- | ------- | ----- |
+| ⚪     | Keyboard navigation logic   | 2d   | Arrow keys + vim-style (h/j/k/l)      | 3.3     | -     |
+| ⚪     | Selection state management  | 1d   | Visual focus ring, persist in session | 3.3     | -     |
+| ⚪     | Keyboard shortcuts: actions | 2d   | n, e, l, m, Space, Delete, Cmd+arrows | 3.3     | -     |
 
 ### 7.4 Work Mode Components
 
-| Status | Feature                          | Est. | Notes                                    | PRD Ref | Owner |
-| ------ | -------------------------------- | ---- | ---------------------------------------- | ------- | ----- |
-| ⚪     | WorkModeLayout component         | 1d   | Full-width centered layout               | 3.4     | -     |
-| ⚪     | CurrentTaskCard component        | 1d   | Large prominent task display             | 3.4     | -     |
-| ⚪     | ForecastSection component        | 1d   | "Up Next" with 2-3 upcoming tasks        | 3.4     | -     |
-| ⚪     | ForecastTaskCard component       | 0.5d | Compact read-only task preview           | 3.4     | -     |
-| ⚪     | CompleteButton component         | 0.5d | Primary CTA with keyboard shortcut       | 3.4     | -     |
-| ⚪     | EmptyWorkState component         | 0.5d | Shown when active list has no tasks      | -       | -     |
+| Status | Feature                    | Est. | Notes                               | PRD Ref | Owner |
+| ------ | -------------------------- | ---- | ----------------------------------- | ------- | ----- |
+| ⚪     | WorkModeLayout component   | 1d   | Full-width centered layout          | 3.4     | -     |
+| ⚪     | CurrentTaskCard component  | 1d   | Large prominent task display        | 3.4     | -     |
+| ⚪     | ForecastSection component  | 1d   | "Up Next" with 2-3 upcoming tasks   | 3.4     | -     |
+| ⚪     | ForecastTaskCard component | 0.5d | Compact read-only task preview      | 3.4     | -     |
+| ⚪     | CompleteButton component   | 0.5d | Primary CTA with keyboard shortcut  | 3.4     | -     |
+| ⚪     | EmptyWorkState component   | 0.5d | Shown when active list has no tasks | -       | -     |
 
 ### 7.5 Done Archive Components
 
-| Status | Feature                          | Est. | Notes                                    | PRD Ref | Owner |
-| ------ | -------------------------------- | ---- | ---------------------------------------- | ------- | ----- |
-| ⚪     | DoneArchiveLayout component      | 1d   | Full-width with metrics header           | 3.5     | -     |
-| ⚪     | MetricsHeader component          | 1d   | Today/week/last week counts              | 3.8     | -     |
-| ⚪     | MetricBadge component            | 0.5d | Individual metric with icon              | 3.8     | -     |
-| ⚪     | CompletedTaskList component      | 1d   | Paginated reverse chronological list     | 3.5     | -     |
-| ⚪     | CompletedTaskCard component      | 1d   | Read-only with completion timestamp      | 3.5     | -     |
-| ⚪     | PaginationControls component     | 1d   | Prev/Next, page numbers, results count   | 3.5     | -     |
-| ⚪     | EmptyDoneState component         | 0.5d | Shown when no tasks completed yet        | -       | -     |
+| Status | Feature                      | Est. | Notes                                  | PRD Ref | Owner |
+| ------ | ---------------------------- | ---- | -------------------------------------- | ------- | ----- |
+| ⚪     | DoneArchiveLayout component  | 1d   | Full-width with metrics header         | 3.5     | -     |
+| ⚪     | MetricsHeader component      | 1d   | Today/week/last week counts            | 3.8     | -     |
+| ⚪     | MetricBadge component        | 0.5d | Individual metric with icon            | 3.8     | -     |
+| ⚪     | CompletedTaskList component  | 1d   | Paginated reverse chronological list   | 3.5     | -     |
+| ⚪     | CompletedTaskCard component  | 1d   | Read-only with completion timestamp    | 3.5     | -     |
+| ⚪     | PaginationControls component | 1d   | Prev/Next, page numbers, results count | 3.5     | -     |
+| ⚪     | EmptyDoneState component     | 0.5d | Shown when no tasks completed yet      | -       | -     |
 
 ### 7.6 Modals & Overlays
 
-| Status | Feature                          | Est. | Notes                                    | PRD Ref | Owner |
-| ------ | -------------------------------- | ---- | ---------------------------------------- | ------- | ----- |
-| ⚪     | CommandPalette component         | 2d   | shadcn/ui Command, Cmd+K trigger         | -       | -     |
-| ⚪     | Command palette actions          | 1d   | Navigation, tasks, lists, help           | -       | -     |
-| ⚪     | KeyboardHelpModal component      | 1d   | Categorized shortcuts, search/filter     | 3.3     | -     |
-| ⚪     | Keyboard shortcuts content       | 1d   | Global, Plan Mode, Work Mode sections    | 3.3     | -     |
-| ⚪     | DumpModeModal component          | 1d   | Overlay with form, Cmd+Shift+D trigger   | 3.3     | -     |
-| ⚪     | DumpModeForm component           | 1d   | Textarea (max 10), backlog selector      | 3.3     | -     |
-| ⚪     | BacklogSelector component        | 0.5d | Dropdown, remember last used             | -       | -     |
+| Status | Feature                     | Est. | Notes                                  | PRD Ref | Owner |
+| ------ | --------------------------- | ---- | -------------------------------------- | ------- | ----- |
+| ⚪     | CommandPalette component    | 2d   | shadcn/ui Command, Cmd+K trigger       | -       | -     |
+| ⚪     | Command palette actions     | 1d   | Navigation, tasks, lists, help         | -       | -     |
+| ⚪     | KeyboardHelpModal component | 1d   | Categorized shortcuts, search/filter   | 3.3     | -     |
+| ⚪     | Keyboard shortcuts content  | 1d   | Global, Plan Mode, Work Mode sections  | 3.3     | -     |
+| ⚪     | DumpModeModal component     | 1d   | Overlay with form, Cmd+Shift+D trigger | 3.3     | -     |
+| ⚪     | DumpModeForm component      | 1d   | Textarea (max 10), backlog selector    | 3.3     | -     |
+| ⚪     | BacklogSelector component   | 0.5d | Dropdown, remember last used           | -       | -     |
 
 ### 7.7 Utility & UI Components
 
-| Status | Feature                          | Est. | Notes                                    | PRD Ref | Owner |
-| ------ | -------------------------------- | ---- | ---------------------------------------- | ------- | ----- |
-| ⚪     | ErrorBoundary component          | 0.5d | Catch React errors, display fallback     | -       | -     |
-| ⚪     | LoadingSpinner component         | 0.5d | Animated spinner, skeleton variants      | -       | -     |
-| ⚪     | EmptyState component             | 0.5d | Generic empty state with actions         | -       | -     |
-| ⚪     | shadcn/ui setup                  | 1d   | Install components, configure theme      | -       | -     |
-| ⚪     | Tailwind CSS configuration       | 0.5d | Theme customization, plugins             | -       | -     |
+| Status | Feature                    | Est. | Notes                                | PRD Ref | Owner |
+| ------ | -------------------------- | ---- | ------------------------------------ | ------- | ----- |
+| ⚪     | ErrorBoundary component    | 0.5d | Catch React errors, display fallback | -       | -     |
+| ⚪     | LoadingSpinner component   | 0.5d | Animated spinner, skeleton variants  | -       | -     |
+| ⚪     | EmptyState component       | 0.5d | Generic empty state with actions     | -       | -     |
+| ⚪     | shadcn/ui setup            | 1d   | Install components, configure theme  | -       | -     |
+| ⚪     | Tailwind CSS configuration | 0.5d | Theme customization, plugins         | -       | -     |
 
 ### 7.8 Forms & Validation
 
-| Status | Feature                          | Est. | Notes                                    | PRD Ref | Owner |
-| ------ | -------------------------------- | ---- | ---------------------------------------- | ------- | ----- |
-| ⚪     | react-hook-form setup            | 0.5d | Form library configuration               | -       | -     |
-| ⚪     | Zod schemas (frontend)           | 1d   | Validation schemas for all forms         | -       | -     |
-| ⚪     | Input validation: task title     | 0.5d | Required, max 500 chars                  | 3.2     | -     |
-| ⚪     | Input validation: task desc      | 0.5d | Optional, max 5000 chars                 | 3.2     | -     |
-| ⚪     | Input validation: list name      | 0.5d | Required, max 100 chars                  | 3.1     | -     |
-| ⚪     | Input sanitization               | 0.5d | Strip HTML tags, prevent XSS             | -       | -     |
+| Status | Feature                      | Est. | Notes                            | PRD Ref | Owner |
+| ------ | ---------------------------- | ---- | -------------------------------- | ------- | ----- |
+| ⚪     | react-hook-form setup        | 0.5d | Form library configuration       | -       | -     |
+| ⚪     | Zod schemas (frontend)       | 1d   | Validation schemas for all forms | -       | -     |
+| ⚪     | Input validation: task title | 0.5d | Required, max 500 chars          | 3.2     | -     |
+| ⚪     | Input validation: task desc  | 0.5d | Optional, max 5000 chars         | 3.2     | -     |
+| ⚪     | Input validation: list name  | 0.5d | Required, max 100 chars          | 3.1     | -     |
+| ⚪     | Input sanitization           | 0.5d | Strip HTML tags, prevent XSS     | -       | -     |
 
 ### 7.9 Accessibility Implementation
 
-| Status | Feature                          | Est. | Notes                                    | PRD Ref | Owner |
-| ------ | -------------------------------- | ---- | ---------------------------------------- | ------- | ----- |
-| ⚪     | ARIA roles & attributes          | 2d   | Proper semantic HTML throughout          | -       | -     |
-| ⚪     | Focus management                 | 1d   | Focus follows keyboard selection         | 3.3     | -     |
-| ⚪     | Focus trap for modals            | 0.5d | Tab cycles within modal                  | -       | -     |
-| ⚪     | Screen reader announcements      | 1d   | aria-live regions for dynamic content    | -       | -     |
-| ⚪     | Keyboard navigation (Tab)        | 1d   | All interactive elements reachable       | 3.3     | -     |
-| ⚪     | High contrast compliance         | 0.5d | WCAG AA 4.5:1 ratio                      | -       | -     |
-| ⚪     | Skip links                       | 0.5d | Skip to main content                     | -       | -     |
+| Status | Feature                     | Est. | Notes                                 | PRD Ref | Owner |
+| ------ | --------------------------- | ---- | ------------------------------------- | ------- | ----- |
+| ⚪     | ARIA roles & attributes     | 2d   | Proper semantic HTML throughout       | -       | -     |
+| ⚪     | Focus management            | 1d   | Focus follows keyboard selection      | 3.3     | -     |
+| ⚪     | Focus trap for modals       | 0.5d | Tab cycles within modal               | -       | -     |
+| ⚪     | Screen reader announcements | 1d   | aria-live regions for dynamic content | -       | -     |
+| ⚪     | Keyboard navigation (Tab)   | 1d   | All interactive elements reachable    | 3.3     | -     |
+| ⚪     | High contrast compliance    | 0.5d | WCAG AA 4.5:1 ratio                   | -       | -     |
+| ⚪     | Skip links                  | 0.5d | Skip to main content                  | -       | -     |
 
 ### 7.10 Mobile Responsive Implementation
 
-| Status | Feature                          | Est. | Notes                                    | PRD Ref | Owner |
-| ------ | -------------------------------- | ---- | ---------------------------------------- | ------- | ----- |
-| ⚪     | Mobile: one list at a time       | 2d   | Single-column full-width view            | 3.10    | -     |
-| ⚪     | Mobile: swipe gestures           | 1d   | Swipe left/right between lists           | 3.10    | -     |
-| ⚪     | Mobile: position indicators      | 0.5d | Dots showing current list in sequence    | 3.10    | -     |
-| ⚪     | Mobile: floating action button   | 0.5d | Create task FAB                          | 3.10    | -     |
-| ⚪     | Mobile: tap actions              | 1d   | Tap task for action menu                 | 3.10    | -     |
-| ⚪     | Mobile: backlog dropdown         | 0.5d | Header dropdown for backlog selection    | 3.10    | -     |
-| ⚪     | Mobile: work mode fullscreen     | 1d   | Large complete button, full-screen card  | 3.10    | -     |
-| ⚪     | Mobile: dump mode bottom sheet   | 0.5d | Bottom sheet modal instead of centered   | 3.10    | -     |
-| ⚪     | Mobile: vertical scroll          | 0.5d | Done archive vertical scroll pagination  | 3.10    | -     |
+| Status | Feature                        | Est. | Notes                                   | PRD Ref | Owner |
+| ------ | ------------------------------ | ---- | --------------------------------------- | ------- | ----- |
+| ⚪     | Mobile: one list at a time     | 2d   | Single-column full-width view           | 3.10    | -     |
+| ⚪     | Mobile: swipe gestures         | 1d   | Swipe left/right between lists          | 3.10    | -     |
+| ⚪     | Mobile: position indicators    | 0.5d | Dots showing current list in sequence   | 3.10    | -     |
+| ⚪     | Mobile: floating action button | 0.5d | Create task FAB                         | 3.10    | -     |
+| ⚪     | Mobile: tap actions            | 1d   | Tap task for action menu                | 3.10    | -     |
+| ⚪     | Mobile: backlog dropdown       | 0.5d | Header dropdown for backlog selection   | 3.10    | -     |
+| ⚪     | Mobile: work mode fullscreen   | 1d   | Large complete button, full-screen card | 3.10    | -     |
+| ⚪     | Mobile: dump mode bottom sheet | 0.5d | Bottom sheet modal instead of centered  | 3.10    | -     |
+| ⚪     | Mobile: vertical scroll        | 0.5d | Done archive vertical scroll pagination | 3.10    | -     |
 
 **Phase Blockers:** Backend API completion (Phase 2-6)
 **Next Up:** Static pages & infrastructure (after backend auth)
 
 **Component Architecture:**
+
 - Astro for static pages (landing, auth callback, legal, errors)
-- React SPA for authenticated app (/app/*)
+- React SPA for authenticated app (/app/\*)
 - shadcn/ui component library (Tailwind-based)
 - TanStack Query for server state management
 - React Context for keyboard navigation state
 
 **Input Validation Max Lengths:**
+
 - Task title: 500 characters
 - Task description: 5000 characters
 - List name: 100 characters
@@ -563,14 +574,14 @@ Infra:    ███████████████░░░░░ 82% (14/1
 
 ### Priority 1: User Experience Enhancements
 
-| Feature                                    | Est. | PRD Ref | Status         |
-| ------------------------------------------ | ---- | ------- | -------------- |
-| Persist last active mode & list selection  | 1d   | -       | ⚪ Not started |
-| Undo/Redo functionality                    | 3d   | -       | ⚪ Not started |
-| Keyboard shortcuts customization           | 2d   | -       | ⚪ Not started |
-| Dark mode                                  | 2d   | -       | ⚪ Not started |
-| Task search/filter                         | 3d   | -       | ⚪ Not started |
-| Bulk task operations                       | 2d   | -       | ⚪ Not started |
+| Feature                                   | Est. | PRD Ref | Status         |
+| ----------------------------------------- | ---- | ------- | -------------- |
+| Persist last active mode & list selection | 1d   | -       | ⚪ Not started |
+| Undo/Redo functionality                   | 3d   | -       | ⚪ Not started |
+| Keyboard shortcuts customization          | 2d   | -       | ⚪ Not started |
+| Dark mode                                 | 2d   | -       | ⚪ Not started |
+| Task search/filter                        | 3d   | -       | ⚪ Not started |
+| Bulk task operations                      | 2d   | -       | ⚪ Not started |
 
 ### Priority 2: Advanced Features
 

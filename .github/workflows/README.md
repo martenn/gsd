@@ -53,15 +53,16 @@ gh workflow run docker-build.yml \
 
 ### Workflow Inputs
 
-| Input | Type | Required | Default | Description |
-|-------|------|----------|---------|-------------|
-| `push_images` | boolean | Yes | `false` | Whether to push images to registry |
-| `registry` | choice | Yes | `ghcr.io` | Container registry (ghcr.io or docker.io) |
-| `tag` | string | No | - | Additional custom tag (e.g., v1.0.0) |
+| Input         | Type    | Required | Default   | Description                               |
+| ------------- | ------- | -------- | --------- | ----------------------------------------- |
+| `push_images` | boolean | Yes      | `false`   | Whether to push images to registry        |
+| `registry`    | choice  | Yes      | `ghcr.io` | Container registry (ghcr.io or docker.io) |
+| `tag`         | string  | No       | -         | Additional custom tag (e.g., v1.0.0)      |
 
 ### Image Tags
 
 Images are tagged automatically based on:
+
 - `{branch}-{git-sha}` - e.g., `main-abc123f`
 - `{branch}` - e.g., `main`
 - `latest` - Only for default branch
@@ -74,6 +75,7 @@ Images are tagged automatically based on:
 **No setup required** - Uses `GITHUB_TOKEN` automatically.
 
 Images will be pushed to:
+
 - `ghcr.io/{owner}/{repo}/backend:latest`
 - `ghcr.io/{owner}/{repo}/frontend:latest`
 
@@ -92,6 +94,7 @@ Images will be pushed to:
    - Add `DOCKERHUB_TOKEN` (your access token)
 
 Images will be pushed to:
+
 - `docker.io/{username}/{repo}/backend:latest`
 - `docker.io/{username}/{repo}/frontend:latest`
 
@@ -105,6 +108,7 @@ The workflow includes **Trivy** security scanning:
 - Runs on every build (even if not pushing)
 
 View scan results:
+
 1. Go to **Security** tab
 2. Click **Code scanning**
 3. Filter by `backend-image` or `frontend-image` category
@@ -112,6 +116,7 @@ View scan results:
 ### Build Cache
 
 The workflow uses GitHub Actions cache to speed up builds:
+
 - Cache stores Docker layer data between runs
 - Significantly reduces build time (50-80% faster)
 - Automatically managed by GitHub
@@ -119,6 +124,7 @@ The workflow uses GitHub Actions cache to speed up builds:
 ### Build Summary
 
 After each run, check the workflow summary for:
+
 - Image names and tags
 - Push status
 - Build logs
@@ -127,17 +133,22 @@ After each run, check the workflow summary for:
 ### Troubleshooting
 
 #### Build fails: "permission denied"
+
 **Solution:** Check repository permissions allow writing packages
 
 #### Build fails: "authentication required"
+
 **Solution:**
+
 - For ghcr.io: Ensure `GITHUB_TOKEN` has `packages: write` permission
 - For docker.io: Verify `DOCKERHUB_USERNAME` and `DOCKERHUB_TOKEN` secrets
 
 #### Security scan fails
+
 **Solution:** Review Trivy output in workflow logs, fix vulnerabilities, rebuild
 
 #### Images not pushed
+
 **Solution:** Verify `push_images` input is set to `true`
 
 ### Local Testing
@@ -168,6 +179,7 @@ See `DOCKER-BUILD-GUIDE.md` for detailed testing instructions.
 ### Future Enhancements
 
 Potential improvements for production:
+
 - [ ] Automatic builds on release tags
 - [ ] Multi-architecture builds (ARM64 support)
 - [ ] Deployment to staging/production after successful build

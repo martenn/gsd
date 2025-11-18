@@ -26,6 +26,14 @@ import { ColorModule } from '../colors/color.module';
       useValue: new PrismaClient(),
     },
   ],
-  exports: [GetLists, CreateList, UpdateList, ToggleBacklog, ReorderList, DeleteList, ListsRepository],
+  exports: [
+    GetLists,
+    CreateList,
+    UpdateList,
+    ToggleBacklog,
+    ReorderList,
+    DeleteList,
+    ListsRepository,
+  ],
 })
 export class ListsModule {}

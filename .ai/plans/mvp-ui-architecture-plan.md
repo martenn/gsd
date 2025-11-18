@@ -8,6 +8,7 @@ This document captures the UI architecture planning for the GSD MVP frontend. It
 **Status:** Approved for Implementation
 
 **Key Objectives:**
+
 - Define responsive UI architecture for Plan Mode, Work Mode, and Done View
 - Establish keyboard-first interaction patterns
 - Plan mobile-responsive layouts
@@ -23,6 +24,7 @@ This document captures the UI architecture planning for the GSD MVP frontend. It
 **Decision:** Implement as a single authenticated shell with client-side view toggling.
 
 **Rationale:**
+
 - Mount a React app at `/app/*` that handles all three modes as routed views (`/app/plan`, `/app/work`, `/app/done`)
 - Allows for faster transitions between modes
 - Shared state via TanStack Query
@@ -30,6 +32,7 @@ This document captures the UI architecture planning for the GSD MVP frontend. It
 - Eliminates page reloads between mode switches
 
 **Implementation:**
+
 - Astro pages for landing/auth/static content
 - React SPA for authenticated app shell
 - Client-side routing within React app
@@ -41,23 +44,27 @@ This document captures the UI architecture planning for the GSD MVP frontend. It
 **Decision:** Two-column cross-scroll layout with fixed backlog column
 
 **Layout Structure:**
+
 - **Left column (fixed 280px desktop, 240px tablet):** Backlogs stacked vertically with independent scroll
 - **Right area (horizontal scroll):** Intermediate lists in columns (280px each)
 - Both areas support independent scrolling (vertical for backlogs, horizontal for intermediate lists)
 
 **Mobile Approach:**
+
 - One list at a time (full viewport width)
 - Header dropdown for backlog/list selection
 - Horizontal swipe gestures for navigation between sibling lists
 - Visual indicator showing current position
 
 **Rationale:**
+
 - Emphasizes left-to-right workflow (backlogs → intermediate → done)
 - Backlogs grouped in single zone without forcing cross-backlog priority
 - Fixed width prevents layout shifts
 - Supports keyboard navigation naturally
 
 **Component Hierarchy:**
+
 ```
 <BoardLayout>
   <BacklogColumn>
@@ -78,6 +85,7 @@ This document captures the UI architecture planning for the GSD MVP frontend. It
 **Decision:** Inline editing with keyboard-first flow
 
 **Task Creation:**
+
 - Press `n` (new) or `Enter` on empty selection
 - Inline editable row appears at top of selected list
 - Fields: title (autofocused) + expandable description
@@ -85,12 +93,14 @@ This document captures the UI architecture planning for the GSD MVP frontend. It
 - No modal interruptions
 
 **Task Editing:**
+
 - Press `e` (edit) or `Enter` on selected task
 - Task row expands to show title and description fields
 - `Tab` to move between fields
 - `Enter` to save, `Esc` to cancel
 
 **Rationale:**
+
 - Maintains keyboard flow
 - Reduces context switching
 - Mirrors spreadsheet-like UX familiar to users
@@ -103,6 +113,7 @@ This document captures the UI architecture planning for the GSD MVP frontend. It
 **Decision:** Modal overlay triggered by global keyboard shortcut
 
 **Interaction:**
+
 - Global shortcut: `Cmd+Shift+D` from any view
 - Modal shows textarea (max 10 lines)
 - Backlog selector dropdown
@@ -110,6 +121,7 @@ This document captures the UI architecture planning for the GSD MVP frontend. It
 - `Esc` to cancel
 
 **Rationale:**
+
 - Keeps user in current context
 - Accessible from any mode
 - Fast task capture without navigation
@@ -122,6 +134,7 @@ This document captures the UI architecture planning for the GSD MVP frontend. It
 **Decision:** 4px left border with origin backlog color
 
 **Implementation:**
+
 - Task inherits color from origin backlog (assigned by backend)
 - 4px left border on desktop
 - 3px left border on mobile
@@ -137,16 +150,19 @@ This document captures the UI architecture planning for the GSD MVP frontend. It
 **Decision:** Read-only focused view with minimal actions
 
 **Layout:**
+
 - Current task displayed prominently (full width, large text)
 - Read-only forecast showing next 2-3 tasks (smaller, below current)
 - Single action button: "Complete" (or keyboard shortcut)
 - Prominent "Switch to Plan Mode" button if reordering needed
 
 **Empty State:**
+
 - Message: "No tasks in [List Name]"
 - Actions: "Switch to Plan Mode" (`p`) and "Add Task" (`n`)
 
 **Rationale:**
+
 - Maintains distraction-free focus
 - Clear separation between planning and execution
 - Prevents mode confusion
@@ -159,12 +175,14 @@ This document captures the UI architecture planning for the GSD MVP frontend. It
 **Decision:** Contextual display in Done View only (MVP)
 
 **Implementation:**
+
 - Header section in Done View: "Today: X tasks • This week: Y tasks • Last week: Z tasks"
 - Fetch via TanStack Query
 - Cache metrics data
 - No separate metrics dashboard in MVP
 
 **Rationale:**
+
 - Simpler implementation
 - Naturally fits completion-focused context
 - Avoids cluttering Plan Mode
@@ -177,6 +195,7 @@ This document captures the UI architecture planning for the GSD MVP frontend. It
 **Decision:** Persistent non-intrusive indicators with disabled controls
 
 **Implementation:**
+
 - Show limit indicators: "8/10 lists" in header, "95/100 tasks" in list title
 - Yellow highlight at 80% capacity
 - Red highlight at 100% capacity
@@ -184,6 +203,7 @@ This document captures the UI architecture planning for the GSD MVP frontend. It
 - Tooltip on hover explaining constraint
 
 **Rationale:**
+
 - Transparent without being alarming
 - Clear feedback before limit reached
 - Prevents user frustration
@@ -196,6 +216,7 @@ This document captures the UI architecture planning for the GSD MVP frontend. It
 **Decision:** Minimal static Astro page
 
 **Structure:**
+
 - App name/logo
 - One-sentence tagline: "Plan and execute work using backlogs, lists, and focused work mode"
 - Centered "Sign in with Google" button
@@ -203,10 +224,12 @@ This document captures the UI architecture planning for the GSD MVP frontend. It
 - No marketing content or hero images (MVP)
 
 **Redirect:**
+
 - Authenticated users redirect to `/app/plan` (or last saved mode post-MVP)
 - Use Astro middleware for redirect logic
 
 **Rationale:**
+
 - Fast initial load (static generation)
 - Simple, focused, professional
 - SEO-friendly
@@ -219,6 +242,7 @@ This document captures the UI architecture planning for the GSD MVP frontend. It
 **Decision:** Categorized help overlay with search
 
 **Structure:**
+
 - Modal triggered by `?`
 - Categories:
   - Global shortcuts (mode switching, help)
@@ -228,6 +252,7 @@ This document captures the UI architecture planning for the GSD MVP frontend. It
 - Search filter at top for quick discovery
 
 **Rationale:**
+
 - Organizes shortcuts by context
 - Searchable for quick reference
 - Scalable as shortcuts grow
@@ -252,6 +277,7 @@ This document captures the UI architecture planning for the GSD MVP frontend. It
 ```
 
 **Authentication:**
+
 - Astro middleware checks JWT cookie
 - Redirects unauthenticated users to `/`
 - Redirects authenticated users from `/` to `/app/plan`
@@ -261,6 +287,7 @@ This document captures the UI architecture planning for the GSD MVP frontend. It
 ### 3.2 Component Library Strategy
 
 **Use shadcn/ui for:**
+
 - Buttons
 - Inputs (text, textarea)
 - Dialogs/Modals
@@ -270,6 +297,7 @@ This document captures the UI architecture planning for the GSD MVP frontend. It
 - Skeleton loaders
 
 **Build custom components for:**
+
 - List board layout (BacklogColumn, IntermediateListsContainer)
 - Task card/row
 - Keyboard navigation grid
@@ -278,6 +306,7 @@ This document captures the UI architecture planning for the GSD MVP frontend. It
 - Mobile swipe container
 
 **Rationale:**
+
 - Leverage shadcn/ui for consistency and accessibility
 - Custom components for domain-specific UX
 - Tailwind CSS for styling both
@@ -290,6 +319,7 @@ This document captures the UI architecture planning for the GSD MVP frontend. It
 **Decision:** Centralized API client + TanStack Query hooks
 
 **Structure:**
+
 ```
 apps/frontend/src/
 ├── lib/
@@ -309,24 +339,23 @@ apps/frontend/src/
 ```
 
 **Query Keys Convention:**
+
 ```typescript
 // Lists
-['lists', userId]
-['lists', listId]
-
-// Tasks
-['tasks', { listId, userId }]
-['tasks', taskId]
-
-// Done
-['done', { page, userId }]
-
-// Metrics
-['metrics', 'daily', { userId }]
-['metrics', 'weekly', { userId }]
+['lists', userId][('lists', listId)][
+  // Tasks
+  ('tasks', { listId, userId })
+][('tasks', taskId)][
+  // Done
+  ('done', { page, userId })
+][
+  // Metrics
+  ('metrics', 'daily', { userId })
+][('metrics', 'weekly', { userId })];
 ```
 
 **Rationale:**
+
 - Single source of truth for queries
 - Clean component code
 - Automatic caching and refetching
@@ -338,17 +367,20 @@ apps/frontend/src/
 ### 3.4 Optimistic Updates Strategy
 
 **Apply optimistic updates for:**
+
 - ✅ Task completion (high confidence, fast feedback)
 - ✅ Task reordering (visual feedback critical)
 - ✅ Task movement between lists (visual operation)
 - ✅ List reordering (visual operation)
 
 **Do NOT use optimistic updates for:**
+
 - ❌ Task/list creation (need server-assigned IDs)
 - ❌ Task/list deletion (risky if fails, user expects confirmation)
 - ❌ Toggle backlog status (affects business rules/constraints)
 
 **Rationale:**
+
 - Balance responsiveness with data integrity
 - Optimistic for operations with low failure risk
 - Pessimistic for operations with business rules
@@ -366,14 +398,17 @@ apps/frontend/src/
 4. **Mode switching:** Instant (no loader, cached data)
 
 **Never:**
+
 - Block entire UI for single operations
 - Use full-page spinners except initial load
 
 **React Suspense:**
+
 - Code-splitting boundaries for routes
 - Lazy load non-critical components
 
 **Rationale:**
+
 - Progressive loading reduces perceived latency
 - Contextual feedback keeps user oriented
 - Suspense for code-splitting improves initial load
@@ -386,19 +421,21 @@ apps/frontend/src/
 
 | HTTP Status | Type           | UI Response                            |
 | ----------- | -------------- | -------------------------------------- |
-| 401/403     | Authentication | Redirect to login, clear local state  |
+| 401/403     | Authentication | Redirect to login, clear local state   |
 | 400/422     | Validation     | Inline error below affected field      |
 | 429         | Rate Limit     | Toast: "Too many requests, try again"  |
 | 500+        | Server Error   | Inline: "Something went wrong, retry?" |
 | Network     | Offline        | Toast: "Connection lost"               |
 
 **Implementation:**
+
 - Error utility: `classifyError(error) => ErrorType`
 - TanStack Query `onError` callback at query level
 - Component-level overrides for specific messages
 - Retry button for recoverable errors
 
 **Rationale:**
+
 - Consistent error handling across app
 - User-friendly messages
 - Clear recovery paths
@@ -411,6 +448,7 @@ apps/frontend/src/
 **Decision:** React context for keyboard selection state
 
 **Context Structure:**
+
 ```typescript
 interface KeyboardNavigationContext {
   selectedListId: string | null;
@@ -423,16 +461,19 @@ interface KeyboardNavigationContext {
 ```
 
 **Persistence:**
+
 - Store selection in `sessionStorage`
 - Restore on component mount
 - Survives React re-renders
 
 **Arrow Key Handlers:**
+
 - Attached at board level
 - Update context based on current selection
 - Visual indicators rendered via context consumers
 
 **Rationale:**
+
 - Centralized keyboard state
 - Decoupled from list/task data
 - Easy to test
@@ -445,6 +486,7 @@ interface KeyboardNavigationContext {
 **Decision:** Swipeable container with header selector
 
 **Implementation:**
+
 - Use `react-swipeable-views` or similar
 - One list per viewport width
 - Header shows current list name + dropdown selector
@@ -452,10 +494,12 @@ interface KeyboardNavigationContext {
 - Disable browser back/forward swipe gestures
 
 **Fallback:**
+
 - CSS `scroll-snap` for better browser compatibility
 - `overflow-x: scroll` with snap points
 
 **Rationale:**
+
 - Native mobile UX pattern
 - Works with touch gestures
 - Clear position indication
@@ -470,6 +514,7 @@ interface KeyboardNavigationContext {
 **Trigger:** `Cmd+K` or `Ctrl+K`
 
 **Actions:**
+
 - "Switch to Plan Mode" (`Cmd+P`)
 - "Switch to Work Mode" (`Cmd+W`)
 - "Go to Done" (`Cmd+D`)
@@ -479,12 +524,14 @@ interface KeyboardNavigationContext {
 - "Show Keyboard Help" (`?`)
 
 **Display:**
+
 - Action name
 - Keyboard shortcut hint (right-aligned)
 - Icon (lucide-react)
 - Search filter at top
 
 **Rationale:**
+
 - Discoverability for keyboard shortcuts
 - Fast action access for mouse users
 - Standard pattern (GitHub, Linear, etc.)
@@ -497,22 +544,26 @@ interface KeyboardNavigationContext {
 **Decision:** react-hook-form + zod in "onBlur" mode
 
 **Task/List Forms:**
+
 - Validate on blur (immediate feedback without distraction)
 - Inline error messages below input
 - Error persists until corrected
 
 **Dump Mode:**
+
 - Validate on submit only
 - Check line count ≤ 10
 - Show error if exceeded
 
 **Validation Rules:**
+
 - Task title: required, 1-200 chars
 - Task description: optional, max 1000 chars
 - List name: required, 1-100 chars
 - Dump mode: max 10 non-empty lines
 
 **Rationale:**
+
 - Balance feedback with UX
 - No interruption during typing
 - Immediate feedback on blur
@@ -757,6 +808,7 @@ interface KeyboardNavigationContext {
 **Question:** What should be the exact route hierarchy?
 
 **Decision:**
+
 - `/` - Landing (Astro static)
 - `/auth/callback` - OAuth callback (Astro)
 - `/app` - Authenticated shell → redirects to `/app/plan`
@@ -832,33 +884,40 @@ interface KeyboardNavigationContext {
 ### Frontend Dependencies
 
 **Core:**
+
 - Astro (islands architecture)
 - React 19
 - TypeScript (strict mode)
 
 **Styling:**
+
 - Tailwind CSS
 - shadcn/ui components
 - lucide-react icons
 
 **State Management:**
+
 - TanStack Query (server state)
 - React Context (keyboard navigation, auth)
 - Local state (useState)
 
 **Forms:**
+
 - react-hook-form
 - zod (validation)
 
 **Routing:**
+
 - Astro pages (static/auth)
 - React Router or client-side routing (within `/app/*`)
 
 **API Client:**
+
 - Custom fetch wrapper with typed DTOs
 - Optional: OpenAPI client generation from backend Swagger
 
 **Mobile:**
+
 - react-swipeable-views (or similar)
 - CSS scroll-snap (fallback)
 
@@ -867,6 +926,7 @@ interface KeyboardNavigationContext {
 ## 6. Next Steps
 
 ### Phase 1: Foundation (Week 1)
+
 - [ ] Set up authenticated React app shell at `/app`
 - [ ] Implement API client wrapper (`lib/api/client.ts`)
 - [ ] Create TanStack Query hooks for lists and tasks
@@ -874,6 +934,7 @@ interface KeyboardNavigationContext {
 - [ ] Implement keyboard navigation context
 
 ### Phase 2: Plan Mode Core (Week 2-3)
+
 - [ ] Build board layout (BacklogColumn + IntermediateListsContainer)
 - [ ] Implement list components (List, ListHeader, TaskCard)
 - [ ] Add inline task creation/editing
@@ -882,6 +943,7 @@ interface KeyboardNavigationContext {
 - [ ] Add keyboard navigation (arrow keys + vim keys)
 
 ### Phase 3: Work Mode & Done (Week 4)
+
 - [ ] Build Work Mode focused view
 - [ ] Implement task completion flow
 - [ ] Create Done archive view with pagination
@@ -889,6 +951,7 @@ interface KeyboardNavigationContext {
 - [ ] Implement empty states
 
 ### Phase 4: Additional Features (Week 5)
+
 - [ ] Add Dump Mode modal
 - [ ] Implement command palette (Cmd+K)
 - [ ] Create keyboard shortcuts help overlay (?)
@@ -896,6 +959,7 @@ interface KeyboardNavigationContext {
 - [ ] Implement error handling UI
 
 ### Phase 5: Mobile Responsive (Week 6)
+
 - [ ] Implement mobile layout (one list at a time)
 - [ ] Add swipeable navigation
 - [ ] Create mobile list selector dropdown
@@ -903,6 +967,7 @@ interface KeyboardNavigationContext {
 - [ ] Test on mobile devices
 
 ### Phase 6: Polish & Testing (Week 7)
+
 - [ ] Add loading states (skeletons, spinners)
 - [ ] Implement optimistic updates
 - [ ] Refine error messages
@@ -935,6 +1000,7 @@ interface KeyboardNavigationContext {
 ## 8. Success Criteria
 
 ### Functional Requirements
+
 - ✅ All three modes (Plan, Work, Done) functional and navigable
 - ✅ Keyboard-first interaction working (arrow keys, vim keys, shortcuts)
 - ✅ Mobile responsive (one list at a time, swipeable)
@@ -945,6 +1011,7 @@ interface KeyboardNavigationContext {
 - ✅ Google OAuth sign-in/out working
 
 ### Performance Targets
+
 - Initial load (authenticated): < 2s (95th percentile)
 - Mode switching: < 100ms
 - Task operations: < 200ms (with optimistic updates)
@@ -952,6 +1019,7 @@ interface KeyboardNavigationContext {
 - Mobile swipe response: < 50ms
 
 ### Quality Metrics
+
 - Zero critical bugs
 - All user stories from PRD satisfied
 - Responsive on desktop (1920x1080) and mobile (375x667)

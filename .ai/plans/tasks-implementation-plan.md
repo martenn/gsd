@@ -3,6 +3,7 @@
 ## 1. Feature Overview
 
 The Task feature is the core execution mechanism of GSD. It enables users to:
+
 - Create, edit, delete, and manage tasks across multiple lists
 - Move tasks between lists (e.g., from Backlog to Today)
 - Complete tasks (marking them as done)
@@ -11,6 +12,7 @@ The Task feature is the core execution mechanism of GSD. It enables users to:
 - Track task metadata (creation time, completion time, origin backlog color)
 
 ### Key Constraints
+
 - **Per-list limit**: 100 tasks maximum per list
 - **Hard delete**: No soft deletes; deletion is permanent
 - **Single ownership**: Each task belongs to exactly one list
@@ -19,6 +21,7 @@ The Task feature is the core execution mechanism of GSD. It enables users to:
 - **Done archive**: Completed tasks moved to Done list with completed_at timestamp
 
 ### Business Rules
+
 1. New tasks and moved tasks always insert at the top (position 0)
 2. Completing a task moves it to the Done list and records completion timestamp
 3. Task order is managed via order_index; reordering updates this index
@@ -31,6 +34,7 @@ The Task feature is the core execution mechanism of GSD. It enables users to:
 ## 2. Core Domain Model
 
 ### Task Entity
+
 ```
 Task {
   id: UUID (primary key)
@@ -59,11 +63,13 @@ Task {
 ```
 
 ### Key Relationships
+
 - **Task → List**: Many-to-one; each task belongs to exactly one list
 - **Task → User**: Many-to-one; tasks scoped per user
 - **Task → Backlog**: Task stores originBacklogId to derive color even after moving to other lists
 
 ### Derived Properties
+
 - **isCompleted**: completedAt !== null
 - **color**: Inherited from originBacklogId's assigned color
 - **listName**: Derived from list relationship
@@ -73,9 +79,11 @@ Task {
 ## 3. Input Details
 
 ### 3.1 Create Task
+
 **Endpoint**: `POST /v1/tasks`
 
 **Request Body** (implements `CreateTaskRequest` from @gsd/types):
+
 ```typescript
 {
   title: string;              // 1-500 chars, required
@@ -85,6 +93,7 @@ Task {
 ```
 
 **Validation Rules**:
+
 - title: required, string, min 1 char, max 500 chars
 - description: optional, string, max 5000 chars
 - listId: required, UUID, must exist, must not be Done list
@@ -96,12 +105,15 @@ Task {
 ---
 
 ### 3.2 Update Task
+
 **Endpoint**: `PATCH /v1/tasks/:id`
 
 **Path Parameters**:
+
 - id: UUID (task to update)
 
 **Request Body** (implements `UpdateTaskRequest` from @gsd/types):
+
 ```typescript
 {
   title?: string;             // 1-500 chars, optional
@@ -110,6 +122,7 @@ Task {
 ```
 
 **Validation Rules**:
+
 - At least one field must be provided (title or description)
 - title: if provided, string, min 1 char, max 500 chars
 - description: if provided, string, max 5000 chars (or null to clear)
@@ -121,9 +134,11 @@ Task {
 ---
 
 ### 3.3 Get Tasks
+
 **Endpoint**: `GET /v1/tasks`
 
 **Query Parameters**:
+
 ```
 listId?: UUID               // filter by list (required for non-Done lists)
 includeCompleted?: boolean  // include tasks from Done list (default: false)
@@ -132,6 +147,7 @@ offset?: number             // pagination offset (default: 0)
 ```
 
 **Validation Rules**:
+
 - If listId provided: must be UUID and user must own the list
 - includeCompleted: boolean (defaults to false)
 - limit: integer, min 1, max 100
@@ -140,12 +156,15 @@ offset?: number             // pagination offset (default: 0)
 ---
 
 ### 3.4 Delete Task
+
 **Endpoint**: `DELETE /v1/tasks/:id`
 
 **Path Parameters**:
+
 - id: UUID (task to delete)
 
 **Validation Rules**:
+
 - Task must exist
 - User must own the task
 - No request body
@@ -153,19 +172,23 @@ offset?: number             // pagination offset (default: 0)
 ---
 
 ### 3.5 Move Task
+
 **Endpoint**: `POST /v1/tasks/:id/move`
 
 **Path Parameters**:
+
 - id: UUID (task to move)
 
 **Request Body** (implements `MoveTaskRequest` from @gsd/types):
+
 ```typescript
 {
-  listId: UUID;               // destination list
+  listId: UUID; // destination list
 }
 ```
 
 **Validation Rules**:
+
 - id: UUID, must exist, user must own
 - listId: UUID, must exist, user must own, must not be Done
 - Task must not be completed (completedAt must be null)
@@ -175,14 +198,17 @@ offset?: number             // pagination offset (default: 0)
 ---
 
 ### 3.6 Complete Task
+
 **Endpoint**: `POST /v1/tasks/:id/complete`
 
 **Path Parameters**:
+
 - id: UUID (task to complete)
 
 **Request Body**: Empty (no body required)
 
 **Validation Rules**:
+
 - id: UUID, must exist, user must own
 - Task must not already be completed (completedAt must be null)
 - Task will be moved to Done list automatically
@@ -190,9 +216,11 @@ offset?: number             // pagination offset (default: 0)
 ---
 
 ### 3.7 Bulk Add Tasks (Dump Mode)
+
 **Endpoint**: `POST /v1/tasks/bulk-add`
 
 **Request Body** (implements `BulkAddTasksRequest` from @gsd/types):
+
 ```typescript
 {
   tasks: Array<{
@@ -204,6 +232,7 @@ offset?: number             // pagination offset (default: 0)
 ```
 
 **Validation Rules**:
+
 - tasks: array, min 1 item, max 10 items
 - Each task.title: required, string, min 1 char, max 500 chars
 - Each task.description: optional, string, max 5000 chars
@@ -218,7 +247,9 @@ offset?: number             // pagination offset (default: 0)
 ## 4. Output Details
 
 ### 4.1 Task DTO Response
+
 **Type**: `TaskDto` (in @gsd/types/api/tasks.ts)
+
 ```typescript
 {
   id: UUID;
@@ -230,10 +261,10 @@ offset?: number             // pagination offset (default: 0)
   description: string | null;
 
   orderIndex: number | decimal;
-  color: string;              // derived from originBacklogId
-  isCompleted: boolean;       // derived from completedAt
+  color: string; // derived from originBacklogId
+  isCompleted: boolean; // derived from completedAt
 
-  createdAt: string;          // ISO 8601 UTC
+  createdAt: string; // ISO 8601 UTC
   completedAt: string | null; // ISO 8601 UTC
 }
 ```
@@ -241,6 +272,7 @@ offset?: number             // pagination offset (default: 0)
 ### 4.2 API Response Formats
 
 **Create Task** - `POST /v1/tasks` (201 Created):
+
 ```typescript
 {
   task: TaskDto;
@@ -249,6 +281,7 @@ offset?: number             // pagination offset (default: 0)
 ```
 
 **Update Task** - `PATCH /v1/tasks/:id` (200 OK):
+
 ```typescript
 {
   task: TaskDto;
@@ -257,6 +290,7 @@ offset?: number             // pagination offset (default: 0)
 ```
 
 **Get Tasks** - `GET /v1/tasks` (200 OK):
+
 ```typescript
 {
   tasks: TaskDto[];
@@ -267,6 +301,7 @@ offset?: number             // pagination offset (default: 0)
 ```
 
 **Get Single Task** (implied for completeness):
+
 ```typescript
 {
   task: TaskDto;
@@ -274,26 +309,30 @@ offset?: number             // pagination offset (default: 0)
 ```
 
 **Delete Task** - `DELETE /v1/tasks/:id` (204 No Content or 200 OK):
+
 ```typescript
 // 204: No body
 // OR 200: { message: "Task deleted" }
 ```
 
 **Move Task** - `POST /v1/tasks/:id/move` (200 OK):
+
 ```typescript
 {
-  task: TaskDto;  // updated with new listId, orderIndex
+  task: TaskDto; // updated with new listId, orderIndex
 }
 ```
 
 **Complete Task** - `POST /v1/tasks/:id/complete` (200 OK):
+
 ```typescript
 {
-  task: TaskDto;  // updated with completedAt, listId=Done
+  task: TaskDto; // updated with completedAt, listId=Done
 }
 ```
 
 **Bulk Add Tasks** - `POST /v1/tasks/bulk-add` (201 Created):
+
 ```typescript
 {
   tasks: TaskDto[];
@@ -308,6 +347,7 @@ offset?: number             // pagination offset (default: 0)
 ## 5. Data Flow
 
 ### 5.1 Create Task Flow
+
 ```
 User Request (POST /v1/tasks)
     ↓
@@ -325,6 +365,7 @@ Response (201 Created + TaskDto)
 ```
 
 ### 5.2 Update Task Flow
+
 ```
 User Request (PATCH /v1/tasks/:id)
     ↓
@@ -342,6 +383,7 @@ Response (200 OK + TaskDto)
 ```
 
 ### 5.3 Move Task Flow
+
 ```
 User Request (POST /v1/tasks/:id/move)
     ↓
@@ -364,6 +406,7 @@ Response (200 OK + TaskDto)
 ```
 
 ### 5.4 Complete Task Flow
+
 ```
 User Request (POST /v1/tasks/:id/complete)
     ↓
@@ -386,6 +429,7 @@ Response (200 OK + TaskDto)
 ```
 
 ### 5.5 Delete Task Flow
+
 ```
 User Request (DELETE /v1/tasks/:id)
     ↓
@@ -402,6 +446,7 @@ Response (204 No Content OR 200 OK)
 ```
 
 ### 5.6 Bulk Add Tasks Flow
+
 ```
 User Request (POST /v1/tasks/bulk-add)
     ↓
@@ -423,6 +468,7 @@ Response (201 Created + TaskDto[] + counts)
 ```
 
 ### 5.7 Get Tasks Flow
+
 ```
 User Request (GET /v1/tasks?listId=xxx&limit=20&offset=0)
     ↓
@@ -445,32 +491,38 @@ Response (200 OK + TaskDto[] + pagination)
 ## 6. Security Considerations
 
 ### 6.1 Authentication & Authorization
+
 - All task endpoints require authenticated user (JWT in HttpOnly cookie)
 - All operations scoped to current user via `req.user.id`
 - Verify user ownership before any operation (database query with userId filter)
 
 ### 6.2 Data Isolation
+
 - Repository queries must always include `where: { userId }` condition
 - Never expose tasks from other users
 - API guards should enforce authentication globally
 
 ### 6.3 Injection & Validation
+
 - All input validated via DTOs with class-validator decorators
 - ListId must be validated to exist and belong to user
 - Title/description length limits enforced at DTO level
 - UUID format validation for all IDs
 
 ### 6.4 List Capacity Abuse
+
 - Enforce 100 task/list limit at use-case level before insertion
 - Return 400 Bad Request if limit exceeded
 - Disable task creation controls on frontend when limit reached
 
 ### 6.5 Move/Complete Operations
+
 - Verify task not already completed before allowing move
 - Verify destination list is valid and user owns it
 - Prevent moving tasks to Done list directly (only via complete endpoint)
 
 ### 6.6 Bulk Operation Safety
+
 - Limit bulk-add to 10 tasks per request
 - Validate total capacity before bulk insert
 - Use database transaction to ensure all-or-nothing semantics
@@ -482,31 +534,32 @@ Response (200 OK + TaskDto[] + pagination)
 
 ### 7.1 Error Scenarios & Status Codes
 
-| Scenario | Status | Error Code | Message |
-|----------|--------|-----------|---------|
-| Task not found | 404 | TASK_NOT_FOUND | "Task with id {id} not found" |
-| User not authorized | 401 | UNAUTHORIZED | "Authentication required" |
-| User doesn't own task | 403 | FORBIDDEN | "You don't have permission to access this task" |
-| Invalid task ID format | 400 | INVALID_ID | "Invalid task ID format" |
-| Invalid list ID format | 400 | INVALID_ID | "Invalid list ID format" |
-| List not found | 404 | LIST_NOT_FOUND | "List with id {listId} not found" |
-| User doesn't own list | 403 | FORBIDDEN | "You don't have permission to access this list" |
-| List is Done list | 400 | INVALID_LIST | "Cannot create/move tasks to Done list directly" |
-| List capacity exceeded | 400 | CAPACITY_EXCEEDED | "List has reached maximum task limit (100)" |
-| Title missing or empty | 400 | VALIDATION_ERROR | "Task title is required and cannot be empty" |
-| Title too long (>500) | 400 | VALIDATION_ERROR | "Task title must not exceed 500 characters" |
-| Description too long (>5000) | 400 | VALIDATION_ERROR | "Task description must not exceed 5000 characters" |
-| Task already completed | 400 | INVALID_STATE | "Cannot modify a completed task" |
-| Task already completed (move) | 400 | INVALID_STATE | "Cannot move a completed task" |
-| Task already completed (complete) | 400 | INVALID_STATE | "Task is already completed" |
-| Moving to same list | 400 | REDUNDANT_OPERATION | "Task is already in the target list" |
-| Bulk add: no tasks provided | 400 | VALIDATION_ERROR | "At least one task must be provided" |
-| Bulk add: too many tasks (>10) | 400 | VALIDATION_ERROR | "Maximum 10 tasks allowed per bulk add request" |
-| Bulk add: capacity exceeded | 400 | CAPACITY_EXCEEDED | "Not enough capacity to add all tasks" |
-| Database transaction failed | 500 | DATABASE_ERROR | "Failed to save task. Please try again." |
-| Unknown error | 500 | INTERNAL_ERROR | "An unexpected error occurred" |
+| Scenario                          | Status | Error Code          | Message                                            |
+| --------------------------------- | ------ | ------------------- | -------------------------------------------------- |
+| Task not found                    | 404    | TASK_NOT_FOUND      | "Task with id {id} not found"                      |
+| User not authorized               | 401    | UNAUTHORIZED        | "Authentication required"                          |
+| User doesn't own task             | 403    | FORBIDDEN           | "You don't have permission to access this task"    |
+| Invalid task ID format            | 400    | INVALID_ID          | "Invalid task ID format"                           |
+| Invalid list ID format            | 400    | INVALID_ID          | "Invalid list ID format"                           |
+| List not found                    | 404    | LIST_NOT_FOUND      | "List with id {listId} not found"                  |
+| User doesn't own list             | 403    | FORBIDDEN           | "You don't have permission to access this list"    |
+| List is Done list                 | 400    | INVALID_LIST        | "Cannot create/move tasks to Done list directly"   |
+| List capacity exceeded            | 400    | CAPACITY_EXCEEDED   | "List has reached maximum task limit (100)"        |
+| Title missing or empty            | 400    | VALIDATION_ERROR    | "Task title is required and cannot be empty"       |
+| Title too long (>500)             | 400    | VALIDATION_ERROR    | "Task title must not exceed 500 characters"        |
+| Description too long (>5000)      | 400    | VALIDATION_ERROR    | "Task description must not exceed 5000 characters" |
+| Task already completed            | 400    | INVALID_STATE       | "Cannot modify a completed task"                   |
+| Task already completed (move)     | 400    | INVALID_STATE       | "Cannot move a completed task"                     |
+| Task already completed (complete) | 400    | INVALID_STATE       | "Task is already completed"                        |
+| Moving to same list               | 400    | REDUNDANT_OPERATION | "Task is already in the target list"               |
+| Bulk add: no tasks provided       | 400    | VALIDATION_ERROR    | "At least one task must be provided"               |
+| Bulk add: too many tasks (>10)    | 400    | VALIDATION_ERROR    | "Maximum 10 tasks allowed per bulk add request"    |
+| Bulk add: capacity exceeded       | 400    | CAPACITY_EXCEEDED   | "Not enough capacity to add all tasks"             |
+| Database transaction failed       | 500    | DATABASE_ERROR      | "Failed to save task. Please try again."           |
+| Unknown error                     | 500    | INTERNAL_ERROR      | "An unexpected error occurred"                     |
 
 ### 7.2 Error Response Format
+
 ```typescript
 {
   error: {
@@ -520,6 +573,7 @@ Response (200 OK + TaskDto[] + pagination)
 ```
 
 ### 7.3 Logging Strategy
+
 - Log all errors with context: userId, taskId, listId, operation
 - Use structured logging (pino or built-in NestJS logger)
 - Log at appropriate levels:
@@ -532,6 +586,7 @@ Response (200 OK + TaskDto[] + pagination)
 ## 8. Performance Considerations
 
 ### 8.1 Database Indexing
+
 ```sql
 CREATE INDEX idx_task_user_id ON task(user_id);
 CREATE INDEX idx_task_list_id ON task(list_id);
@@ -541,20 +596,24 @@ CREATE INDEX idx_task_user_list ON task(user_id, list_id);
 ```
 
 ### 8.2 Query Optimization
+
 - **Get tasks**: Use indexed query on (user_id, list_id) with orderIndex DESC ordering
 - **Move/complete**: Batch reindex operations where possible
 - **Bulk add**: Use transaction to minimize round-trips
 
 ### 8.3 Order Index Strategy (TBD)
+
 Currently open question: fractional vs stepped integers for orderIndex
 
 **Fractional approach**:
+
 - Use decimal(10,6) or similar
 - Insert new tasks at 0.5 (middle between existing indices)
 - Avoids reindexing until indices converge
 - Complex decimal arithmetic; potential precision issues
 
 **Stepped integers approach**:
+
 - Use integer with step size (e.g., 1000 between items)
 - New task at current_index + 500
 - Simpler integer math
@@ -564,16 +623,19 @@ Currently open question: fractional vs stepped integers for orderIndex
 **Recommendation**: Use stepped integers (1000-step) with periodic reindexing job
 
 ### 8.4 N+1 Query Prevention
+
 - Use database joins to fetch related data in single query
 - Eager load originBacklog when fetching tasks (for color derivation)
 - Lazy load list details if not needed in response
 
 ### 8.5 Pagination
+
 - Default limit: 20 tasks (configurable, max 100)
 - Use offset/limit for pagination (not keyset due to reordering)
 - Cache frequently accessed lists in memory (post-MVP optimization)
 
 ### 8.6 Caching Strategy (Post-MVP)
+
 - Cache task list per (userId, listId) with TTL of 5-10 seconds
 - Invalidate on create/update/move/complete
 - Consider Redis for distributed caching
@@ -612,6 +674,7 @@ apps/backend/src/tasks/
 ```
 
 ### 9.2 Repository Interface
+
 ```typescript
 // infra/tasks.repository.ts
 export interface ITasksRepository {
@@ -635,7 +698,9 @@ export interface ITasksRepository {
 ```
 
 ### 9.3 Use Case Structure
+
 Each use case follows single responsibility:
+
 ```typescript
 @Injectable()
 export class CreateTask {
@@ -655,7 +720,9 @@ export class CreateTask {
 ```
 
 ### 9.4 Controller Structure
+
 Controllers are thin adapters:
+
 ```typescript
 @Controller('v1/tasks')
 export class TasksController {
@@ -667,10 +734,7 @@ export class TasksController {
 
   @Post()
   @UseGuards(AuthGuard)
-  async createTask(
-    @Request() req,
-    @Body() dto: CreateTaskDto,
-  ): Promise<CreateTaskResponseDto> {
+  async createTask(@Request() req, @Body() dto: CreateTaskDto): Promise<CreateTaskResponseDto> {
     const task = await this.createTaskUseCase.execute(req.user.id, dto);
     return { task };
   }
@@ -684,6 +748,7 @@ export class TasksController {
 ## 10. Implementation Steps (Incremental Sub-Features)
 
 ### Phase 1: Core Task CRUD & Database
+
 1. **Create Prisma schema** for Task entity with indexes
 2. **Create DTOs** for all task operations (@gsd/types and backend)
 3. **Create TasksRepository** with all database methods
@@ -692,6 +757,7 @@ export class TasksController {
 6. **Add tests** for repository and use cases
 
 ### Phase 2: Task Ordering & Movement
+
 7. **Create order-index.helper.ts** for orderIndex calculations
 8. **Create MoveTask use case** with reindexing logic
 9. **Add move endpoint** to controller
@@ -699,18 +765,21 @@ export class TasksController {
 11. **Add tests** for move operation and reindexing
 
 ### Phase 3: Task Completion & Done List
+
 12. **Create CompleteTask use case** with Done list handling
 13. **Add complete endpoint** to controller
 14. **Ensure originBacklogId tracking** for color derivation
 15. **Add tests** for completion flow
 
 ### Phase 4: Bulk Operations & Advanced Features
+
 16. **Create BulkAddTasks use case** with transaction support
 17. **Add bulk-add endpoint** to controller
 18. **Add validation** for 10-task limit and blank line filtering
 19. **Add tests** for bulk operations
 
 ### Phase 5: Integration & Refinement
+
 20. **Integration tests** for complete workflows
 21. **Performance testing** at limits (100 tasks/list)
 22. **Error handling** comprehensive testing

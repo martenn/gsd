@@ -16,6 +16,7 @@ The Metrics & Analytics module supports the primary KPI for GSD: **tasks complet
 From the PRD (Section 3.8):
 
 > **3.8 Metrics**
+>
 > - Track counts of tasks completed per user per day and per week.
 > - Store timestamps in UTC; present in browser timezone; week starts Monday.
 > - Goal: encourage 10+ tasks completed per user per week.
@@ -23,6 +24,7 @@ From the PRD (Section 3.8):
 From Success Metrics (Section 6):
 
 > **Primary KPI:**
+>
 > - Tasks completed per user per week (target: 10+ at MVP)
 > - Secondary: tasks completed per user per day
 
@@ -32,6 +34,7 @@ From Success Metrics (Section 6):
 > As a user, I can view counts of tasks I completed per day and per week.
 >
 > **Acceptance Criteria:**
+>
 > - The system aggregates completed_at timestamps into daily/weekly counts using the browser timezone
 > - Week starts Monday
 
@@ -40,11 +43,13 @@ From Success Metrics (Section 6):
 **Status:** ❌ Not implemented
 
 **Related Existing Features:**
+
 - ✅ Task model has `completedAt` timestamp (UTC)
 - ✅ `CompleteTask` use case sets `completedAt` when tasks are completed
 - ✅ Done module tracks completed tasks (paginated view)
 
 **Database Schema (Task model):**
+
 ```prisma
 model Task {
   id          String    @id @default(uuid())
@@ -62,6 +67,7 @@ model Task {
 ```
 
 **Missing:**
+
 - ❌ MetricsModule (module, controller, use cases, repository)
 - ❌ API endpoints for daily/weekly metrics
 - ❌ Aggregation logic for grouping by day/week
@@ -73,16 +79,19 @@ model Task {
 ### Endpoint 1: Daily Metrics
 
 **Request:**
+
 ```
 GET /v1/metrics/daily?startDate=2025-11-01&endDate=2025-11-15&timezone=America/New_York
 ```
 
 **Query Parameters:**
+
 - `startDate` (optional): ISO date string (e.g., "2025-11-01"). Defaults to 30 days ago.
 - `endDate` (optional): ISO date string (e.g., "2025-11-15"). Defaults to today.
 - `timezone` (optional): IANA timezone string (e.g., "America/New_York", "Europe/London"). Defaults to "UTC".
 
 **Response (200 OK):**
+
 ```typescript
 {
   "metrics": [
@@ -108,16 +117,19 @@ GET /v1/metrics/daily?startDate=2025-11-01&endDate=2025-11-15&timezone=America/N
 ### Endpoint 2: Weekly Metrics
 
 **Request:**
+
 ```
 GET /v1/metrics/weekly?startDate=2025-10-01&endDate=2025-11-15&timezone=America/New_York
 ```
 
 **Query Parameters:**
+
 - `startDate` (optional): ISO date string. Defaults to 12 weeks ago.
 - `endDate` (optional): ISO date string. Defaults to today.
 - `timezone` (optional): IANA timezone string. Defaults to "UTC".
 
 **Response (200 OK):**
+
 ```typescript
 {
   "metrics": [
@@ -144,6 +156,7 @@ GET /v1/metrics/weekly?startDate=2025-10-01&endDate=2025-11-15&timezone=America/
 ```
 
 **Week Definition:**
+
 - Week starts Monday (ISO 8601 week date system)
 - Week ends Sunday
 - Partial weeks at start/end of range are included
@@ -161,7 +174,7 @@ export interface DailyMetric {
 
 export interface WeeklyMetric {
   weekStartDate: string; // Monday (YYYY-MM-DD)
-  weekEndDate: string;   // Sunday (YYYY-MM-DD)
+  weekEndDate: string; // Sunday (YYYY-MM-DD)
   count: number;
   timezone: string;
 }
@@ -199,6 +212,7 @@ export interface WeeklyMetricsResponseDto {
 ### Backend DTOs
 
 **File:** `apps/backend/src/metrics/dto/get-daily-metrics-query.dto.ts`
+
 ```typescript
 import { IsOptional, IsString, Matches, IsISO8601 } from 'class-validator';
 import { GetDailyMetricsQuery } from '@gsd/types';
@@ -222,6 +236,7 @@ export class GetDailyMetricsQueryDto implements GetDailyMetricsQuery {
 ```
 
 **File:** `apps/backend/src/metrics/dto/get-weekly-metrics-query.dto.ts`
+
 ```typescript
 import { IsOptional, IsString, Matches, IsISO8601 } from 'class-validator';
 import { GetWeeklyMetricsQuery } from '@gsd/types';
@@ -287,6 +302,7 @@ export class GetWeeklyMetricsQueryDto implements GetWeeklyMetricsQuery {
 ```
 
 ### Weekly Metrics Flow
+
 (Similar to daily, but with additional week calculation logic)
 
 ## 6. Algorithm Details
@@ -457,11 +473,13 @@ function getSunday(mondayDate: Date): Date {
 ## 7. Security Considerations
 
 ### Authentication & Authorization
+
 - ✅ All endpoints protected by `@UseGuards(JwtAuthGuard)`
 - ✅ User ID extracted from JWT via `@CurrentUser()` decorator
 - ✅ Queries scoped by userId (users can only see their own metrics)
 
 ### Input Validation
+
 - ✅ Date format: ISO 8601 validated by `@IsISO8601`
 - ✅ Timezone format: IANA timezone string regex pattern
 - ✅ Date range: Prevent excessively large ranges (e.g., max 1 year)
@@ -469,19 +487,23 @@ function getSunday(mondayDate: Date): Date {
 ### Potential Threats
 
 **1. Information Disclosure**
+
 - ✅ Mitigated: All queries filter by userId from JWT
 - ✅ Cannot query other users' metrics
 
 **2. Resource Exhaustion (DoS)**
+
 - ⚠️ Potential Issue: Very large date ranges could query thousands of tasks
 - ✅ Mitigation: Limit date range to 1 year max
 - ✅ Use indexed query on `[userId, completedAt]`
 
 **3. Invalid Timezone Attack**
+
 - ✅ Mitigated: Regex validation for timezone format
 - ✅ Use `date-fns-tz` which handles invalid timezones gracefully
 
 **4. SQL Injection**
+
 - ✅ Mitigated: Prisma ORM uses parameterized queries
 
 ## 8. Error Handling
@@ -543,11 +565,13 @@ function getSunday(mondayDate: Date): Date {
 ### Database Queries
 
 **Daily Metrics:**
+
 - 1 SELECT query with WHERE userId AND completedAt BETWEEN
 - Uses index: `[userId, completedAt]`
 - Aggregation done in-memory (not database)
 
 **Weekly Metrics:**
+
 - Same as daily (1 SELECT query)
 - Grouping logic in application layer
 
@@ -564,49 +588,61 @@ ORDER BY completed_at ASC;
 ```
 
 **Index Usage:**
+
 - Existing index `[userId, completedAt]` covers this query perfectly
 - Expected query time: <10ms for 1000 tasks
 
 ### In-Memory Aggregation
+
 - Maximum tasks in date range: ~1000 (30 days × ~33 tasks/day)
 - Memory footprint: ~100KB for 1000 tasks
 - Aggregation time: <10ms
 
 ### Response Size
+
 - Daily metrics (30 days): ~2KB JSON
 - Weekly metrics (12 weeks): ~1KB JSON
 - Well within acceptable limits
 
 ### Caching Strategy (Post-MVP)
+
 - Daily metrics can be cached (don't change for past dates)
 - Cache key: `metrics:daily:${userId}:${date}`
 - TTL: 24 hours for today, permanent for past dates
 - Use Redis or in-memory cache
 
 ### Target Performance
+
 - **Goal:** 95th percentile <100ms
 - **Expected:** 50-80ms (query 10ms + aggregation 10ms + network 30ms)
 
 ## 10. Implementation Steps
 
 ### Step 1: Install Dependencies
+
 ```bash
 pnpm add date-fns date-fns-tz
 ```
 
 ### Step 2: Create Shared Types
+
 **File:** `packages/types/src/api/metrics.ts`
+
 - Add all interfaces (DailyMetric, WeeklyMetric, queries, responses)
 
 **File:** `packages/types/src/index.ts`
+
 - Export metrics types
 
 ### Step 3: Create Backend DTOs
+
 **Files:**
+
 - `apps/backend/src/metrics/dto/get-daily-metrics-query.dto.ts`
 - `apps/backend/src/metrics/dto/get-weekly-metrics-query.dto.ts`
 
 ### Step 4: Create MetricsRepository
+
 **File:** `apps/backend/src/metrics/infra/metrics.repository.ts`
 
 ```typescript
@@ -648,13 +684,7 @@ import { DailyMetricsResponseDto, DailyMetric } from '@gsd/types';
 import { MetricsRepository } from '../infra/metrics.repository';
 import { GetDailyMetricsQueryDto } from '../dto/get-daily-metrics-query.dto';
 import { AppLogger } from '../../logger/app-logger';
-import {
-  startOfDay,
-  endOfDay,
-  addDays,
-  differenceInDays,
-  format,
-} from 'date-fns';
+import { startOfDay, endOfDay, addDays, differenceInDays, format } from 'date-fns';
 import { utcToZonedTime, zonedTimeToUtc } from 'date-fns-tz';
 
 @Injectable()
@@ -666,10 +696,7 @@ export class GetDailyMetrics {
     this.logger.setContext(GetDailyMetrics.name);
   }
 
-  async execute(
-    userId: string,
-    query: GetDailyMetricsQueryDto,
-  ): Promise<DailyMetricsResponseDto> {
+  async execute(userId: string, query: GetDailyMetricsQueryDto): Promise<DailyMetricsResponseDto> {
     this.logger.log(`Fetching daily metrics for user ${userId}`);
 
     try {
@@ -686,11 +713,7 @@ export class GetDailyMetrics {
       const utcEnd = this.convertToUTCEnd(endDate, timezone);
 
       // Fetch completed tasks
-      const tasks = await this.repository.getCompletedTasksByDateRange(
-        userId,
-        utcStart,
-        utcEnd,
-      );
+      const tasks = await this.repository.getCompletedTasksByDateRange(userId, utcStart, utcEnd);
 
       // Aggregate by day
       const metrics = this.aggregateByDay(tasks, startDate, endDate, timezone);
@@ -871,6 +894,7 @@ export class AppModule {}
 ### Step 9: Write Tests
 
 **Unit Tests:**
+
 - GetDailyMetrics use case tests
   - ✅ Returns correct daily counts
   - ✅ Converts timezones correctly
@@ -889,6 +913,7 @@ export class AppModule {}
 **File:** `apps/backend/test/metrics.e2e-spec.ts`
 
 E2E test scenarios:
+
 - ✅ GET /v1/metrics/daily returns 200 with metrics array
 - ✅ GET /v1/metrics/weekly returns 200 with metrics array
 - ✅ Daily metrics use default date range (30 days)
@@ -903,6 +928,7 @@ E2E test scenarios:
 ### Step 10: Swagger Documentation
 
 Add to controller:
+
 ```typescript
 @ApiOperation({ summary: 'Get daily task completion metrics' })
 @ApiQuery({ name: 'startDate', required: false, example: '2025-11-01' })
@@ -912,6 +938,7 @@ Add to controller:
 ```
 
 ### Step 11: Update Project Tracker
+
 - Mark "Metrics & Analytics Module" as completed in `.ai/project-tracker.md`
 - Update MetricsModule implementation status
 
@@ -920,6 +947,7 @@ Add to controller:
 ### Unit Tests
 
 **GetDailyMetrics:**
+
 - ✅ Aggregates tasks by day correctly
 - ✅ Converts UTC timestamps to user timezone
 - ✅ Fills missing days with zero counts
@@ -928,12 +956,14 @@ Add to controller:
 - ✅ Uses default values when query params omitted
 
 **GetWeeklyMetrics:**
+
 - ✅ Aggregates tasks by week (Monday-Sunday)
 - ✅ Handles partial weeks at start/end of range
 - ✅ Converts timezones correctly
 - ✅ Throws BadRequestException for invalid date range
 
 **MetricsRepository:**
+
 - ✅ Queries tasks within date range
 - ✅ Filters by userId
 - ✅ Orders by completedAt ascending
@@ -941,12 +971,14 @@ Add to controller:
 ### Integration Tests
 
 **HTTP Success:**
+
 - ✅ GET /v1/metrics/daily returns 200 with correct structure
 - ✅ GET /v1/metrics/weekly returns 200 with correct structure
 - ✅ Defaults work correctly (30 days for daily, 12 weeks for weekly)
 - ✅ Timezone conversion produces correct date grouping
 
 **HTTP Errors:**
+
 - ✅ Returns 400 for malformed dates
 - ✅ Returns 400 for invalid timezone
 - ✅ Returns 400 for end date < start date
@@ -954,6 +986,7 @@ Add to controller:
 - ✅ Returns 401 without JWT token
 
 **Edge Cases:**
+
 - ✅ User with no completed tasks returns empty metrics (all zeros)
 - ✅ Tasks completed exactly at midnight (timezone boundary)
 - ✅ Timezone conversion across DST boundaries
@@ -961,13 +994,16 @@ Add to controller:
 ## 12. Open Questions & Decisions
 
 ### 1. Aggregation: Database vs. Application Layer
+
 **Question:** Should aggregation be done in database (SQL GROUP BY) or application?
 
 **Options:**
+
 - A) Database: Use PostgreSQL `DATE_TRUNC` and `GROUP BY`
 - B) Application: Fetch all tasks, group in-memory with date-fns
 
 **MVP Decision:** Application layer (Option B)
+
 - Simpler implementation (no timezone conversion in SQL)
 - Easier to test and debug
 - Performance acceptable for <1000 tasks per query
@@ -976,9 +1012,11 @@ Add to controller:
 **Post-MVP:** Consider database aggregation for better performance.
 
 ### 2. Caching Strategy
+
 **Question:** Should metrics be cached?
 
 **MVP Decision:** No caching in MVP
+
 - Queries are fast enough (<100ms)
 - Simple implementation
 - No cache invalidation complexity
@@ -986,15 +1024,18 @@ Add to controller:
 **Post-MVP:** Add caching for past dates (immutable) using Redis.
 
 ### 3. Frontend Timezone Detection
+
 **Question:** How does frontend determine user's timezone?
 
 **Frontend Responsibility:**
+
 - Use `Intl.DateTimeFormat().resolvedOptions().timeZone` in browser
 - Send as query parameter to API
 
 **Alternative:** Store user timezone preference in User model (future enhancement).
 
 ### 4. Week Start Day Configuration
+
 **Question:** Should week start day be configurable (Monday vs. Sunday)?
 
 **MVP Decision:** Hard-code to Monday (ISO 8601 standard, per PRD).
@@ -1002,9 +1043,11 @@ Add to controller:
 **Post-MVP:** Add user preference for week start day.
 
 ### 5. Empty Metrics Display
+
 **Question:** Should days/weeks with zero tasks be included in response?
 
 **MVP Decision:** Yes, include all days/weeks with count=0.
+
 - Easier for frontend to render (no gaps)
 - Clearer for users to see patterns
 
@@ -1013,14 +1056,17 @@ Add to controller:
 ## 13. Related User Stories & Features
 
 ### User Stories
+
 - **US-016**: Metrics display (this feature)
 
 ### Related Features
+
 - **CompleteTask**: Sets completedAt timestamp (source of metrics data)
 - **DoneModule**: Displays completed tasks (complementary view)
 - **Tasks retention**: Done view retention (N=500) affects metrics accuracy for old data
 
 ### Success Metrics (PRD Section 6)
+
 - **Primary KPI**: Tasks completed per user per week (target: 10+)
 - **Secondary KPI**: Tasks completed per user per day
 - **Leading indicator**: Ratio of tasks completed to tasks created
@@ -1031,23 +1077,24 @@ Add to controller:
 
 **Scenario:** User with 100 completed tasks in last 30 days
 
-| Operation                | Time (ms) |
-|--------------------------|-----------|
-| Database query           | 5-10      |
-| In-memory aggregation    | 5-10      |
-| DTO serialization        | 5         |
-| **Total**                | **15-25** |
+| Operation             | Time (ms) |
+| --------------------- | --------- |
+| Database query        | 5-10      |
+| In-memory aggregation | 5-10      |
+| DTO serialization     | 5         |
+| **Total**             | **15-25** |
 
 **Scenario:** User with 1000 completed tasks in last year (max range)
 
-| Operation                | Time (ms) |
-|--------------------------|-----------|
-| Database query           | 20-30     |
-| In-memory aggregation    | 10-20     |
-| DTO serialization        | 10        |
-| **Total**                | **40-60** |
+| Operation             | Time (ms) |
+| --------------------- | --------- |
+| Database query        | 20-30     |
+| In-memory aggregation | 10-20     |
+| DTO serialization     | 10        |
+| **Total**             | **40-60** |
 
 ### Monitoring
+
 - Log query execution time
 - Track 95th percentile in production
 - Alert if queries exceed 200ms
@@ -1055,42 +1102,50 @@ Add to controller:
 ## 15. Future Enhancements (Post-MVP)
 
 ### Enhanced Metrics
+
 - **Completion rate**: Tasks completed / tasks created
 - **Streak tracking**: Consecutive days with completed tasks
 - **Time-of-day analysis**: When are users most productive?
 - **List-based metrics**: Which lists have highest completion rates?
 
 ### Visualizations
+
 - **Charts**: Line chart for daily trends, bar chart for weekly
 - **Heatmap**: Calendar heatmap showing completion density
 - **Insights**: AI-generated productivity insights
 
 ### Export
+
 - **CSV/JSON export**: Download metrics data
 - **Integration**: Export to productivity tracking tools
 
 ### Comparative Metrics
+
 - **Week-over-week**: Compare this week to last week
 - **Goals**: Set completion goals, track progress
 
 ## 16. Rollout Plan
 
 ### Phase 1: Implementation (This Plan)
+
 - Implement MetricsModule (repository, use cases, controller)
 - Write comprehensive tests
 - Deploy to production
 
 ### Phase 2: Frontend Integration
+
 - Create metrics dashboard view
 - Display daily/weekly charts
 - Allow timezone and date range selection
 
 ### Phase 3: Monitoring & Iteration
+
 - Monitor query performance
 - Collect user feedback
 - Consider caching if performance becomes an issue
 
 ### Phase 4: Enhancements (Post-MVP)
+
 - Add streak tracking
 - Add completion rate metrics
 - Implement visualizations (charts, heatmaps)

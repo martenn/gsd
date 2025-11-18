@@ -3,6 +3,7 @@
 ## 1. Feature Overview
 
 Implement a global exception filter and error handling middleware for the GSD NestJS backend to provide:
+
 - Consistent error response format across all endpoints
 - Proper HTTP status codes for different error types
 - Security-conscious error messages (no stack traces in production)
@@ -14,6 +15,7 @@ This centralizes error handling, eliminating inconsistent error responses and im
 ## 2. Inputs
 
 Error handling middleware intercepts all exceptions thrown by:
+
 - Controllers (validation errors, business logic errors)
 - Guards (authentication/authorization failures)
 - Interceptors (transformation errors)
@@ -22,16 +24,16 @@ Error handling middleware intercepts all exceptions thrown by:
 
 ### Exception Types to Handle
 
-| Exception Type | Source | Example |
-|----------------|--------|---------|
-| `BadRequestException` | DTO validation, business rules | Invalid input, limits exceeded |
-| `UnauthorizedException` | Auth guard | Missing or invalid JWT |
-| `ForbiddenException` | Authorization guard | Insufficient permissions |
-| `NotFoundException` | Use cases | List/task not found |
-| `ConflictException` | Business logic | Duplicate resource |
-| `HttpException` | Custom business errors | Any HTTP error |
-| `Error` (unhandled) | Application errors | Unexpected failures |
-| `PrismaClientKnownRequestError` | Database errors | Constraint violations, connection errors |
+| Exception Type                  | Source                         | Example                                  |
+| ------------------------------- | ------------------------------ | ---------------------------------------- |
+| `BadRequestException`           | DTO validation, business rules | Invalid input, limits exceeded           |
+| `UnauthorizedException`         | Auth guard                     | Missing or invalid JWT                   |
+| `ForbiddenException`            | Authorization guard            | Insufficient permissions                 |
+| `NotFoundException`             | Use cases                      | List/task not found                      |
+| `ConflictException`             | Business logic                 | Duplicate resource                       |
+| `HttpException`                 | Custom business errors         | Any HTTP error                           |
+| `Error` (unhandled)             | Application errors             | Unexpected failures                      |
+| `PrismaClientKnownRequestError` | Database errors                | Constraint violations, connection errors |
 
 ## 3. Used Types
 
@@ -75,6 +77,7 @@ export class BusinessException extends HttpException {
 ## 4. Outputs
 
 ### Standard Error Response (400, 404, 409, etc.)
+
 ```json
 {
   "statusCode": 404,
@@ -87,6 +90,7 @@ export class BusinessException extends HttpException {
 ```
 
 ### Validation Error Response (400)
+
 ```json
 {
   "statusCode": 400,
@@ -105,6 +109,7 @@ export class BusinessException extends HttpException {
 ```
 
 ### Internal Server Error (500)
+
 ```json
 {
   "statusCode": 500,
@@ -121,6 +126,7 @@ export class BusinessException extends HttpException {
 ## 5. Data Flow
 
 ### Exception Handling Flow
+
 1. Exception thrown anywhere in application (controller, guard, use case, etc.)
 2. NestJS exception layer catches exception
 3. HttpExceptionFilter receives exception
@@ -134,6 +140,7 @@ export class BusinessException extends HttpException {
 8. Client receives consistent error format
 
 ### Request ID Flow
+
 1. Request enters application
 2. RequestIdMiddleware generates UUID for request
 3. UUID stored in request object and async context
@@ -143,11 +150,13 @@ export class BusinessException extends HttpException {
 ## 6. Security Considerations
 
 ### Information Disclosure Prevention
+
 - **Production:** Never expose stack traces, internal paths, or database details
 - **Development:** Include additional debug information
 - **Environment detection:** Use `NODE_ENV` to determine response verbosity
 
 ### Secure Error Messages
+
 - Generic messages for 500 errors: "Internal server error"
 - Specific messages for 4xx errors (client errors are safe to expose)
 - Never expose:
@@ -159,14 +168,15 @@ export class BusinessException extends HttpException {
 
 ### Example Secure vs Insecure Messages
 
-| ❌ Insecure | ✅ Secure |
-|------------|----------|
-| "Cannot connect to postgres at localhost:5432" | "Internal server error" |
+| ❌ Insecure                                            | ✅ Secure                 |
+| ------------------------------------------------------ | ------------------------- |
+| "Cannot connect to postgres at localhost:5432"         | "Internal server error"   |
 | "Prisma query failed: User table constraint violation" | "Resource already exists" |
-| "JWT secret is invalid" | "Unauthorized" |
-| "/usr/src/app/dist/lists/use-cases/create-list.js:42" | (path only in logs) |
+| "JWT secret is invalid"                                | "Unauthorized"            |
+| "/usr/src/app/dist/lists/use-cases/create-list.js:42"  | (path only in logs)       |
 
 ### Authentication Error Handling
+
 - 401 Unauthorized: Invalid or missing JWT
 - 403 Forbidden: Valid user but insufficient permissions
 - Never reveal if user exists or not (prevent enumeration)
@@ -182,29 +192,32 @@ The error handler itself must be robust and never fail. If the error handler enc
 
 ### Prisma Error Mapping
 
-| Prisma Error Code | HTTP Status | Message |
-|-------------------|-------------|---------|
-| P2002 | 409 Conflict | "Resource already exists" |
-| P2025 | 404 Not Found | "Resource not found" |
-| P2003 | 400 Bad Request | "Invalid reference" |
-| P2023 | 400 Bad Request | "Invalid input" |
-| P1001, P1002 | 503 Service Unavailable | "Service temporarily unavailable" |
-| Other | 500 Internal Server Error | "Internal server error" |
+| Prisma Error Code | HTTP Status               | Message                           |
+| ----------------- | ------------------------- | --------------------------------- |
+| P2002             | 409 Conflict              | "Resource already exists"         |
+| P2025             | 404 Not Found             | "Resource not found"              |
+| P2003             | 400 Bad Request           | "Invalid reference"               |
+| P2023             | 400 Bad Request           | "Invalid input"                   |
+| P1001, P1002      | 503 Service Unavailable   | "Service temporarily unavailable" |
+| Other             | 500 Internal Server Error | "Internal server error"           |
 
 ## 8. Performance Considerations
 
 ### Minimal Overhead
+
 - Filter executes only on error path (not on success)
 - Error responses are lightweight (small JSON objects)
 - Logging is async (non-blocking)
 - No external API calls in error handling
 
 ### Target Performance
+
 - **Error response time:** <10ms additional overhead
 - **Logging overhead:** <5ms
 - **Total error handling time:** <20ms
 
 ### Optimization Strategies
+
 - Pre-compile error response templates
 - Use object pooling for common error responses (optional)
 - Batch logs if error rate is extremely high (future optimization)
@@ -212,6 +225,7 @@ The error handler itself must be robust and never fail. If the error handler enc
 ## 9. Implementation Steps
 
 ### Step 1: Create shared error types
+
 1. Create `packages/types/src/api/error.ts`
 2. Define `ErrorResponse` interface
 3. Define `ValidationErrorResponse` interface
@@ -219,6 +233,7 @@ The error handler itself must be robust and never fail. If the error handler enc
 5. Export from `packages/types/src/api/index.ts`
 
 ### Step 2: Create common directory structure
+
 1. Create `apps/backend/src/common/` directory
 2. Create subdirectories:
    - `common/filters/` (exception filters)
@@ -227,18 +242,21 @@ The error handler itself must be robust and never fail. If the error handler enc
    - `common/interceptors/` (if needed)
 
 ### Step 3: Implement RequestIdMiddleware
+
 1. Create `apps/backend/src/common/middleware/request-id.middleware.ts`
 2. Generate UUID for each request
 3. Store in request object: `req.id = uuid()`
 4. Optionally use AsyncLocalStorage for context (advanced)
 
 ### Step 4: Create custom exception classes
+
 1. Create `apps/backend/src/common/exceptions/business.exception.ts`
 2. Extend `HttpException`
 3. Add constructor accepting message and status code
 4. Used for domain-specific errors (e.g., "Last backlog cannot be deleted")
 
 ### Step 5: Implement HttpExceptionFilter
+
 1. Create `apps/backend/src/common/filters/http-exception.filter.ts`
 2. Implement `ExceptionFilter` interface
 3. Inject `AppLogger`
@@ -252,6 +270,7 @@ The error handler itself must be robust and never fail. If the error handler enc
    - Send JSON response with appropriate status code
 
 ### Step 6: Add Prisma error handling
+
 1. In HttpExceptionFilter, detect `PrismaClientKnownRequestError`
 2. Create `mapPrismaErrorToHttp()` helper method:
    - Switch on error.code (P2002, P2025, etc.)
@@ -259,6 +278,7 @@ The error handler itself must be robust and never fail. If the error handler enc
 3. Integrate into main catch logic
 
 ### Step 7: Add environment-aware error details
+
 1. Detect `NODE_ENV` in filter
 2. If development:
    - Include stack trace in response (optional field)
@@ -269,12 +289,14 @@ The error handler itself must be robust and never fail. If the error handler enc
    - Minimal information disclosure
 
 ### Step 8: Register middleware and filter globally
+
 1. Update `apps/backend/src/main.ts`:
    - Apply RequestIdMiddleware globally: `app.use(new RequestIdMiddleware().use)`
    - Register HttpExceptionFilter globally: `app.useGlobalFilters(new HttpExceptionFilter(logger))`
 2. Ensure filter is registered AFTER other middleware
 
 ### Step 9: Update existing use cases to throw appropriate exceptions
+
 1. Audit all use cases for error handling
 2. Replace generic errors with specific HTTP exceptions:
    - `throw new NotFoundException('List not found')`
@@ -283,6 +305,7 @@ The error handler itself must be robust and never fail. If the error handler enc
 3. Ensure all business rule violations throw proper exceptions
 
 ### Step 10: Write unit tests
+
 1. Create `http-exception.filter.spec.ts`:
    - Test NotFoundException → 404 response
    - Test BadRequestException → 400 response
@@ -296,6 +319,7 @@ The error handler itself must be robust and never fail. If the error handler enc
    - Test logging behavior
 
 ### Step 11: Write E2E tests
+
 1. Create `apps/backend/test/error-handling.e2e-spec.ts`
 2. Test error responses from actual endpoints:
    - Invalid DTO → 400 with validation errors
@@ -305,6 +329,7 @@ The error handler itself must be robust and never fail. If the error handler enc
    - Server error simulation → 500
 
 ### Step 12: Update documentation
+
 1. Update `.ai/project-tracker.md`:
    - Mark error handling middleware as ✅
    - Update infrastructure progress percentage
@@ -314,6 +339,7 @@ The error handler itself must be robust and never fail. If the error handler enc
 ## 10. Testing Strategy
 
 ### Unit Tests (Target: 100% coverage)
+
 - **http-exception.filter.spec.ts:** 12+ test cases
   - All exception types
   - Prisma error mapping
@@ -322,6 +348,7 @@ The error handler itself must be robust and never fail. If the error handler enc
   - Logging verification
 
 ### E2E Tests (Target: Key scenarios)
+
 - **error-handling.e2e-spec.ts:** 6+ test cases
   - Validation error from DTO
   - Not found error from use case
@@ -331,6 +358,7 @@ The error handler itself must be robust and never fail. If the error handler enc
   - Unexpected server error
 
 ### Manual Testing
+
 1. Send invalid DTO to POST /v1/lists
 2. Request non-existent list GET /v1/lists/invalid-id
 3. Send request without JWT to protected endpoint
@@ -341,6 +369,7 @@ The error handler itself must be robust and never fail. If the error handler enc
 ## 11. Error Response Examples by Status Code
 
 ### 400 Bad Request (Validation)
+
 ```json
 {
   "statusCode": 400,
@@ -359,6 +388,7 @@ The error handler itself must be robust and never fail. If the error handler enc
 ```
 
 ### 400 Bad Request (Business Rule)
+
 ```json
 {
   "statusCode": 400,
@@ -371,6 +401,7 @@ The error handler itself must be robust and never fail. If the error handler enc
 ```
 
 ### 401 Unauthorized
+
 ```json
 {
   "statusCode": 401,
@@ -383,6 +414,7 @@ The error handler itself must be robust and never fail. If the error handler enc
 ```
 
 ### 404 Not Found
+
 ```json
 {
   "statusCode": 404,
@@ -395,6 +427,7 @@ The error handler itself must be robust and never fail. If the error handler enc
 ```
 
 ### 409 Conflict
+
 ```json
 {
   "statusCode": 409,
@@ -407,6 +440,7 @@ The error handler itself must be robust and never fail. If the error handler enc
 ```
 
 ### 500 Internal Server Error
+
 ```json
 {
   "statusCode": 500,
@@ -421,6 +455,7 @@ The error handler itself must be robust and never fail. If the error handler enc
 ---
 
 ## Notes
+
 - Error handling middleware is foundational infrastructure
 - Should be implemented early (before extensive API development)
 - Improves debugging, monitoring, and client integration

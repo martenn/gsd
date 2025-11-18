@@ -19,6 +19,7 @@ The Lists module already has GET (GetLists), POST (CreateList), and DELETE (Dele
 ## 2. Current Implementation Status
 
 **Already Implemented:**
+
 - `GetLists` use case (GET /v1/lists)
 - `CreateList` use case (POST /v1/lists)
 - `DeleteList` use case (DELETE /v1/lists/:id?destListId=...)
@@ -26,6 +27,7 @@ The Lists module already has GET (GetLists), POST (CreateList), and DELETE (Dele
 - `ListsController` with authentication/authorization guards
 
 **Database Schema (List model):**
+
 ```prisma
 model List {
   id         String   @id @default(uuid())
@@ -52,11 +54,13 @@ model List {
 **Purpose:** Allow users to rename existing lists while maintaining all other properties.
 
 **Inputs:**
+
 - Path parameter: `id` (UUID of list to update)
 - Request body: `{ name: string }` (new name)
 - User ID from JWT token
 
 **Output:**
+
 - 200 OK: Updated `ListDto`
 - 400 Bad Request: Invalid input (empty name, exceeds length)
 - 401 Unauthorized: User not authenticated
@@ -64,12 +68,14 @@ model List {
 - 404 Not Found: List doesn't exist
 
 **Business Rules:**
+
 - Name must be 1-100 characters
 - Name is trimmed of whitespace
 - Cannot rename the Done list (isDone = true)
 - User can only update their own lists
 
 **Types Required:**
+
 ```typescript
 // @gsd/types/api/lists.ts (add to existing file)
 export interface UpdateListRequest {
@@ -97,10 +103,12 @@ export class UpdateListDto implements UpdateListRequest {
 **Purpose:** Mark or unmark a non-Done list as a backlog, enforcing the constraint that at least one backlog must always exist.
 
 **Inputs:**
+
 - Path parameter: `id` (UUID of list)
 - User ID from JWT token
 
 **Output:**
+
 - 200 OK: Updated `ListDto` with toggled `isBacklog` value
 - 400 Bad Request: Operation would violate "at least one backlog" constraint
 - 401 Unauthorized: User not authenticated
@@ -108,12 +116,14 @@ export class UpdateListDto implements UpdateListRequest {
 - 404 Not Found: List doesn't exist
 
 **Business Rules:**
+
 - Cannot toggle the Done list (isDone = true) - return 400
 - If toggling OFF would result in zero backlogs, return 400 with error message
 - If toggling ON, list becomes a backlog (may need to reorder to leftmost position)
 - At least one backlog must always exist
 
 **Types Required:**
+
 ```typescript
 // @gsd/types/api/lists.ts (add to existing)
 export interface ToggleBacklogResponseDto {
@@ -124,6 +134,7 @@ export interface ToggleBacklogResponseDto {
 ```
 
 **Algorithm:**
+
 1. Verify list exists and belongs to user
 2. Check if list.isDone === true → return 400
 3. If isBacklog === true (currently a backlog):
@@ -141,6 +152,7 @@ export interface ToggleBacklogResponseDto {
 **Purpose:** Change the left-to-right position of a list by updating its orderIndex.
 
 **Inputs:**
+
 - Path parameter: `id` (UUID of list to reorder)
 - Request body: One of:
   - `{ newOrderIndex: number }` - Explicit order index
@@ -148,6 +160,7 @@ export interface ToggleBacklogResponseDto {
 - User ID from JWT token
 
 **Output:**
+
 - 200 OK: Updated `ListDto` with new orderIndex
 - 400 Bad Request: Invalid input or conflicting parameters
 - 401 Unauthorized: User not authenticated
@@ -155,12 +168,14 @@ export interface ToggleBacklogResponseDto {
 - 404 Not Found: List or afterListId doesn't exist
 
 **Business Rules:**
+
 - Cannot reorder the Done list
 - Backlogs maintain leftmost grouping (backlogs ordered before all intermediate lists)
 - Use fractional indexing for orderIndex to minimize updates
 - Only one of `newOrderIndex` or `afterListId` should be provided
 
 **Types Required:**
+
 ```typescript
 // @gsd/types/api/lists.ts (add to existing)
 export interface ReorderListRequest {
@@ -189,6 +204,7 @@ export class ReorderListDto implements ReorderListRequest {
 ```
 
 **Algorithm:**
+
 1. Verify list exists and belongs to user
 2. Check if list.isDone === true → return 400
 3. If `afterListId` provided:
@@ -204,6 +220,7 @@ export class ReorderListDto implements ReorderListRequest {
 ## 4. Data Flow
 
 ### Update List Flow
+
 1. Client → PATCH /v1/lists/:id with { name }
 2. Controller validates DTO, extracts user ID from JWT
 3. Controller → UpdateList use case
@@ -214,6 +231,7 @@ export class ReorderListDto implements ReorderListRequest {
 8. Controller → return 200 with ListDto
 
 ### Toggle Backlog Flow
+
 1. Client → POST /v1/lists/:id/toggle-backlog
 2. Controller extracts user ID from JWT
 3. Controller → ToggleBacklog use case
@@ -227,6 +245,7 @@ export class ReorderListDto implements ReorderListRequest {
 9. Controller → return 200 with ListDto
 
 ### Reorder List Flow
+
 1. Client → POST /v1/lists/:id/reorder with { afterListId } or { newOrderIndex }
 2. Controller validates DTO, extracts user ID from JWT
 3. Controller → ReorderList use case
@@ -242,21 +261,25 @@ export class ReorderListDto implements ReorderListRequest {
 ## 5. Security Considerations
 
 ### Authentication & Authorization
+
 - All endpoints protected by `@UseGuards(JwtAuthGuard)`
 - User ID extracted from JWT via `@CurrentUser()` decorator
 - Repository queries scoped by userId to prevent cross-user access
 
 ### Input Validation
+
 - **UpdateList**: Name trimmed, length validated (1-100 chars)
 - **ToggleBacklog**: No input, but verify list ownership
 - **ReorderList**: Validate UUID format for afterListId, numeric range for orderIndex
 
 ### Business Logic Security
+
 - Prevent modification of Done list (isDone checks)
 - Enforce "at least one backlog" constraint
 - Verify ownership before any mutation
 
 ### Potential Threats
+
 - **Mass Assignment**: DTOs use explicit class-validator decorators
 - **SQL Injection**: Prisma ORM provides parameterized queries
 - **Authorization Bypass**: All repository methods filter by userId
@@ -265,6 +288,7 @@ export class ReorderListDto implements ReorderListRequest {
 ## 6. Error Handling
 
 ### Standard HTTP Status Codes
+
 - **200 OK**: Successful update/toggle/reorder
 - **400 Bad Request**:
   - Invalid input (validation failure)
@@ -279,6 +303,7 @@ export class ReorderListDto implements ReorderListRequest {
 - **500 Internal Server Error**: Unexpected database/server errors
 
 ### Error Response Format
+
 ```typescript
 {
   "statusCode": 400,
@@ -288,6 +313,7 @@ export class ReorderListDto implements ReorderListRequest {
 ```
 
 ### Specific Error Messages
+
 - `"List name must be between 1 and 100 characters"`
 - `"Cannot rename the Done list"`
 - `"Cannot toggle backlog status of the Done list"`
@@ -299,27 +325,33 @@ export class ReorderListDto implements ReorderListRequest {
 ## 7. Performance Considerations
 
 ### Database Queries
+
 - **Update List**: Single SELECT + UPDATE (2 queries)
 - **Toggle Backlog**: SELECT + optional COUNT + UPDATE (2-3 queries)
 - **Reorder List**: SELECT (1-2) + UPDATE (2-3 queries total)
 
 ### Indexes
+
 - Existing index `[userId, orderIndex]` supports efficient ordering queries
 - Existing index `[userId, isDone]` supports filtering non-Done lists
 
 ### Optimization Strategies
+
 - Use `Prisma.$transaction` for toggle backlog (count + update) to ensure consistency
 - For reorder, consider caching neighbor lists to calculate fractional index
 - All operations target <100ms (PRD requirement: 95th percentile <100ms)
 
 ### Limits
+
 - Maximum 10 non-Done lists per user (enforced in CreateList)
 - Reordering is O(1) with fractional indexing (no bulk updates)
 
 ## 8. Implementation Steps
 
 ### Step 1: Add Shared Types
+
 **File:** `packages/types/src/api/lists.ts`
+
 - Add `UpdateListRequest` interface
 - Add `UpdateListResponseDto` interface
 - Add `ToggleBacklogResponseDto` interface
@@ -327,18 +359,24 @@ export class ReorderListDto implements ReorderListRequest {
 - Add `ReorderListResponseDto` interface
 
 ### Step 2: Create DTOs
+
 **Files:**
+
 - `apps/backend/src/lists/dto/update-list.dto.ts` - UpdateListDto class with validators
 - `apps/backend/src/lists/dto/reorder-list.dto.ts` - ReorderListDto class with validators
 
 ### Step 3: Extend Repository
+
 **File:** `apps/backend/src/lists/infra/lists.repository.ts`
+
 - Add `update(id: string, userId: string, data: Partial<List>): Promise<List>`
 - Add `countBacklogsByUserId(userId: string): Promise<number>`
 - Add `findAdjacentLists(userId: string, afterListId: string): Promise<List[]>` (optional helper)
 
 ### Step 4: Create Use Cases
+
 **Files:**
+
 - `apps/backend/src/lists/use-cases/update-list.ts` - UpdateList class
 - `apps/backend/src/lists/use-cases/update-list.spec.ts` - Tests
 - `apps/backend/src/lists/use-cases/toggle-backlog.ts` - ToggleBacklog class
@@ -347,6 +385,7 @@ export class ReorderListDto implements ReorderListRequest {
 - `apps/backend/src/lists/use-cases/reorder-list.spec.ts` - Tests
 
 **Use Case Structure (example for UpdateList):**
+
 ```typescript
 @Injectable()
 export class UpdateList {
@@ -398,12 +437,15 @@ export class UpdateList {
 ```
 
 ### Step 5: Add Controller Endpoints
+
 **File:** `apps/backend/src/lists/adapters/lists.controller.ts`
+
 - Add `@Patch(':id')` method → calls UpdateList use case
 - Add `@Post(':id/toggle-backlog')` method → calls ToggleBacklog use case
 - Add `@Post(':id/reorder')` method → calls ReorderList use case
 
 **Example:**
+
 ```typescript
 @Patch(':id')
 async updateList(
@@ -436,40 +478,49 @@ async reorderList(
 ```
 
 ### Step 6: Update Module
+
 **File:** `apps/backend/src/lists/lists.module.ts`
+
 - Add `UpdateList`, `ToggleBacklog`, `ReorderList` to providers array
 - Optionally export them if other modules need them
 
 ### Step 7: Write Tests
+
 - Unit tests for each use case (mock repository, test business rules)
 - Test error paths: NotFound, Forbidden, BadRequest
 - Test toggle backlog constraint (cannot unmark last backlog)
 - Test that Done list cannot be updated/toggled/reordered
 
 ### Step 8: Integration Testing
+
 - E2E tests in `apps/backend/test/lists-management.e2e-spec.ts`
 - Test full flows with real HTTP requests
 - Verify JWT authentication works
 - Test concurrent reorder operations
 
 ### Step 9: Swagger Documentation
+
 - Add `@ApiOperation`, `@ApiResponse` decorators to controller methods
 - Ensure DTOs are documented for OpenAPI spec generation
 
 ### Step 10: Update Project Tracker
+
 - Mark Lists Management features as completed in `.ai/project-tracker.md`
 - Update progress percentages
 
 ## 9. Testing Strategy
 
 ### Unit Tests
+
 **UpdateList:**
+
 - ✅ Successfully updates list name
 - ✅ Throws NotFoundException for non-existent list
 - ✅ Throws BadRequestException when trying to rename Done list
 - ✅ Validates name length (1-100 chars)
 
 **ToggleBacklog:**
+
 - ✅ Successfully toggles backlog on (false → true)
 - ✅ Successfully toggles backlog off (true → false) when >1 backlog exists
 - ✅ Throws BadRequestException when trying to unmark last backlog
@@ -477,6 +528,7 @@ async reorderList(
 - ✅ Throws NotFoundException for non-existent list
 
 **ReorderList:**
+
 - ✅ Successfully reorders with explicit newOrderIndex
 - ✅ Successfully reorders with afterListId (fractional indexing)
 - ✅ Throws BadRequestException when trying to reorder Done list
@@ -484,6 +536,7 @@ async reorderList(
 - ✅ Validates that at least one parameter is provided
 
 ### Integration Tests
+
 - ✅ PATCH /v1/lists/:id returns 200 with updated list
 - ✅ POST /v1/lists/:id/toggle-backlog returns 200 with toggled list
 - ✅ POST /v1/lists/:id/reorder returns 200 with reordered list
@@ -494,16 +547,19 @@ async reorderList(
 ## 10. Open Questions & Post-MVP Considerations
 
 ### Reindexing Strategy
+
 - **Question:** When should orderIndex values be reindexed to prevent precision issues?
 - **MVP Approach:** Use fractional indexing without automatic reindexing
 - **Post-MVP:** Implement background job to reindex when values get too small/large
 
 ### Backlog Grouping & Order
+
 - **Question:** Should backlogs maintain a separate orderIndex namespace?
 - **Current:** Backlogs and intermediates share orderIndex space, filtered by isBacklog
 - **Alternative:** Separate ordering for backlogs (vertical) vs intermediates (horizontal)
 
 ### Reorder Constraints
+
 - **Question:** Should reordering respect backlog grouping automatically?
 - **MVP:** Client responsible for maintaining backlog leftmost position
 - **Post-MVP:** Server could enforce that backlogs always have lower orderIndex than intermediates
@@ -511,16 +567,19 @@ async reorderList(
 ## 11. Dependencies & Related Features
 
 ### Module Dependencies
+
 - **ColorModule**: Already imported for list color assignment (CreateList)
 - **AuthModule**: JWT guard for authentication
 - **PrismaClient**: Database access
 
 ### Related Features
+
 - **CreateList**: Sets initial orderIndex for new lists
 - **DeleteList**: May need to promote intermediate to backlog if last backlog deleted
 - **Tasks Reorder**: Similar fractional indexing pattern
 
 ### Affected User Stories
+
 - US-001A: Mark list as backlog
 - US-002: Rename list
 - US-003A: Ensure at least one backlog

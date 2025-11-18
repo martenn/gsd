@@ -7,6 +7,7 @@ The Maintenance module provides automated background jobs for system maintenance
 **Implementation:** Simple cron job using @nestjs/schedule
 
 **Key behaviors:**
+
 - Runs daily at a scheduled time (e.g., 2 AM UTC)
 - Deletes completed tasks beyond the 500-task limit per user
 - Logs execution for monitoring
@@ -15,9 +16,11 @@ The Maintenance module provides automated background jobs for system maintenance
 ## 2. Inputs
 
 **Scheduled Job Parameters:**
+
 - None (runs automatically via cron)
 
 **Business Logic Parameters:**
+
 - Retention limit: 500 tasks per user (hardcoded for MVP)
 - Query: Find users with > 500 completed tasks
 - Delete: Remove oldest completed tasks beyond limit
@@ -27,6 +30,7 @@ The Maintenance module provides automated background jobs for system maintenance
 **No new shared types needed** - Internal implementation only
 
 **Prisma Operations:**
+
 ```typescript
 // Find users with > 500 completed tasks
 prisma.task.groupBy({
@@ -68,13 +72,14 @@ prisma.task.deleteMany({
 
 ## 6. Error Handling
 
-| Scenario | Status Code | Response |
-|----------|-------------|----------|
-| Success | N/A | Log summary (users processed, tasks deleted) |
-| Database error | N/A | Log error, continue to next user |
-| Partial failure | N/A | Log which users failed, complete rest |
+| Scenario        | Status Code | Response                                     |
+| --------------- | ----------- | -------------------------------------------- |
+| Success         | N/A         | Log summary (users processed, tasks deleted) |
+| Database error  | N/A         | Log error, continue to next user             |
+| Partial failure | N/A         | Log which users failed, complete rest        |
 
 **Logging strategy:**
+
 - Log job start with timestamp
 - Log each user processed with deletion count
 - Log errors with user context
@@ -91,6 +96,7 @@ prisma.task.deleteMany({
 ## 8. Implementation Steps
 
 ### Phase 1: Setup (Steps 1-3)
+
 1. **Install @nestjs/schedule**
    - Add dependency to backend package.json
    - Import ScheduleModule in app.module.ts
@@ -107,6 +113,7 @@ prisma.task.deleteMany({
    - Implement basic structure with @Cron decorator
 
 ### Phase 2: Business Logic (Steps 4-6)
+
 4. **Implement retention query logic**
    - Method to find users with > 500 completed tasks
    - Method to get 500 most recent task IDs for a user
@@ -123,6 +130,7 @@ prisma.task.deleteMany({
    - Summary logging with totals
 
 ### Phase 3: Testing & Monitoring (Steps 7-8)
+
 7. **Write unit tests**
    - Test retention logic with mock data
    - Test edge cases (exactly 500, < 500, > 500)
@@ -137,6 +145,7 @@ prisma.task.deleteMany({
 ---
 
 **Notes:**
+
 - Cron schedule: `'0 2 * * *'` (2 AM UTC daily)
 - Retention limit: 500 tasks per user (hardcoded constant)
 - No API endpoint needed (internal job only)

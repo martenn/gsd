@@ -53,13 +53,16 @@ erDiagram
 ## Database Indexes
 
 ### users table
+
 - `email` - Unique index for fast user lookups
 
 ### lists table
+
 - `(userId, orderIndex)` - Composite index for ordered list retrieval
 - `(userId, isDone)` - Composite index for filtering Done lists
 
 ### tasks table
+
 - `(userId, listId, orderIndex)` - Composite index for ordered task retrieval within lists
 - `(userId, completedAt)` - Composite index for filtering completed tasks
 

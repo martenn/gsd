@@ -28,11 +28,13 @@ npm run lint
 ## IDE Setup
 
 ### VS Code
+
 1. Install recommended extensions (Prettier, ESLint)
 2. Enable format on save
 3. Use Prettier as default formatter
 
 ### Other IDEs
+
 - Install Prettier and ESLint plugins
 - Configure to use project settings
 - Enable format on save
@@ -55,6 +57,7 @@ npm install --save-dev husky lint-staged
 ```
 
 Then add to package.json:
+
 ```json
 {
   "lint-staged": {
