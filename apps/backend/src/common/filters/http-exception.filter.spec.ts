@@ -347,13 +347,23 @@ describe('HttpExceptionFilter', () => {
   describe('Self-protecting error handling', () => {
     it('should handle errors in filter execution and return safe response', () => {
       const exception = new NotFoundException('Test');
+      let callCount = 0;
       mockResponse.status = jest.fn().mockImplementation(() => {
-        throw new Error('Response error');
+        callCount++;
+        if (callCount === 1) {
+          throw new Error('Response error');
+        }
+        return mockResponse;
       });
 
       filter.catch(exception, mockArgumentsHost);
 
       expect(logger.error).toHaveBeenCalledWith('Error in exception filter', expect.any(String));
+      expect(mockResponse.status).toHaveBeenCalledTimes(2);
+      expect(mockResponse.json).toHaveBeenCalledWith({
+        statusCode: 500,
+        message: 'Internal server error',
+      });
     });
   });
 
