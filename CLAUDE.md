@@ -5,12 +5,14 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Meta-Rules for Claude Code & Cursor IDE
 
 **IMPORTANT:** When architectural patterns, coding standards, or rules are established or changed during a conversation:
+
 1. Always update CLAUDE.md with the new rule/pattern (this file)
 2. Always update the corresponding `.cursor/rules/*.mdc` file(s)
 3. Both files must stay in sync
 4. Changes should be made in the same response/action
 
 **Custom Commands Sync:**
+
 - `.claude/commands/` - Used by Claude Code (this IDE)
 - `.cursor/commands/` - Used by Cursor IDE
 - Both directories must stay in sync
@@ -28,6 +30,7 @@ This ensures consistency across all development tools and documentation.
 ## Tech Stack
 
 ### Frontend
+
 - **Framework**: Astro (islands architecture) + React 19
 - **Styling/UI**: Tailwind CSS + shadcn/ui + lucide-react
 - **State Management**: TanStack Query (server state), local UI state in React
@@ -36,6 +39,7 @@ This ensures consistency across all development tools and documentation.
 - **API Client**: fetch wrapper with typed DTOs; optional OpenAPI client generation from backend swagger
 
 ### Backend
+
 - **Runtime/Framework**: NestJS (REST, modular architecture)
 - **ORM**: Prisma (PostgreSQL)
 - **Authentication**: Google OAuth 2.0 (@nestjs/passport + passport-google-oauth20)
@@ -45,6 +49,7 @@ This ensures consistency across all development tools and documentation.
 - **Security**: CORS, helmet, rate limiting (@nestjs/throttler)
 
 ### Database
+
 - **Engine**: PostgreSQL 16
 - **Migrations**: `prisma migrate`
 - **Indexes**: On user_id, list_id, completed_at, order_index
@@ -52,6 +57,7 @@ This ensures consistency across all development tools and documentation.
 - **Local Dev**: docker-compose (Postgres + optional pgAdmin)
 
 ### Build & Quality
+
 - **Language**: TypeScript (strict mode)
 - **Linting**: ESLint
 - **Formatting**: Prettier
@@ -84,6 +90,7 @@ gsd/
 ```
 
 **Key Commands:**
+
 - `pnpm dev` - Start both apps in dev mode
 - `pnpm build` - Build all packages and apps
 - `pnpm test` - Run all tests
@@ -95,6 +102,7 @@ gsd/
 ### Core Domain Model
 
 **Lists**:
+
 - Users can create, rename, delete, and reorder lists
 - Three types: backlog, intermediate, and done
 - Backlogs are always leftmost; users may have multiple backlogs (marked/unmarked by user)
@@ -105,6 +113,7 @@ gsd/
 - Limit: 10 non-Done lists per user
 
 **Tasks**:
+
 - A task belongs to exactly one list at a time
 - Fields: title (required), description (optional), list_id, created_at, completed_at (nullable), order_index
 - New/moved tasks are inserted at the top of the target list
@@ -113,6 +122,7 @@ gsd/
 - Visual origin: tasks inherit color from their origin backlog (system-assigned)
 
 **Done Archive**:
+
 - Separate read-only view with pagination (50 items per page)
 - Retention: keep last N=500 completed tasks per user, delete oldest first
 - Timestamps stored in UTC, rendered in user's local timezone
@@ -120,6 +130,7 @@ gsd/
 ### User Modes
 
 **Plan Mode**:
+
 - Full task and list management interface
 - Keyboard-first navigation (arrow keys primary; vim-style h/j/k/l alternates)
 - Spreadsheet-like cell selection behavior
@@ -127,11 +138,13 @@ gsd/
 - Controls disabled when limits are reached
 
 **Work Mode**:
+
 - Focused execution view showing top task of active work list (rightmost non-Done)
 - Displays short forecast of next 2-3 tasks
 - Single action: mark current task complete (moves to Done, advances to next)
 
 **Dump Mode**:
+
 - Quick multi-line task creation into default backlog
 - Max 10 lines per submission
 - Blank lines removed, duplicates allowed
@@ -151,21 +164,25 @@ Aligned to PRD requirements:
 ### API Surface (v1)
 
 Authentication:
+
 - `POST /auth/google` (init OAuth flow)
 - `GET /auth/google/callback` (OAuth callback)
 
 Lists:
+
 - `GET/POST/PATCH/DELETE /v1/lists`
 - `POST /v1/lists/:id/toggle-backlog`
 - `DELETE /v1/lists/:id?dest=:destId` (delete with destination for tasks)
 
 Tasks:
+
 - `GET/POST/PATCH/DELETE /v1/tasks`
 - `POST /v1/tasks/:id/move` (move to different list)
 - `POST /v1/tasks/:id/complete` (move to Done)
 - `POST /v1/tasks/bulk-add` (dump mode)
 
 Done & Metrics:
+
 - `GET /v1/done?page=n` (paginated completed tasks)
 - `GET /v1/metrics/daily` (daily completion counts)
 - `GET /v1/metrics/weekly` (weekly completion counts, week starts Monday)
@@ -219,6 +236,7 @@ apps/backend/src/{domain}/
    - Example: AuthModule imports ListsModule to inject CreateList use case in OnboardUser
 
 **Feature Separation:**
+
 - Each feature should have its own folder: `/src/{feature}/`
 - Features should not mix concerns - keep color management separate from list management
 - Cross-feature dependencies should be explicit through module imports
@@ -247,7 +265,7 @@ export class GetLists {
 
   async execute(userId: string): Promise<ListDto[]> {
     const lists = await this.repository.findManyByUserId(userId);
-    return lists.map(list => this.toDto(list));
+    return lists.map((list) => this.toDto(list));
   }
 }
 
@@ -309,6 +327,7 @@ export class CreateListDto implements CreateListRequest {
 ```
 
 **Rationale:**
+
 - Frontend gets pure TypeScript interfaces (no class-validator dependency)
 - Backend maintains full runtime validation control via class-validator
 - Type safety enforced between frontend requests and backend expectations
@@ -317,29 +336,34 @@ export class CreateListDto implements CreateListRequest {
 ## Key Constraints & Requirements
 
 ### Business Rules
+
 - At least one backlog must always exist; if deleting last backlog, promote leftmost intermediate list or block deletion
 - Tasks move to Done when completed (from any list), setting completed_at
 - Deleting a list requires choosing a destination list for its tasks (defaults to default backlog)
 - Single-user accounts only; data isolation enforced at API level
 
 ### Limits & Performance
+
 - Maximum 10 non-Done lists per user
 - Maximum 100 tasks per list
 - Design for performance at these limits; consider virtualization if needed
 - Target: 95th percentile list interactions <100 ms
 
 ### Keyboard Navigation
+
 - Arrow keys as primary navigation
 - Vim-style h/j/k/l as alternates
 - "?" opens keyboard shortcuts overlay
 - Controls disabled (not hidden) when limits reached
 
 ### Mobile Considerations
+
 - Show one list at a time with horizontal navigation (swipe left/right)
 - Backlog selection via searchable dropdown
 - Work mode is full-screen with only Complete action
 
 ### Success Metrics
+
 - **Primary KPI**: Tasks completed per user per week (target: 10+ at MVP)
 - Store timestamps in UTC, render in user's local timezone
 - Week starts Monday
@@ -348,21 +372,25 @@ export class CreateListDto implements CreateListRequest {
 ## Development Workflow
 
 ### Local Development Setup
+
 1. Start Postgres via docker-compose
 2. Run Prisma migrations: `prisma migrate dev`
 3. Start Nest dev server (backend)
 4. Start Astro dev server (frontend)
 
 ### Database Migrations
+
 - Use Prisma: `prisma migrate dev` (development) or `prisma migrate deploy` (production)
 - Always include indexes on: user_id, list_id, completed_at, order_index
 
 ### Testing
+
 - **Unit tests**: Jest + @nestjs/testing for backend services
 - **E2E tests**: supertest for API endpoints
 - Focus on business logic: list/task CRUD, limits enforcement, backlog constraints
 
 ### Project Tracking
+
 - **IMPORTANT**: After completing any feature, module, or significant implementation, update `.ai/project-tracker.md`
 - Mark completed features with ✅ status
 - Update progress percentages for the relevant phase
@@ -371,11 +399,13 @@ export class CreateListDto implements CreateListRequest {
 - This ensures visibility into project status and helps track completion toward MVP goals
 
 ### CI/CD
+
 - GitHub Actions workflow: lint, typecheck, test, build
 - Deploy: Containerized (Docker) for both frontend and backend services
 - Postgres: managed service or self-hosted
 
 ### Documentation Organization
+
 - **View Implementation Plans**: Store in `.ai/plans/` directory
   - File naming: `{view-name}-view-implementation-plan.md`
   - Example: `.ai/plans/app-shell-view-implementation-plan.md`
@@ -412,6 +442,7 @@ The following coding standards are automatically enforced for specific file type
 ### Backend Development (TypeScript)
 
 **Support Level: EXPERT**
+
 - Favor elegant, maintainable solutions with verbose code. Assume understanding of language idioms and design patterns.
 - Highlight potential performance implications and optimization opportunities in suggested code.
 - Frame solutions within broader architectural contexts and suggest design alternatives when appropriate.
@@ -421,16 +452,19 @@ The following coding standards are automatically enforced for specific file type
 - Suggest comprehensive testing strategies rather than just example tests, including considerations for mocking, test organization, and coverage.
 
 **TypeScript Best Practices**:
+
 - Avoid using `any` type - prefer explicit types or generics
 - Use strict mode in TypeScript configuration
 
 **Code Documentation**:
+
 - Don't use JSDoc or similar documentation comments, unless specifically requested
 - Avoid inline comments that state the obvious (e.g., `// Blue` next to color codes)
 - Let well-named functions and variables be self-documenting
 - Focus on "why" not "what" when comments are necessary
 
 **Naming Conventions**:
+
 - Avoid "Service" suffix in class names - use descriptive names instead
   - Examples: `ColorPool` instead of `ColorPoolService`, `ScanUsedColors` instead of `ColorScanService`
   - Class names should clearly indicate their primary responsibility
@@ -441,6 +475,7 @@ The following coding standards are automatically enforced for specific file type
   - Test files should mirror source files: `color-pool.spec.ts` for `color-pool.ts`
 
 **NestJS Best Practices**:
+
 - Use dependency injection for services to improve testability and maintainability following SOLID principles
 - Implement custom decorators for cross-cutting concerns to keep code DRY and maintain separation of business logic
 - Use interceptors for transforming the response data structure consistently
@@ -449,6 +484,7 @@ The following coding standards are automatically enforced for specific file type
 - Use Prisma with repository patterns to abstract database operations and simplify testing with mocks
 
 **Logging Standards**:
+
 - Use `AppLogger` (from `src/logger/app-logger.ts`) for all logging throughout the application
 - Inject `AppLogger` via dependency injection in use cases, services, and other classes
 - Always call `setContext()` in the constructor to set the class name as context
@@ -467,6 +503,7 @@ The following coding standards are automatically enforced for specific file type
 - Log configuration is environment-aware (more verbose in development, production logs only error/warn/log)
 
 **Testing Conventions**:
+
 - Test files should mirror source file names: `{feature}.spec.ts`
 - Use descriptive test descriptions that explain behavior
 - Group related tests in describe blocks
@@ -483,12 +520,14 @@ The following coding standards are automatically enforced for specific file type
   - Example: Instead of testing if a color is defined, test that it matches the expected format or value
 
 **Docker Best Practices**:
+
 - Use multi-stage builds to create smaller production images
 - Use non-root users in containers for better security
 
 ### Frontend Development (React/Astro)
 
 **Support Level: BEGINNER-FRIENDLY**
+
 - Keep code in small, understandable chunks (prefer multiple simple components over one complex component)
 - Always favor simpler solutions over clever or optimized ones
 - Omit nice-to-have features; implement only what's strictly necessary for MVP
@@ -496,22 +535,26 @@ The following coding standards are automatically enforced for specific file type
 - Document unclear decisions in a tracker file for future discussion
 
 **Component Size**:
+
 - Maximum 50-80 lines per component (excluding types)
 - If a component grows larger, split it into smaller components
 - Each component should have a single, clear responsibility
 
 **File Structure**:
+
 - One component per file (no multiple exports)
 - Keep related files together in feature folders
 - Use clear, descriptive file names matching component names
 
 **Naming Conventions**:
+
 - Components: PascalCase (e.g., `TaskCard.tsx`)
 - Files: Match component name (e.g., `TaskCard.tsx` for `TaskCard` component)
 - Hooks: `use` prefix (e.g., `useTaskList.ts`)
 - Types: `types.ts` suffix for separate type files
 
 **React Coding Standards**:
+
 - Use functional components with hooks instead of class components
 - Implement React.memo() for expensive components that render often with the same props
 - Utilize React.lazy() and Suspense for code-splitting and performance optimization
@@ -524,22 +567,26 @@ The following coding standards are automatically enforced for specific file type
 - Use useTransition for non-urgent state updates to keep the UI responsive
 
 **Component Patterns**:
+
 - Use functional components only (no class components)
 - Use TypeScript interfaces for props (defined at top of file)
 - Keep useState and useEffect at the top of components
 - Extract complex logic into custom hooks
 
 **State Management**:
+
 - Start with local useState for UI state
 - Use TanStack Query only for server data
 - Avoid premature optimization with context or complex state
 
 **Props**:
+
 - Keep props simple and flat (avoid nested objects when possible)
 - Use explicit prop types (no `any` or overly complex unions)
 - Provide default values for optional props
 
 **Tailwind CSS Best Practices**:
+
 - Use the @layer directive to organize styles into components, utilities, and base layers
 - Implement Just-in-Time (JIT) mode for development efficiency and smaller CSS bundles
 - Use arbitrary values with square brackets (e.g., w-[123px]) for precise one-off designs
@@ -552,16 +599,19 @@ The following coding standards are automatically enforced for specific file type
 - Leverage state variants (hover:, focus:, active:, etc.) for interactive elements
 
 **Styling**:
+
 - Use utility classes directly in JSX (no @apply in MVP)
 - Keep class lists readable (use clsx or cn helper for conditional classes)
 - Use shadcn/ui components as-is (no customization in MVP)
 
 **Avoid Premature Styling**:
+
 - Focus on functionality first, polish later
 - Use basic Tailwind spacing and colors initially
 - Don't spend time on animations or transitions in MVP
 
 **Astro Coding Standards**:
+
 - Use Astro components (.astro) for static content and layout
 - Implement framework components in React only when interactivity is needed
 - Leverage View Transitions API for smooth page transitions
@@ -574,12 +624,14 @@ The following coding standards are automatically enforced for specific file type
 - Leverage import.meta.env for environment variables
 
 **Error Handling**:
+
 - Use try-catch for async operations
 - Display simple error messages (no toast libraries in MVP)
 - Log errors to console for debugging
 - Don't implement complex error recovery in MVP
 
 **Accessibility (ARIA) Standards**:
+
 - Use ARIA landmarks to identify regions of the page (main, navigation, search, etc.)
 - Apply appropriate ARIA roles to custom interface elements that lack semantic HTML equivalents
 - Set aria-expanded and aria-controls for expandable content like accordions and dropdowns
@@ -592,11 +644,13 @@ The following coding standards are automatically enforced for specific file type
 - Apply aria-invalid and appropriate error messaging for form validation
 
 **Testing (Post-MVP)**:
+
 - Manual testing in browser is sufficient for MVP
 - Focus on functionality over test coverage
 - Add tests after MVP is working
 
 **When to Ask for Help**:
+
 - Always ask before implementing a feature that seems too complex
 - Adding a new library or dependency
 - Deviating from existing patterns
@@ -604,6 +658,7 @@ The following coding standards are automatically enforced for specific file type
 
 **MVP Feature Omissions**:
 The following can be omitted or simplified for MVP:
+
 - Loading skeletons (use simple spinner)
 - Optimistic updates (update after server confirms)
 - Complex animations
@@ -613,6 +668,7 @@ The following can be omitted or simplified for MVP:
 ### Version Control & Git Practices
 
 **Git Standards**:
+
 - Use conventional commits to create meaningful commit messages
 - Use feature branches with descriptive names
 - Write meaningful commit messages that explain why changes were made, not just what
@@ -621,6 +677,7 @@ The following can be omitted or simplified for MVP:
 - Leverage git hooks to enforce code quality checks before commits and pushes
 
 **GitHub Standards**:
+
 - Use pull request templates to standardize information provided for code reviews
 - Implement branch protection rules to enforce quality checks
 - Configure required status checks to prevent merging code that fails tests or linting
@@ -648,5 +705,224 @@ The following can be omitted or simplified for MVP:
 ### DevOps & Containerization
 
 **Containerization (Docker)**:
+
 - Use multi-stage builds to create smaller production images
 - Use non-root users in containers for better security
+
+---
+
+## AI Agent Validation Rules (CRITICAL)
+
+**MANDATORY: All AI agents (Cursor, Claude Code, etc.) MUST follow these rules before completing any code changes.**
+
+### Pre-Completion Validation Checklist
+
+**BEFORE marking any task as complete, AI agents MUST:**
+
+1. **Run Linting**
+   - Backend: `cd apps/backend && pnpm lint`
+   - Frontend: `cd apps/frontend && pnpm lint`
+   - Root packages: `cd packages/types && pnpm lint` (if applicable)
+   - **MUST FIX ALL LINT ERRORS** before proceeding
+   - If lint errors exist, run `pnpm lint:fix` and manually fix remaining issues
+
+2. **Run Type Checking**
+   - Backend: `cd apps/backend && pnpm typecheck`
+   - Frontend: `cd apps/frontend && pnpm typecheck`
+   - **MUST FIX ALL TYPE ERRORS** before proceeding
+   - Type errors are blocking issues - code with type errors is incomplete
+
+3. **Run Build**
+   - Backend: `cd apps/backend && pnpm build`
+   - Frontend: `cd apps/frontend && pnpm build`
+   - **MUST FIX ALL BUILD ERRORS** before proceeding
+   - Build failures indicate incomplete or incorrect code
+
+4. **Run Tests**
+   - Backend: `cd apps/backend && pnpm test`
+   - Backend E2E: `cd apps/backend && pnpm test:e2e` (if applicable)
+   - **MUST FIX ALL TEST FAILURES** before proceeding
+   - If tests fail due to code changes, update tests or fix implementation
+   - If tests fail due to missing test updates, add/update tests accordingly
+
+5. **Format Code**
+   - Run `pnpm format` at root level or per package
+   - Ensure consistent formatting across all changed files
+
+### Validation Workflow
+
+**For every code change set:**
+
+```
+1. Make code changes
+2. Run lint → Fix errors → Re-run lint until clean
+3. Run typecheck → Fix errors → Re-run typecheck until clean
+4. Run build → Fix errors → Re-run build until successful
+5. Run tests → Fix failures → Re-run tests until passing
+6. Run format → Ensure consistent formatting
+7. Verify no new errors introduced
+8. Only then mark task as complete
+```
+
+### Error Handling Rules
+
+**When encountering errors:**
+
+1. **Lint Errors:**
+   - Read error messages carefully
+   - Fix formatting issues automatically with `lint:fix`
+   - Fix code quality issues manually
+   - Never ignore lint errors with `eslint-disable` unless absolutely necessary and documented
+
+2. **Type Errors:**
+   - Read TypeScript error messages
+   - Fix type mismatches, missing types, or incorrect type usage
+   - Never use `any` to bypass type errors (unless explicitly allowed in project rules)
+   - Ensure all imports are correctly typed
+
+3. **Build Errors:**
+   - Check for missing dependencies
+   - Verify import paths are correct
+   - Check for syntax errors
+   - Ensure all required files are present
+
+4. **Test Failures:**
+   - Read test failure messages
+   - Determine if implementation is wrong or test needs updating
+   - Fix implementation if behavior changed incorrectly
+   - Update tests if behavior changed intentionally
+   - Ensure all new code paths are tested
+
+### Prohibited Practices
+
+**NEVER:**
+
+- Mark a task complete with lint errors present
+- Mark a task complete with type errors present
+- Mark a task complete with build failures
+- Mark a task complete with failing tests
+- Skip validation steps to save time
+- Use `@ts-ignore` or `@ts-expect-error` without fixing underlying issues
+- Use `eslint-disable` without justification
+- Commit code that doesn't pass all checks
+
+### Required Tools Usage
+
+**Always use these commands in the correct order:**
+
+```bash
+# Backend validation sequence
+cd apps/backend
+pnpm lint          # Must pass
+pnpm typecheck     # Must pass
+pnpm build         # Must pass
+pnpm test          # Must pass
+
+# Frontend validation sequence
+cd apps/frontend
+pnpm lint          # Must pass
+pnpm typecheck     # Must pass
+pnpm build         # Must pass
+
+# Root-level validation (if making cross-package changes)
+pnpm lint          # Must pass
+pnpm typecheck     # Must pass
+pnpm build         # Must pass
+pnpm test          # Must pass
+```
+
+### Exception Handling
+
+**Only in these cases can validation be skipped:**
+
+1. **Work-in-Progress (WIP) commits:**
+   - Must be explicitly marked as WIP
+   - Must include `[WIP]` prefix in commit message
+   - Must be followed by completion commit that passes all checks
+
+2. **Breaking changes requiring coordination:**
+   - Must be documented in PR description
+   - Must include migration plan
+   - Must be approved before merging
+
+3. **Known issues documented:**
+   - Must be tracked in issue tracker
+   - Must have timeline for resolution
+   - Must not block other development
+
+### Verification Commands
+
+**Before completing any task, run this verification:**
+
+```bash
+# Quick validation script (create if needed)
+# Should return exit code 0 if all checks pass
+
+# Backend
+cd apps/backend && \
+  pnpm lint && \
+  pnpm typecheck && \
+  pnpm build && \
+  pnpm test
+
+# Frontend
+cd apps/frontend && \
+  pnpm lint && \
+  pnpm typecheck && \
+  pnpm build
+
+# If any command fails, fix issues and re-run
+```
+
+### Integration with Git Workflow
+
+**Before committing or marking complete:**
+
+1. Stage all changes
+2. Run full validation suite
+3. If validation passes → proceed with commit/complete
+4. If validation fails → fix issues and repeat from step 2
+
+### Reporting Validation Status
+
+**When completing a task, AI agents MUST report:**
+
+```
+✅ Linting: PASSED
+✅ Type Checking: PASSED
+✅ Build: PASSED
+✅ Tests: PASSED
+✅ Formatting: APPLIED
+
+Task complete - all validations passed.
+```
+
+**If any check fails, report:**
+
+```
+❌ Linting: FAILED (X errors)
+❌ Type Checking: FAILED (Y errors)
+⚠️  Fixing issues...
+
+[After fixes]
+✅ All validations now pass.
+```
+
+### Continuous Validation
+
+**During development:**
+
+- Run linting frequently (after each file change)
+- Run typecheck after significant changes
+- Run tests after logic changes
+- Don't wait until the end to validate
+
+**This prevents:**
+
+- Accumulation of errors
+- Difficult-to-debug issues
+- Time-consuming fixes at the end
+
+---
+
+**REMINDER: Code that doesn't pass all validation checks is incomplete code. Incomplete code should never be marked as complete.**
