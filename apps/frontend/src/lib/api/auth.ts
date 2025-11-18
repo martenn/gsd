@@ -2,9 +2,17 @@ import type { GetMeResponseDto, SignOutResponseDto } from '@gsd/types';
 import { apiClient } from './client';
 
 export async function getMe(): Promise<GetMeResponseDto> {
-  return apiClient.get('/auth/me');
+  const result = await apiClient.get<GetMeResponseDto>('/auth/me');
+  if (!result) {
+    throw new Error('Failed to get user data');
+  }
+  return result;
 }
 
 export async function logout(): Promise<SignOutResponseDto> {
-  return apiClient.post('/auth/signout');
+  const result = await apiClient.post<SignOutResponseDto>('/auth/signout');
+  if (!result) {
+    throw new Error('Failed to logout');
+  }
+  return result;
 }
