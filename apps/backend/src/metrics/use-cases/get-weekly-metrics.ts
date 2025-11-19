@@ -55,7 +55,10 @@ export class GetWeeklyMetrics {
         totalWeeks: metrics.length,
       };
     } catch (error) {
-      this.logger.error(`Failed to fetch weekly metrics for user ${userId}`, error.stack);
+      this.logger.error(
+        `Failed to fetch weekly metrics for user ${userId}`,
+        (error as Error).stack,
+      );
       throw error;
     }
   }

@@ -43,7 +43,7 @@ export class GetDailyMetrics {
         totalCompleted: tasks.length,
       };
     } catch (error) {
-      this.logger.error(`Failed to fetch daily metrics for user ${userId}`, error.stack);
+      this.logger.error(`Failed to fetch daily metrics for user ${userId}`, (error as Error).stack);
       throw error;
     }
   }
