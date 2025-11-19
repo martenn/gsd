@@ -136,7 +136,8 @@ describe('ReorderList', () => {
       updatedAt: new Date(),
     };
 
-    jest.spyOn(repository, 'findById').mockImplementation((id: string) => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    jest.spyOn(repository, 'findById').mockImplementation((id: string, _userId: string) => {
       if (id === listId) return Promise.resolve(listToMove);
       if (id === targetListId) return Promise.resolve(targetList);
       return Promise.resolve(null);
@@ -193,7 +194,8 @@ describe('ReorderList', () => {
       updatedAt: new Date(),
     };
 
-    jest.spyOn(repository, 'findById').mockImplementation((id: string) => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    jest.spyOn(repository, 'findById').mockImplementation((id: string, _userId: string) => {
       if (id === listId) return Promise.resolve(listToMove);
       if (id === targetListId) return Promise.resolve(lastList);
       return Promise.resolve(null);
@@ -273,7 +275,8 @@ describe('ReorderList', () => {
       updatedAt: now,
     };
 
-    jest.spyOn(repository, 'findById').mockImplementation((id: string) => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    jest.spyOn(repository, 'findById').mockImplementation((id: string, _userId: string) => {
       if (id === listId) return Promise.resolve(existingList);
       return Promise.resolve(null);
     });

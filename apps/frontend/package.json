@@ -15,6 +15,7 @@
     "typecheck": "astro check"
   },
   "dependencies": {
+    "@gsd/types": "workspace:^",
     "@astrojs/react": "^4.4.0",
     "@gsd/types": "workspace:^",
     "@tanstack/react-query": "^5.90.9",
