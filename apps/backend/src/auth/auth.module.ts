@@ -13,6 +13,7 @@ import { SignOut } from './use-cases/sign-out';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { ListsModule } from '../lists/lists.module';
 import { ColorModule } from '../colors/color.module';
+import { TokenExpiration } from './domain/token-expiration';
 
 @Module({
   imports: [
@@ -28,7 +29,7 @@ import { ColorModule } from '../colors/color.module';
         return secret;
       })(),
       signOptions: {
-        expiresIn: 60 * 60 * 24 * 7, // 7 days in seconds
+        expiresIn: TokenExpiration.fromEnv().toSeconds(),
       },
     }),
   ],
