@@ -155,9 +155,7 @@ describe('CreateTask', () => {
           originBacklogId: backlogId,
         }),
       );
-      expect(logger.log).toHaveBeenCalledWith(
-        expect.stringContaining('using topmost backlog'),
-      );
+      expect(logger.log).toHaveBeenCalledWith(expect.stringContaining('using topmost backlog'));
     });
 
     it('should throw InternalServerErrorException when no backlog exists for intermediate list', async () => {
@@ -168,7 +166,9 @@ describe('CreateTask', () => {
       tasksRepository.countByList.mockResolvedValue(0);
 
       await expect(createTask.execute(userId, validDto)).rejects.toThrow(
-        new InternalServerErrorException('No backlog found for user. This is a data integrity issue.'),
+        new InternalServerErrorException(
+          'No backlog found for user. This is a data integrity issue.',
+        ),
       );
 
       expect(tasksRepository.create).not.toHaveBeenCalled();

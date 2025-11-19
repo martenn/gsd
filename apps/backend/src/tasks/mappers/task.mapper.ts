@@ -68,9 +68,7 @@ export class TaskMapper {
       return originBacklog.color;
     }
 
-    this.logger.warn(
-      `No origin backlog color found, using default: ${TaskMapper.DEFAULT_COLOR}`,
-    );
+    this.logger.warn(`No origin backlog color found, using default: ${TaskMapper.DEFAULT_COLOR}`);
     return TaskMapper.DEFAULT_COLOR;
   }
 }

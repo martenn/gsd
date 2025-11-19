@@ -46,7 +46,9 @@ export class CreateTask {
         orderIndex,
       });
 
-      this.logger.log(`Task created successfully: ${task.id} with origin backlog ${originBacklogId}`);
+      this.logger.log(
+        `Task created successfully: ${task.id} with origin backlog ${originBacklogId}`,
+      );
 
       return this.taskMapper.toDto(task);
     } catch (error) {
@@ -96,7 +98,9 @@ export class CreateTask {
 
     const backlogs = await this.listsRepository.findBacklogs(userId);
     if (backlogs.length === 0) {
-      throw new InternalServerErrorException('No backlog found for user. This is a data integrity issue.');
+      throw new InternalServerErrorException(
+        'No backlog found for user. This is a data integrity issue.',
+      );
     }
 
     const defaultBacklog = backlogs[0];
