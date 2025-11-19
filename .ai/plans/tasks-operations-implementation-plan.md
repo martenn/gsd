@@ -11,12 +11,14 @@ This plan covers three critical task operations required for MVP:
 These operations are part of the core task flow (Phase 2 in project tracker) and are HIGH PRIORITY features. They enable users to manage task lifecycle from creation through planning to completion.
 
 **PRD References:**
+
 - US-008: Move task between lists
 - US-009: Reorder tasks within a list
 - US-010: Complete task in work mode
 - US-011: Complete task in plan mode
 
 **Business Context:**
+
 - Tasks flow left-to-right: backlogs → intermediate lists → Done
 - Active work list is rightmost non-Done list
 - Completing tasks is the primary user action in work mode
@@ -27,44 +29,54 @@ These operations are part of the core task flow (Phase 2 in project tracker) and
 ### Move Task (POST /v1/tasks/:id/move)
 
 **Path Parameters:**
+
 - `id` (required, string): Task ID to move
 
 **Request Body (MoveTaskDto):**
+
 ```typescript
 {
-  targetListId: string  // Required: Destination list ID
+  targetListId: string; // Required: Destination list ID
 }
 ```
 
 **Authentication:**
+
 - userId from authenticated session (currently mock-user-id)
 
 ### Reorder Task (POST /v1/tasks/:id/reorder)
 
 **Path Parameters:**
+
 - `id` (required, string): Task ID to reorder
 
 **Request Body (ReorderTaskDto):**
+
 ```typescript
 {
   newOrderIndex?: number  // Option 1: Explicit position
   afterTaskId?: string    // Option 2: Position after specific task
 }
 ```
+
 Note: Exactly one of `newOrderIndex` or `afterTaskId` must be provided.
 
 **Authentication:**
+
 - userId from authenticated session
 
 ### Complete Task (POST /v1/tasks/:id/complete)
 
 **Path Parameters:**
+
 - `id` (required, string): Task ID to complete
 
 **Request Body:**
+
 - None (operation is idempotent)
 
 **Authentication:**
+
 - userId from authenticated session
 
 ## 3. Used Types
@@ -72,6 +84,7 @@ Note: Exactly one of `newOrderIndex` or `afterTaskId` must be provided.
 ### DTOs
 
 **MoveTaskDto** (apps/backend/src/tasks/dto/move-task.dto.ts):
+
 ```typescript
 import { IsString, IsNotEmpty } from 'class-validator';
 
@@ -83,6 +96,7 @@ export class MoveTaskDto {
 ```
 
 **ReorderTaskDto** (apps/backend/src/tasks/dto/reorder-task.dto.ts):
+
 ```typescript
 import { IsNumber, IsString, IsOptional, ValidateIf } from 'class-validator';
 
@@ -100,6 +114,7 @@ export class ReorderTaskDto {
 ```
 
 **TaskDto** (response, should exist in @gsd/types or apps/backend):
+
 ```typescript
 export interface TaskDto {
   id: string;
@@ -110,13 +125,14 @@ export interface TaskDto {
   completedAt: Date | null;
   createdAt: Date;
   updatedAt: Date;
-  color: string;  // Inherited from origin backlog
+  color: string; // Inherited from origin backlog
 }
 ```
 
 ### Models
 
 **Prisma Task Model** (existing in schema.prisma):
+
 ```prisma
 model Task {
   id          String    @id @default(cuid())
@@ -140,6 +156,7 @@ model Task {
 ```
 
 **Prisma List Model** (existing in schema.prisma):
+
 ```prisma
 model List {
   id         String   @id @default(cuid())
@@ -164,13 +181,15 @@ model List {
 ### Move Task
 
 **Success Response (200 OK):**
+
 ```typescript
 {
-  task: TaskDto  // Updated task with new listId and orderIndex
+  task: TaskDto; // Updated task with new listId and orderIndex
 }
 ```
 
 **Error Responses:**
+
 - 400 Bad Request: Invalid targetListId, target is Done list, target list at capacity (100 tasks)
 - 404 Not Found: Task not found, destination list not found
 - 403 Forbidden: Task or destination list belongs to different user
@@ -178,9 +197,11 @@ model List {
 ### Reorder Task
 
 **Success Response (204 No Content):**
+
 - Empty body (operation updates order indices only)
 
 **Error Responses:**
+
 - 400 Bad Request: Neither or both of newOrderIndex/afterTaskId provided, invalid orderIndex value, afterTaskId not found in same list
 - 404 Not Found: Task not found, afterTaskId not found
 - 403 Forbidden: Task belongs to different user
@@ -188,9 +209,11 @@ model List {
 ### Complete Task
 
 **Success Response (204 No Content):**
+
 - Empty body (operation is idempotent)
 
 **Error Responses:**
+
 - 404 Not Found: Task not found, Done list not found for user
 - 403 Forbidden: Task belongs to different user
 - 500 Internal Server Error: Done list missing (data integrity issue)
@@ -246,15 +269,18 @@ model List {
 ## 6. Security Considerations
 
 ### Authentication
+
 - All endpoints require authenticated userId (currently mock, future: JWT from session)
 - Controllers extract userId from auth context (not request body)
 
 ### Authorization
+
 - **Ownership Validation:** All operations must verify task.userId === authenticated userId
 - **List Ownership Validation:** Move operation must verify targetList.userId === authenticated userId
 - Prevent cross-user task/list access
 
 ### Input Validation
+
 - **Move Task:**
   - Validate targetListId is valid UUID/CUID format
   - Prevent SQL injection via Prisma parameterized queries
@@ -271,11 +297,13 @@ model List {
   - Validate taskId format
 
 ### Data Integrity
+
 - **Move Task:** Validate target list capacity (< 100 tasks) before allowing move
 - **Complete Task:** Ensure Done list exists for user (created during onboarding)
 - Use Prisma transactions for operations that update multiple records
 
 ### Potential Threats
+
 1. **Unauthorized Access:** User tries to move/complete other users' tasks
    - Mitigation: Always include userId in WHERE clauses
 
@@ -291,6 +319,7 @@ model List {
 ## 7. Performance Considerations
 
 ### Database Queries
+
 - **Move Task:**
   - 1 query: Fetch task with userId filter
   - 1 query: Fetch target list with userId filter
@@ -313,6 +342,7 @@ model List {
   - **Total: 4 queries**
 
 ### Optimization Strategies
+
 1. **Indexing:** Ensure indices exist on:
    - Task(userId, listId) - composite index
    - Task(orderIndex)
@@ -329,11 +359,13 @@ model List {
    - Complete task (update task + potentially update orderIndex of others)
 
 ### Expected Performance
+
 - Target: <100ms for individual task operations (per PRD)
 - Reorder should be instant (single update query)
 - Move and Complete may be slower due to orderIndex calculation
 
 ### Bottlenecks
+
 1. **Order Index Calculation:** Getting max orderIndex + 1 requires full table scan
    - Mitigation: Index on orderIndex, periodic reindex job (planned)
 
@@ -345,6 +377,7 @@ model List {
 ### Phase 1: Move Task (POST /v1/tasks/:id/move)
 
 **Step 1: Create DTO and Repository Methods**
+
 - [ ] Create `apps/backend/src/tasks/dto/move-task.dto.ts`
   - Implement MoveTaskDto with @IsString() @IsNotEmpty() targetListId
 - [ ] Add methods to `TasksRepository`:
@@ -356,6 +389,7 @@ model List {
   - `findById(listId: string, userId: string): Promise<List | null>` (may already exist)
 
 **Step 2: Create MoveTask Use Case**
+
 - [ ] Create `apps/backend/src/tasks/use-cases/move-task.ts`
   - Inject TasksRepository, ListsRepository, AppLogger
   - Implement `execute(userId: string, taskId: string, dto: MoveTaskDto): Promise<TaskDto>`
@@ -381,6 +415,7 @@ model List {
   - Mock TasksRepository, ListsRepository, AppLogger
 
 **Step 3: Add Controller Endpoint**
+
 - [ ] Update `apps/backend/src/tasks/adapters/tasks.controller.ts`
   - Inject MoveTask use case as `moveTaskUseCase: MoveTask`
   - Add endpoint:
@@ -404,6 +439,7 @@ model List {
 ### Phase 2: Complete Task (POST /v1/tasks/:id/complete)
 
 **Step 4: Create CompleteTask Use Case**
+
 - [ ] Add methods to `TasksRepository`:
   - `completeTask(taskId: string, doneListId: string, completedAt: Date, orderIndex: number): Promise<Task>`
 - [ ] Add method to `ListsRepository`:
@@ -430,6 +466,7 @@ model List {
   - Mock repositories and logger
 
 **Step 5: Add Controller Endpoint**
+
 - [ ] Update `apps/backend/src/tasks/adapters/tasks.controller.ts`
   - Inject CompleteTask use case as `completeTaskUseCase: CompleteTask`
   - Add endpoint:
@@ -449,6 +486,7 @@ model List {
 ### Phase 3: Reorder Task (POST /v1/tasks/:id/reorder)
 
 **Step 6: Create DTO and Repository Methods**
+
 - [ ] Create `apps/backend/src/tasks/dto/reorder-task.dto.ts`
   - Implement ReorderTaskDto with custom validation:
     - Either newOrderIndex OR afterTaskId must be provided (not both, not neither)
@@ -458,6 +496,7 @@ model List {
   - `findById(taskId: string, userId: string): Promise<Task | null>` (may already exist)
 
 **Step 7: Create ReorderTask Use Case**
+
 - [ ] Create `apps/backend/src/tasks/use-cases/reorder-task.ts`
   - Inject TasksRepository, AppLogger
   - Implement `execute(userId: string, taskId: string, dto: ReorderTaskDto): Promise<void>`
@@ -486,6 +525,7 @@ model List {
   - Mock repository and logger
 
 **Step 8: Add Controller Endpoint**
+
 - [ ] Update `apps/backend/src/tasks/adapters/tasks.controller.ts`
   - Inject ReorderTask use case as `reorderTaskUseCase: ReorderTask`
   - Add endpoint:
@@ -508,6 +548,7 @@ model List {
 ### Phase 4: Integration & Testing
 
 **Step 9: Update Module Configuration**
+
 - [ ] Update `apps/backend/src/tasks/tasks.module.ts`
   - Add all three use cases to providers array:
     ```typescript
@@ -517,11 +558,12 @@ model List {
       MoveTask,
       ReorderTask,
       CompleteTask,
-    ]
+    ];
     ```
   - Ensure TasksRepository and ListsRepository are available (import ListsModule if needed)
 
 **Step 10: End-to-End Testing**
+
 - [ ] Create E2E test file: `apps/backend/test/tasks-operations.e2e-spec.ts`
   - Test full flow: Create task → Move to different list → Reorder → Complete
   - Test edge cases: Move to full list, complete already completed task (idempotent)
@@ -531,6 +573,7 @@ model List {
 - [ ] Run E2E tests: `pnpm test:e2e`
 
 **Step 11: Documentation & Cleanup**
+
 - [ ] Update API documentation (Swagger decorators):
   - Add @ApiOperation() descriptions for each endpoint
   - Add @ApiResponse() for success and error codes
@@ -555,31 +598,37 @@ model List {
 ## 9. Open Questions & Future Considerations
 
 **Order Index Strategy:**
+
 - Current approach: Simple incrementing integers (max + 1)
 - Future optimization: Fractional indexing to avoid cascading updates
 - Periodic reindex job planned in MaintenanceModule (out of scope for this feature)
 
 **Transaction Strategy:**
+
 - Should Move/Complete operations use Prisma transactions?
 - Current plan: Single update queries (simpler, faster)
 - Future: Consider transactions if concurrency issues arise
 
 **Idempotency:**
+
 - Complete task is idempotent (can complete already completed task)
 - Should we return different status codes for already-completed tasks?
 - Current plan: Return 204 regardless (simpler UX)
 
 **Capacity Validation:**
+
 - Move task validates target list < 100 tasks
 - Should we cache task counts to improve performance?
 - Current plan: Count on every move (accurate, simpler)
 
 **Done List Creation:**
+
 - Complete task assumes Done list exists for user
 - When is Done list created? During user onboarding?
 - Should we auto-create Done list if missing? (No - throw 500 for data integrity)
 
 **Authentication Integration:**
+
 - All endpoints currently use mock-user-id
 - Need to replace with authenticated userId from JWT session (Phase 1: Authentication)
 - Guards should be added to protect all endpoints
@@ -589,19 +638,23 @@ model List {
 ## 10. Dependencies & Blockers
 
 **Blockers:**
+
 - None (can implement with mock userId)
 
 **Dependencies:**
+
 - TasksRepository (existing, needs new methods)
 - ListsRepository (existing, needs findDoneList method)
 - AppLogger (existing)
 - Prisma schema (existing, Task and List models)
 
 **Future Dependencies:**
+
 - Authentication module (to replace mock userId)
 - Done list creation during user onboarding (ensures Done list exists)
 
 **Related Features:**
+
 - Delete list (already implemented, uses destination list concept)
 - Create task (already implemented, inserts at top using orderIndex)
 - Bulk add tasks (planned, will use similar move/insert logic)
@@ -611,6 +664,7 @@ model List {
 ## 11. Success Criteria
 
 **Functional Requirements:**
+
 - ✅ User can move task from one list to another
 - ✅ Moved task appears at top of destination list
 - ✅ User cannot move task to Done list (must use complete)
@@ -622,6 +676,7 @@ model List {
 - ✅ All operations enforce userId ownership
 
 **Non-Functional Requirements:**
+
 - ✅ All endpoints respond in <100ms (at MVP scale)
 - ✅ All use cases have comprehensive unit tests (>80% coverage)
 - ✅ All endpoints have E2E tests covering success and error paths
@@ -631,6 +686,7 @@ model List {
 - ✅ Error messages are clear and actionable
 
 **Validation Criteria:**
+
 - Run `pnpm test` - all tests pass
 - Run `pnpm build` - no TypeScript errors
 - Run `pnpm typecheck` - no type errors

@@ -5,6 +5,7 @@ Quick reference for managing database schema changes in GSD using Prisma Migrate
 ## Core Concept
 
 **Prisma Migrate vs Flyway:**
+
 - **Flyway**: Write SQL migrations manually → Apply them
 - **Prisma**: Change `schema.prisma` → Generate SQL migrations → Apply them
 
@@ -69,6 +70,7 @@ Each migration is a timestamped folder containing SQL DDL statements.
 ## Example: Adding a Field
 
 **Step 1:** Edit `schema.prisma`
+
 ```prisma
 model Task {
   id          String    @id @default(uuid())
@@ -79,11 +81,13 @@ model Task {
 ```
 
 **Step 2:** Generate migration
+
 ```bash
 pnpm prisma migrate dev --name add_task_priority
 ```
 
 **Step 3:** Prisma auto-generates SQL
+
 ```sql
 -- prisma/migrations/20231028150000_add_task_priority/migration.sql
 ALTER TABLE "tasks" ADD COLUMN "priority" INTEGER NOT NULL DEFAULT 0;
@@ -102,6 +106,7 @@ pnpm prisma db push
 ```
 
 **Current GSD scripts in `package.json`:**
+
 - `db:migrate` → Uses `migrate dev` ✅ Correct for production
 - `db:push` → Available but avoid for production features
 
@@ -135,6 +140,7 @@ This is similar to Flyway's `flyway_schema_history` table.
 ## Troubleshooting
 
 **Migration conflicts:**
+
 ```bash
 # Mark a migration as applied (if already applied manually):
 pnpm prisma migrate resolve --applied "20231028150000_migration_name"
@@ -144,6 +150,7 @@ pnpm prisma migrate resolve --rolled-back "20231028150000_migration_name"
 ```
 
 **Reset everything (dev only):**
+
 ```bash
 pnpm prisma migrate reset  # Nuclear option - drops DB and replays all migrations
 ```

@@ -3,12 +3,13 @@ I'm thinking about an app, that will be a variation of getting things done. Imag
 So, we have work mode and plan mode. In plan mode you can really change everything, you can add new tasks, change existing tasks, delete tasks. You can also change the order of tasks. All should be just easy and simple.
 
 Additional functionality:
+
 - register user
 - login
 - logout
 - change password
 - view only own tasks
-</functional>
+  </functional>
 
 <non-functional>
 Non functional requirements:
@@ -51,14 +52,17 @@ Open points and questions:
 Given updated constraints (Google-only auth, avoid complex providers, simplicity priority, NestJS familiarity), two viable paths:
 
 ### Path A: Serverless (Recommended for Simplicity) ⭐
+
 **Stack**: React SPA + Supabase (Auth + DB)
 
 **Architecture**:
+
 - Frontend: React (Vite) + Tailwind + shadcn/ui on Vercel (free)
 - Backend: Supabase (Auth + Postgres + Row Level Security)
 - No Astro needed (unfamiliar), no NestJS needed (Supabase handles backend)
 
 **Deployment**:
+
 - Vercel: Push to GitHub → auto-deploy (HTTPS included)
 - Supabase: One-click project creation, enable Google OAuth
 
@@ -66,21 +70,25 @@ Given updated constraints (Google-only auth, avoid complex providers, simplicity
 **Complexity**: Low - no backend code, no Docker, no server management
 
 **Trade-offs**:
+
 - ✅ Simplest path, leverages Supabase RLS for data isolation
 - ❌ Need to learn Supabase client SDK and Row Level Security policies (2-3 days)
 
 ---
 
 ### Path B: Traditional (Leverage NestJS Knowledge)
+
 **Stack**: React SPA + NestJS + Neon Postgres
 
 **Architecture**:
+
 - Frontend: React (Vite) on Vercel (free)
 - Backend: NestJS on Fly.io with Docker (~$5/month)
 - Database: Neon Postgres (free tier 0.5GB, then $19/month)
 - Auth: Passport.js Google OAuth → JWT
 
 **Deployment**:
+
 - Vercel: GitHub auto-deploy
 - Fly.io: `fly launch` with Dockerfile
 - Neon: Connection string via env var
@@ -89,6 +97,7 @@ Given updated constraints (Google-only auth, avoid complex providers, simplicity
 **Complexity**: Medium - backend deployment, env management, CORS setup
 
 **Trade-offs**:
+
 - ✅ Full control, uses NestJS expertise, no new frameworks
 - ❌ More moving parts (backend + DB separately managed)
 
@@ -97,6 +106,7 @@ Given updated constraints (Google-only auth, avoid complex providers, simplicity
 ### Recommendation: Path A (Supabase)
 
 **Why**: Aligns with "as simple as possible" requirement. Avoids:
+
 - Backend deployment complexity
 - HTTPS/CORS configuration
 - JWT token management
@@ -106,28 +116,30 @@ Given updated constraints (Google-only auth, avoid complex providers, simplicity
 **Learning curve**: 2-3 days for Supabase basics vs. 1 week setting up NestJS + Fly.io + Neon properly.
 
 **Timeline Estimates**:
+
 - Path A: MVP in 2-3 weeks, full feature set in 4-5 weeks
 - Path B: MVP in 3-4 weeks, full feature set in 5-7 weeks
-</answers-claude>
+  </answers-claude>
 
 <answers-cursor-plan>
 
 ## Summary (Cursor Plan)
 
-- **Feasibility**: Yes. Focus on two core features: 
+- **Feasibility**: Yes. Focus on two core features:
   - **Flow**: drag-and-drop `backlog → week → today` with ordering
   - **Work Mode**: top “focus” task + next 2–3 preview; single action = complete
 - **MVP scope**: Google-only auth; per-user data; views for Backlogs, Week, Today, Work Mode; Done explored separately; no collaboration/notifications.
 - **Data model**: `Task(user_id, list: backlog|week|today|done, position float, done_at)`; `Backlog(name)`; index `(user_id, list, position)`. Use float `position` for cheap reordering; normalize periodically.
-- **Auth**: 
-  - Supabase Auth (Google-only) with RLS; or 
+- **Auth**:
+  - Supabase Auth (Google-only) with RLS; or
   - NestJS + Passport Google → JWT/refresh, `google_sub` as identity.
 - **Two main paths**:
   - **Path A (Simplest)**: React + Supabase (Auth + Postgres + RLS), host frontend on Vercel, Supabase handles HTTPS/DB. Fastest to MVP.
   - **Path B (NestJS)**: React + NestJS + Postgres (Neon/Supabase). More control, more setup (CORS, HTTPS, Docker).
 
 ### Docker + DigitalOcean variants
-- **Option A – App Platform (recommended)**: 
+
+- **Option A – App Platform (recommended)**:
   - Frontend (static) + NestJS (Docker) + DO Managed Postgres.
   - Pros: minimal ops, auto HTTPS, rollbacks. Cost: ~$5–$12 (API) + ~$15 (DB).
 - **Option B – Single Droplet + Docker Compose (cheapest)**:
@@ -135,6 +147,7 @@ Given updated constraints (Google-only auth, avoid complex providers, simplicity
   - Pros: low cost ($6–$12). Cons: you manage TLS, backups, updates.
 
 ### 6-week timeline
+
 - W1: Project setup, auth, DB schema, basic queries/endpoints.
 - W2: Backlogs UI + CRUD + DnD + optimistic updates.
 - W3: Week/Today lists, moves, ordering, Done flow.

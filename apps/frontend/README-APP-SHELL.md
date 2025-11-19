@@ -68,6 +68,7 @@ src/
 ## Next Steps
 
 The placeholder views (Plan, Work, Done) need to be replaced with:
+
 - Plan Mode: Full task and list management
 - Work Mode: Focused task execution
 - Done View: Completed tasks archive

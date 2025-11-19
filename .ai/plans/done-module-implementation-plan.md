@@ -7,6 +7,7 @@ The Done module provides read-only access to completed tasks through a paginated
 **Endpoint:** `GET /v1/done`
 
 **Key behaviors:**
+
 - Returns paginated list of completed tasks using limit+offset
 - Ordered by completion date (newest first)
 - Filtered by authenticated user
@@ -15,15 +16,18 @@ The Done module provides read-only access to completed tasks through a paginated
 ## 2. Inputs
 
 **Query Parameters:**
+
 - `limit` (optional, number): Number of tasks to return (default: 50, min: 1, max: 100)
 - `offset` (optional, number): Number of tasks to skip (default: 0, min: 0)
 
 **Authentication:**
+
 - JWT token in HttpOnly cookie (required)
 
 ## 3. Used Types
 
 **Request DTO:**
+
 ```typescript
 // apps/backend/src/done/dto/get-done-query.dto.ts
 export class GetDoneQueryDto implements GetDoneQuery {
@@ -43,6 +47,7 @@ export class GetDoneQueryDto implements GetDoneQuery {
 ```
 
 **Shared Types (@gsd/types):**
+
 ```typescript
 // Add to @gsd/types/api/done.ts
 export interface GetDoneQuery {
@@ -97,15 +102,16 @@ Uses existing Prisma `Task` model with `completed_at IS NOT NULL`
 
 ## 6. Error Handling
 
-| Scenario | Status Code | Response |
-|----------|-------------|----------|
-| Success | 200 | `GetDoneResponseDto` |
-| Not authenticated | 401 | Handled by JwtAuthGuard |
-| Invalid limit/offset | 400 | Validation error from class-validator |
-| Database error | 500 | Log error, return generic message |
-| Offset beyond available data | 200 | Return empty tasks array with correct total |
+| Scenario                     | Status Code | Response                                    |
+| ---------------------------- | ----------- | ------------------------------------------- |
+| Success                      | 200         | `GetDoneResponseDto`                        |
+| Not authenticated            | 401         | Handled by JwtAuthGuard                     |
+| Invalid limit/offset         | 400         | Validation error from class-validator       |
+| Database error               | 500         | Log error, return generic message           |
+| Offset beyond available data | 200         | Return empty tasks array with correct total |
 
 **Logging strategy:**
+
 - Log start of execution with userId, limit, offset
 - Log successful completion with task count
 - Log errors with full context before throwing
@@ -121,6 +127,7 @@ Uses existing Prisma `Task` model with `completed_at IS NOT NULL`
 ## 8. Implementation Steps
 
 ### Phase 1: Core Structure (Steps 1-3)
+
 1. **Create shared types in @gsd/types**
    - Add `@gsd/types/api/done.ts` with `GetDoneQuery`, `DoneTaskDto`, `GetDoneResponseDto`
    - Export from `@gsd/types/index.ts`
@@ -137,6 +144,7 @@ Uses existing Prisma `Task` model with `completed_at IS NOT NULL`
    - Add to DoneModule providers
 
 ### Phase 2: Business Logic (Steps 4-6)
+
 4. **Implement GetDoneTasks use case**
    - Create `apps/backend/src/done/use-cases/get-done-tasks.ts`
    - Inject DoneRepository and AppLogger
@@ -157,6 +165,7 @@ Uses existing Prisma `Task` model with `completed_at IS NOT NULL`
    - Add to DoneModule controllers
 
 ### Phase 3: Testing & Documentation (Steps 7-8)
+
 7. **Write unit tests**
    - Create `apps/backend/src/done/use-cases/get-done-tasks.spec.ts`
    - Test pagination logic (first page, offset, limits)
@@ -172,6 +181,7 @@ Uses existing Prisma `Task` model with `completed_at IS NOT NULL`
 ---
 
 **Notes:**
+
 - Default limit: 50 tasks, max: 100
 - Uses limit+offset pagination (consistent with GET /v1/tasks)
 - Retention job implementation will be in separate MaintenanceModule

@@ -302,7 +302,9 @@ ab -n 1000 -c 10 http://localhost:8080/
 ## Common Issues
 
 ### Issue: "Port already in use"
+
 **Solution:** Stop conflicting container or change port mapping
+
 ```bash
 docker ps
 docker stop <conflicting-container>
@@ -310,22 +312,28 @@ docker stop <conflicting-container>
 ```
 
 ### Issue: "Permission denied" errors
+
 **Cause:** Non-root user cannot access files
 **Solution:** Check file permissions in Dockerfile, ensure proper ownership
 
 ### Issue: Health check fails
+
 **Cause:** App not ready or database unreachable
 **Solution:**
+
 - Check database is running and accessible
 - Verify DATABASE_URL is correct
 - Check container logs for startup errors
 
 ### Issue: "Cannot connect to database"
+
 **Cause:** Database URL points to localhost (not accessible from container)
 **Solution:** Use `host.docker.internal` (macOS/Windows) or host IP (Linux)
 
 ### Issue: Build fails with "No space left on device"
+
 **Solution:**
+
 ```bash
 docker system prune -a
 docker builder prune -a
@@ -334,6 +342,7 @@ docker builder prune -a
 ## Next Steps
 
 After successful local testing:
+
 1. Push images to container registry (GitHub Container Registry, Docker Hub, etc.)
 2. Deploy to production environment (Kubernetes, ECS, etc.)
 3. Set up CI/CD pipeline for automated builds

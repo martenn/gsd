@@ -14,10 +14,12 @@ This plan covers the implementation of the **Dump Mode** feature - a quick multi
 > As a user, I can paste or type multiple lines to quickly add tasks to the default backlog.
 >
 > **Acceptance Criteria:**
+>
 > - Up to 10 non-empty lines create up to 10 tasks at the top of the default backlog
 > - Blank lines are ignored; duplicates are allowed
 
 **Key Features:**
+
 - Accept up to 10 tasks in a single request
 - Insert all tasks at the top of the target list (default backlog if not specified)
 - Blank lines are filtered out automatically
@@ -28,6 +30,7 @@ This plan covers the implementation of the **Dump Mode** feature - a quick multi
 ## 2. Current Implementation Status
 
 **Already Implemented:**
+
 - ✅ `BulkAddTasksDto` in `apps/backend/src/tasks/dto/bulk-add-tasks.dto.ts`
 - ✅ `CreateTask` use case (for individual task creation)
 - ✅ `TasksRepository` with Prisma operations
@@ -35,12 +38,14 @@ This plan covers the implementation of the **Dump Mode** feature - a quick multi
 - ✅ Shared types in `@gsd/types/api/tasks.ts`
 
 **Missing:**
+
 - ❌ `BulkAddTasks` use case implementation
 - ❌ Controller endpoint `POST /v1/tasks/bulk-add`
 - ❌ Integration with default backlog selection logic
 - ❌ Transaction handling for atomic bulk insertion
 
 **Database Schema (Task model):**
+
 ```prisma
 model Task {
   id          String    @id @default(uuid())
@@ -62,9 +67,11 @@ model Task {
 ## 3. Inputs
 
 ### Path
+
 `POST /v1/tasks/bulk-add`
 
 ### Request Body
+
 ```typescript
 {
   "tasks": [
@@ -81,6 +88,7 @@ model Task {
 ```
 
 **Parameters:**
+
 - **Required:**
   - `tasks` (array): Array of task objects, 1-10 items
     - `title` (string): Task title, 1-500 characters
@@ -90,6 +98,7 @@ model Task {
   - `listId` (UUID): Target list ID. If omitted, uses the user's default backlog
 
 **Validation (already in BulkAddTasksDto):**
+
 ```typescript
 export class BulkAddTasksDto implements BulkAddTasksRequest {
   @IsArray()
@@ -118,11 +127,13 @@ class BulkTaskInput {
 ```
 
 ### User Context
+
 - User ID extracted from JWT via `@CurrentUser()` decorator
 
 ## 4. Outputs
 
 ### Success Response (201 Created)
+
 ```typescript
 {
   "tasks": [
@@ -148,6 +159,7 @@ class BulkTaskInput {
 ```
 
 ### Response Type (already defined)
+
 ```typescript
 export interface BulkAddTasksResponseDto {
   tasks: TaskDto[];
@@ -160,9 +172,11 @@ export interface BulkAddTasksResponseDto {
 ### Error Responses
 
 **400 Bad Request:**
+
 - Invalid input validation (empty title, too many tasks, etc.)
 - List has reached 100 task limit
 - Cannot add to Done list
+
 ```json
 {
   "statusCode": 400,
@@ -172,10 +186,13 @@ export interface BulkAddTasksResponseDto {
 ```
 
 **401 Unauthorized:**
+
 - Missing or invalid JWT token
 
 **403 Forbidden:**
+
 - List belongs to different user
+
 ```json
 {
   "statusCode": 403,
@@ -185,8 +202,10 @@ export interface BulkAddTasksResponseDto {
 ```
 
 **404 Not Found:**
+
 - Specified listId doesn't exist
 - User has no default backlog (edge case, should not happen in normal operation)
+
 ```json
 {
   "statusCode": 404,
@@ -196,12 +215,14 @@ export interface BulkAddTasksResponseDto {
 ```
 
 **500 Internal Server Error:**
+
 - Database transaction failure
 - Unexpected server errors
 
 ## 5. Data Flow
 
 ### High-Level Flow
+
 1. Client sends POST /v1/tasks/bulk-add with array of tasks
 2. Controller validates DTO (class-validator)
 3. Controller extracts user ID from JWT
@@ -269,6 +290,7 @@ export interface BulkAddTasksResponseDto {
 ### Algorithm Details
 
 **Step 1: Determine Target List**
+
 ```typescript
 let targetListId: string;
 
@@ -286,6 +308,7 @@ if (dto.listId) {
 ```
 
 **Step 2: Validate Target List**
+
 ```typescript
 const targetList = await this.repository.findListByIdAndUser(targetListId, userId);
 
@@ -301,14 +324,15 @@ const currentTaskCount = await this.repository.countTasksInList(targetListId);
 
 if (currentTaskCount + dto.tasks.length > 100) {
   throw new BadRequestException(
-    `List has ${currentTaskCount} tasks. Cannot add ${dto.tasks.length} more (limit: 100)`
+    `List has ${currentTaskCount} tasks. Cannot add ${dto.tasks.length} more (limit: 100)`,
   );
 }
 ```
 
 **Step 3: Calculate Order Indexes**
+
 ```typescript
-const maxOrderIndex = await this.repository.getMaxOrderIndex(targetListId) || 0;
+const maxOrderIndex = (await this.repository.getMaxOrderIndex(targetListId)) || 0;
 
 // New tasks inserted at top: orderIndex = max + 1, max + 2, ...
 // This ensures they appear above existing tasks
@@ -322,13 +346,15 @@ const tasks = dto.tasks.map((taskInput, index) => ({
 ```
 
 **Step 4: Bulk Create in Transaction**
+
 ```typescript
 const createdTasks = await this.prisma.$transaction(
-  tasks.map((task) => this.prisma.task.create({ data: task }))
+  tasks.map((task) => this.prisma.task.create({ data: task })),
 );
 ```
 
 **Alternative Approach (createMany):**
+
 ```typescript
 // More efficient but doesn't return created records directly
 await this.prisma.task.createMany({ data: tasks });
@@ -338,21 +364,23 @@ const createdTasks = await this.prisma.task.findMany({
   where: {
     userId,
     listId: targetListId,
-    createdAt: { gte: startTime }
+    createdAt: { gte: startTime },
   },
   orderBy: { orderIndex: 'desc' },
-  take: dto.tasks.length
+  take: dto.tasks.length,
 });
 ```
 
 ## 6. Security Considerations
 
 ### Authentication & Authorization
+
 - ✅ Protected by `@UseGuards(JwtAuthGuard)`
 - ✅ User ID from JWT token (`@CurrentUser()`)
 - ✅ All repository queries scoped by `userId`
 
 ### Input Validation
+
 - ✅ Array size: 1-10 tasks (enforced by `@ArrayMinSize`, `@ArrayMaxSize`)
 - ✅ Title length: 1-500 characters (enforced by `@MinLength`, `@MaxLength`)
 - ✅ Description length: max 5000 characters
@@ -360,6 +388,7 @@ const createdTasks = await this.prisma.task.findMany({
 - ✅ UUID validation for `listId`
 
 ### Business Logic Security
+
 - ✅ Verify list ownership before insertion
 - ✅ Prevent adding to Done list
 - ✅ Enforce 100 task per list limit
@@ -368,23 +397,28 @@ const createdTasks = await this.prisma.task.findMany({
 ### Potential Threats
 
 **1. Mass Assignment Attack**
+
 - ✅ Mitigated: DTO uses explicit class-validator decorators
 - ✅ Only `title`, `description`, `listId` accepted from client
 - ✅ `userId`, `orderIndex`, `id` set by server
 
 **2. SQL Injection**
+
 - ✅ Mitigated: Prisma ORM uses parameterized queries
 
 **3. Authorization Bypass (IDOR)**
+
 - ✅ Mitigated: `findListByIdAndUser` filters by `userId`
 - ✅ Repository methods always include `userId` in WHERE clause
 
 **4. Resource Exhaustion (DoS)**
+
 - ✅ Mitigated: Maximum 10 tasks per request
 - ✅ Rate limiting should be configured at API gateway level (NestJS throttler)
 - ✅ List limit of 100 tasks prevents unbounded growth
 
 **5. Race Conditions**
+
 - ⚠️ Potential Issue: Concurrent bulk-add requests could exceed list limit
 - ✅ Mitigation: Use database transaction with SELECT FOR UPDATE (optional)
 - 📝 For MVP: Accept small race condition window; post-MVP use row-level locking
@@ -484,6 +518,7 @@ const createdTasks = await this.prisma.task.findMany({
 ## 8. Performance Considerations
 
 ### Database Operations
+
 - **Query Count:** 3-4 queries per request
   1. Find/verify target list (1 SELECT)
   2. Count existing tasks in list (1 SELECT COUNT)
@@ -495,11 +530,13 @@ const createdTasks = await this.prisma.task.findMany({
   - More efficient for bulk operations
 
 ### Index Usage
+
 - Existing indexes support the queries:
   - `[userId, listId, orderIndex]` for finding tasks and max orderIndex
   - `[userId, completedAt]` not used in this flow
 
 ### Transaction Performance
+
 - **Trade-off:** Atomicity vs. performance
   - `createMany` + separate SELECT: Faster, 2 queries
   - Individual `create` in `$transaction`: Slower, N+2 queries but returns IDs immediately
@@ -507,10 +544,12 @@ const createdTasks = await this.prisma.task.findMany({
 - **Recommendation:** Use `createMany` for better performance (max 10 tasks)
 
 ### Response Payload Size
+
 - Maximum response size: ~10 tasks × ~500 bytes ≈ 5KB
 - Well within acceptable limits for JSON responses
 
 ### Target Performance (PRD Requirement)
+
 - **Goal:** 95th percentile <100ms for list interactions
 - **Bulk-add:** May take 100-200ms for 10 tasks (still acceptable)
 - **Monitoring:** Log execution time for analysis
@@ -518,9 +557,11 @@ const createdTasks = await this.prisma.task.findMany({
 ## 9. Implementation Steps
 
 ### Step 1: Extend ListsRepository (Default Backlog)
+
 **File:** `apps/backend/src/lists/infra/lists.repository.ts`
 
 Add method to find user's default backlog:
+
 ```typescript
 async findDefaultBacklog(userId: string): Promise<List | null> {
   return this.prisma.list.findFirst({
@@ -535,9 +576,11 @@ async findDefaultBacklog(userId: string): Promise<List | null> {
 ```
 
 ### Step 2: Extend TasksRepository
+
 **File:** `apps/backend/src/tasks/infra/tasks.repository.ts`
 
 Add methods for bulk operations:
+
 ```typescript
 async findListByIdAndUser(listId: string, userId: string): Promise<List | null> {
   return this.prisma.list.findFirst({
@@ -586,6 +629,7 @@ async bulkCreateTasks(
 ```
 
 ### Step 3: Create BulkAddTasks Use Case
+
 **File:** `apps/backend/src/tasks/use-cases/bulk-add-tasks.ts`
 
 ```typescript
@@ -693,9 +737,11 @@ export class BulkAddTasks {
 ```
 
 ### Step 4: Create Unit Tests
+
 **File:** `apps/backend/src/tasks/use-cases/bulk-add-tasks.spec.ts`
 
 Test cases:
+
 - ✅ Successfully creates tasks in provided list
 - ✅ Successfully creates tasks in default backlog when listId omitted
 - ✅ Throws NotFoundException when listId doesn't exist
@@ -706,6 +752,7 @@ Test cases:
 - ✅ Trims whitespace from title and description
 
 ### Step 5: Add Controller Endpoint
+
 **File:** `apps/backend/src/tasks/adapters/tasks.controller.ts`
 
 ```typescript
@@ -734,6 +781,7 @@ export class TasksController {
 ```
 
 ### Step 6: Update TasksModule
+
 **File:** `apps/backend/src/tasks/tasks.module.ts`
 
 ```typescript
@@ -758,9 +806,11 @@ export class TasksModule {}
 ```
 
 ### Step 7: Integration Tests
+
 **File:** `apps/backend/test/tasks-bulk-add.e2e-spec.ts`
 
 E2E test scenarios:
+
 - ✅ POST /v1/tasks/bulk-add returns 201 with created tasks
 - ✅ Uses default backlog when listId omitted
 - ✅ Returns 401 without JWT
@@ -770,7 +820,9 @@ E2E test scenarios:
 - ✅ Filters out blank lines (if client sends empty titles)
 
 ### Step 8: Swagger Documentation
+
 Add to controller:
+
 ```typescript
 @ApiOperation({ summary: 'Bulk add tasks to a list' })
 @ApiResponse({ status: 201, description: 'Tasks created successfully' })
@@ -780,6 +832,7 @@ Add to controller:
 ```
 
 ### Step 9: Update Project Tracker
+
 - Mark "Dump Mode" and "Bulk-Add Tasks" as completed in `.ai/project-tracker.md`
 
 ## 10. Testing Strategy
@@ -787,18 +840,21 @@ Add to controller:
 ### Unit Tests (BulkAddTasks Use Case)
 
 **Happy Path:**
+
 - ✅ Creates multiple tasks with provided listId
 - ✅ Creates multiple tasks in default backlog when listId omitted
 - ✅ Assigns correct orderIndex values (sequential, at top)
 - ✅ Trims whitespace from title and description
 
 **Error Paths:**
+
 - ✅ Throws NotFoundException when listId doesn't exist
 - ✅ Throws NotFoundException when no default backlog
 - ✅ Throws BadRequestException when target is Done list
 - ✅ Throws BadRequestException when list capacity exceeded (current + new > 100)
 
 **Edge Cases:**
+
 - ✅ Creates exactly 10 tasks (max allowed)
 - ✅ Creates 1 task (min allowed)
 - ✅ Handles empty description as null
@@ -806,12 +862,14 @@ Add to controller:
 ### Integration Tests (E2E)
 
 **HTTP Success:**
+
 - ✅ POST /v1/tasks/bulk-add returns 201 with tasks array
 - ✅ Response includes `created`, `failed`, `message` fields
 - ✅ Tasks appear in target list via GET /v1/tasks?listId=X
 - ✅ Tasks have sequential orderIndex values
 
 **HTTP Errors:**
+
 - ✅ Returns 400 for empty array
 - ✅ Returns 400 for >10 tasks
 - ✅ Returns 400 for invalid title length
@@ -821,6 +879,7 @@ Add to controller:
 - ✅ Returns 404 when listId doesn't exist
 
 **Concurrency:**
+
 - ⚠️ Test concurrent bulk-add requests (race condition on list limit)
   - Expected: Small window for race condition in MVP
   - Post-MVP: Add database-level locking if needed
@@ -828,9 +887,11 @@ Add to controller:
 ## 11. Open Questions & Decisions
 
 ### 1. originBacklogId Field
+
 **Question:** How should `originBacklogId` be tracked for tasks?
 
 **Options:**
+
 - A) Add `originBacklogId` column to Task model (persist it)
 - B) Compute it at runtime (tasks created in backlog have `listId === originBacklogId`)
 - C) Derive from list hierarchy (track which backlog a task came from as it moves)
@@ -840,6 +901,7 @@ Add to controller:
 **Post-MVP:** If tasks can be created in intermediate lists, implement proper origin tracking.
 
 ### 2. Blank Line Handling
+
 **Question:** Should blank lines be filtered on backend or frontend?
 
 **Current:** DTO validates `@MinLength(1)` so blank titles are rejected.
@@ -849,6 +911,7 @@ Add to controller:
 **MVP Decision:** Keep DTO validation strict. Frontend should filter blank lines before sending request.
 
 ### 3. Duplicate Detection
+
 **Question:** Should duplicate titles be prevented?
 
 **PRD:** "Duplicates are allowed"
@@ -856,6 +919,7 @@ Add to controller:
 **MVP Decision:** Allow duplicates. Users may legitimately want multiple tasks with same title.
 
 ### 4. Transaction Strategy
+
 **Question:** Use `createMany` (fast, separate SELECT) or `$transaction` (slower, atomic)?
 
 **MVP Decision:** Use `createMany` + separate SELECT for better performance. The edge case of failed SELECT after successful INSERT is acceptable for MVP.
@@ -863,6 +927,7 @@ Add to controller:
 **Post-MVP:** If atomicity becomes critical, switch to `$transaction` with explicit creates.
 
 ### 5. Color Assignment
+
 **Question:** How are task colors determined for bulk-added tasks?
 
 **Current Implementation:** Uses list color (passed to `toDto`).
@@ -874,16 +939,19 @@ Add to controller:
 ## 12. Related User Stories & Features
 
 ### User Stories
+
 - **US-014**: Dump mode quick add (this feature)
 - **US-005**: Create task in a list (individual creation)
 - **US-019**: Limits enforcement (100 tasks per list)
 
 ### Related Features
+
 - **CreateTask**: Individual task creation use case
 - **Default Backlog Selection**: Logic for finding user's primary backlog
 - **List Capacity Check**: Enforced in both CreateTask and BulkAddTasks
 
 ### Dependencies
+
 - **ListsModule**: Needed to query default backlog
 - **TasksRepository**: Extended with bulk operations
 - **AuthModule**: JWT authentication
@@ -891,10 +959,12 @@ Add to controller:
 ## 13. Performance Benchmarks
 
 ### Target Metrics (PRD Requirement)
+
 - **Goal:** 95th percentile <100ms for list interactions
 - **Acceptable for Bulk-Add:** 100-200ms (10× individual creates would be 1000ms)
 
 ### Estimated Query Times
+
 - Find default backlog: ~5ms
 - Verify list ownership: ~5ms
 - Count tasks in list: ~10ms (with index)
@@ -903,6 +973,7 @@ Add to controller:
 - Total: ~80ms (well within target)
 
 ### Monitoring
+
 - Log execution time in use case
 - Track 95th percentile in production metrics
 - Alert if bulk-add exceeds 200ms
@@ -910,17 +981,20 @@ Add to controller:
 ## 14. Rollout Plan
 
 ### Phase 1: Implementation (This Plan)
+
 - Implement BulkAddTasks use case
 - Add controller endpoint
 - Write unit and integration tests
 
 ### Phase 2: Frontend Integration
+
 - Create dump mode UI (multi-line textarea)
 - Parse lines, trim whitespace, filter blanks
 - Call POST /v1/tasks/bulk-add
 - Show success/error feedback
 
 ### Phase 3: Monitoring & Iteration
+
 - Monitor performance metrics
 - Collect user feedback on dump mode UX
 - Consider enhancements:

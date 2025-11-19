@@ -9,11 +9,13 @@ This document explains how to control when Claude reviews your pull requests to 
 **How it works:** Add the `review:claude` label to a PR to trigger a review.
 
 **Usage:**
+
 1. Open your PR on GitHub
 2. Add the label `review:claude` to the PR
 3. The workflow will automatically run and post a review
 
 **To create the label (first time only):**
+
 ```bash
 gh label create "review:claude" --description "Trigger Claude code review" --color "0E8A16"
 ```
@@ -23,12 +25,14 @@ gh label create "review:claude" --description "Trigger Claude code review" --col
 **How it works:** Manually trigger the review workflow for a specific PR.
 
 **Usage:**
+
 1. Go to Actions → Claude Code Review workflow
 2. Click "Run workflow"
 3. Enter the PR number
 4. Optionally check "Force review" to bypass safety checks
 
 **Or via CLI:**
+
 ```bash
 gh workflow run claude-code-review.yml -f pr_number=123 -f force_review=false
 ```
@@ -46,38 +50,44 @@ The workflow has built-in safety checks to prevent excessive token usage:
 Edit the `MAX_CHANGES` constant in `.github/workflows/claude-code-review.yml`:
 
 ```javascript
-const MAX_CHANGES = 500;  // Adjust this value
+const MAX_CHANGES = 500; // Adjust this value
 ```
 
 ## Workflow Behavior
 
 ### When review runs:
+
 - ✅ PR has `review:claude` label
 - ✅ PR is not in draft status
 - ✅ PR has ≤500 lines of changes
 
 ### When review is skipped:
+
 - ❌ Missing label
 - ❌ Draft PR
 - ❌ Too many changes
 
 ### Notifications:
+
 - If skipped: Workflow posts a comment explaining why and how to trigger
 - If completed: Workflow posts confirmation comment
 
 ## Recommended Workflow
 
 **For normal PRs:**
+
 1. Create PR (no review yet)
 2. When ready for review, add `review:claude` label
 3. Review is automatically triggered
 
 **For large PRs:**
+
 1. Create PR
 2. Manually trigger with "force review" option if needed
 3. Or break into smaller PRs
 
 **For quick iterations:**
+
 - Don't add the label until you're ready for a review
 - Use draft PRs while still working on code
 

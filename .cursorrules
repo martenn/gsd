@@ -1,0 +1,94 @@
+# Cursor IDE Rules - AI Agent Validation Requirements
+
+## CRITICAL: Pre-Completion Validation
+
+**NEVER mark a task as complete without running ALL validation checks:**
+
+### Mandatory Validation Sequence
+
+For EVERY code change, you MUST run these checks in order:
+
+1. **Linting** - `pnpm lint` (in affected package/app)
+   - Fix ALL errors before proceeding
+   - Use `pnpm lint:fix` for auto-fixable issues
+   - Never skip lint errors
+
+2. **Type Checking** - `pnpm typecheck` (in affected package/app)
+   - Fix ALL type errors before proceeding
+   - Never use `@ts-ignore` or `any` to bypass errors
+   - Ensure all imports are correctly typed
+
+3. **Build** - `pnpm build` (in affected package/app)
+   - Fix ALL build errors before proceeding
+   - Verify no missing dependencies
+   - Check import paths are correct
+
+4. **Tests** - `pnpm test` (in affected package/app)
+   - Fix ALL test failures before proceeding
+   - Update tests if behavior changed intentionally
+   - Fix implementation if behavior changed incorrectly
+
+5. **Formatting** - `pnpm format` (at root or package level)
+   - Ensure consistent code formatting
+   - Apply formatting to all changed files
+
+### Validation Commands by Package
+
+**Backend (`apps/backend`):**
+```bash
+cd apps/backend
+pnpm lint && pnpm typecheck && pnpm build && pnpm test
+```
+
+**Frontend (`apps/frontend`):**
+```bash
+cd apps/frontend
+pnpm lint && pnpm typecheck && pnpm build
+```
+
+**Root (cross-package changes):**
+```bash
+pnpm lint && pnpm typecheck && pnpm build && pnpm test
+```
+
+### Error Handling
+
+**When errors occur:**
+- Read error messages carefully
+- Fix root cause, not symptoms
+- Re-run validation after fixes
+- Never proceed with errors present
+
+### Prohibited Actions
+
+**NEVER:**
+- ✅ Mark complete with lint errors
+- ✅ Mark complete with type errors  
+- ✅ Mark complete with build failures
+- ✅ Mark complete with test failures
+- ✅ Skip validation steps
+- ✅ Use `@ts-ignore` without fixing issues
+- ✅ Use `eslint-disable` without justification
+
+### Reporting
+
+**Always report validation status:**
+```
+✅ Linting: PASSED
+✅ Type Checking: PASSED
+✅ Build: PASSED
+✅ Tests: PASSED
+✅ Formatting: APPLIED
+```
+
+**If errors exist:**
+```
+❌ [Check Name]: FAILED
+[Fix errors]
+✅ [Check Name]: NOW PASSING
+```
+
+### Reference
+
+See `CLAUDE.md` section "AI Agent Validation Rules (CRITICAL)" for complete details.
+

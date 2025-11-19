@@ -37,6 +37,7 @@ This guide walks you through setting up Docker Hub for the GSD project, creating
    - Click "Save"
 
 **Free Tier Limits:**
+
 - 1 private repository
 - Unlimited public repositories
 - 200 container pulls per 6 hours (anonymous users share 100 pulls)
@@ -63,6 +64,7 @@ This guide walks you through setting up Docker Hub for the GSD project, creating
 ## 2. Create Access Token
 
 **Why Access Tokens?**
+
 - More secure than passwords
 - Can be scoped to specific permissions
 - Can be revoked without changing password
@@ -96,6 +98,7 @@ This guide walks you through setting up Docker Hub for the GSD project, creating
    - You cannot retrieve it later
 
 **Example Token:**
+
 ```
 dckr_pat_1a2b3c4d5e6f7g8h9i0j1k2l3m4n5o6p
 ```
@@ -167,6 +170,7 @@ echo "YOUR_ACCESS_TOKEN" | docker login -u YOUR_USERNAME --password-stdin
 ```
 
 **Example:**
+
 ```bash
 echo "dckr_pat_1a2b3c4d5e6f7g8h9i0j1k2l3m4n5o6p" | docker login -u martenn --password-stdin
 ```
@@ -251,7 +255,7 @@ docker push YOUR_USERNAME/gsd-backend:test
 
    Create a `README.md` in your repository root:
 
-   ```markdown
+   ````markdown
    # GSD Backend Docker Image
 
    Production-ready Docker image for GSD (Getting Shit Done) backend API.
@@ -262,15 +266,18 @@ docker push YOUR_USERNAME/gsd-backend:test
    docker pull martenn/gsd-backend:latest
    docker run -p 3000:3000 --env-file .env martenn/gsd-backend:latest
    ```
+   ````
 
    ## Environment Variables
 
    See [.env.example](https://github.com/martenn/gsd/blob/main/apps/backend/.env.example)
 
    ## Documentation
-
    - [GitHub Repository](https://github.com/martenn/gsd)
    - [API Documentation](https://api.gsd.example.com/api)
+
+   ```
+
    ```
 
 ### Delete Images/Tags
@@ -299,12 +306,14 @@ docker push YOUR_USERNAME/gsd-backend:test
 **Cause**: Invalid credentials or using password instead of access token
 
 **Solution:**
+
 1. Verify you're using an access token, not password
 2. Check token hasn't been revoked on Docker Hub
 3. Verify GitHub secret values are correct (no extra spaces/newlines)
 4. Regenerate access token if needed
 
 **Test locally:**
+
 ```bash
 echo "YOUR_TOKEN" | docker login -u YOUR_USERNAME --password-stdin
 ```
@@ -314,6 +323,7 @@ echo "YOUR_TOKEN" | docker login -u YOUR_USERNAME --password-stdin
 **Cause**: Insufficient permissions or repository doesn't exist
 
 **Solution:**
+
 1. Verify repository name matches your Docker Hub username
    - Correct: `docker.io/martenn/gsd-backend`
    - Wrong: `docker.io/gsd/backend` (unless org is named "gsd")
@@ -325,6 +335,7 @@ echo "YOUR_TOKEN" | docker login -u YOUR_USERNAME --password-stdin
 **Cause**: Exceeded 200 pulls per 6 hours (free tier limit)
 
 **Solution:**
+
 1. Wait for rate limit to reset (6 hours)
 2. Login to Docker Hub (authenticated users get higher limits)
 3. Upgrade to paid plan for unlimited pulls
@@ -335,6 +346,7 @@ echo "YOUR_TOKEN" | docker login -u YOUR_USERNAME --password-stdin
 **Cause**: Various reasons (authentication, build errors, network)
 
 **Solution:**
+
 1. Check workflow logs for specific error message
 2. Verify GitHub secrets are set correctly
 3. Test build locally first:
@@ -349,6 +361,7 @@ echo "YOUR_TOKEN" | docker login -u YOUR_USERNAME --password-stdin
 **Cause**: Including unnecessary files or dependencies
 
 **Solution:**
+
 1. Review `.dockerignore` file
 2. Ensure multi-stage builds are working
 3. Check layer sizes:
@@ -363,6 +376,7 @@ echo "YOUR_TOKEN" | docker login -u YOUR_USERNAME --password-stdin
 **Cause**: Base image or dependencies have known CVEs
 
 **Solution:**
+
 1. Update base image version:
    ```dockerfile
    FROM node:20-alpine  # Use latest patch version
@@ -381,13 +395,13 @@ echo "YOUR_TOKEN" | docker login -u YOUR_USERNAME --password-stdin
 
 ### Docker Hub URLs
 
-| Resource | URL |
-|----------|-----|
-| Sign Up | https://hub.docker.com/signup |
-| Login | https://hub.docker.com/ |
-| Repositories | https://hub.docker.com/repositories/YOUR_USERNAME |
-| Access Tokens | https://hub.docker.com/settings/security |
-| Account Settings | https://hub.docker.com/settings/general |
+| Resource         | URL                                               |
+| ---------------- | ------------------------------------------------- |
+| Sign Up          | https://hub.docker.com/signup                     |
+| Login            | https://hub.docker.com/                           |
+| Repositories     | https://hub.docker.com/repositories/YOUR_USERNAME |
+| Access Tokens    | https://hub.docker.com/settings/security          |
+| Account Settings | https://hub.docker.com/settings/general           |
 
 ### Docker CLI Commands
 
@@ -416,18 +430,18 @@ docker logout
 
 ### GitHub Secrets
 
-| Secret Name | Description | Example |
-|-------------|-------------|---------|
-| `DOCKERHUB_USERNAME` | Your Docker Hub username | `martenn` |
-| `DOCKERHUB_TOKEN` | Docker Hub access token | `dckr_pat_abc123...` |
+| Secret Name          | Description              | Example              |
+| -------------------- | ------------------------ | -------------------- |
+| `DOCKERHUB_USERNAME` | Your Docker Hub username | `martenn`            |
+| `DOCKERHUB_TOKEN`    | Docker Hub access token  | `dckr_pat_abc123...` |
 
 ### Workflow Dispatch Options
 
-| Input | Type | Default | Description |
-|-------|------|---------|-------------|
-| `push_images` | boolean | `false` | Push to registry |
-| `registry` | choice | `ghcr.io` | Registry to use |
-| `tag` | string | - | Custom tag |
+| Input         | Type    | Default   | Description      |
+| ------------- | ------- | --------- | ---------------- |
+| `push_images` | boolean | `false`   | Push to registry |
+| `registry`    | choice  | `ghcr.io` | Registry to use  |
+| `tag`         | string  | -         | Custom tag       |
 
 ---
 

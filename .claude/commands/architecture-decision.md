@@ -11,25 +11,28 @@ Your task is to help document and decide on architectural choices for the GSD pr
 Review the following before proceeding:
 
 1. **Current Architecture:**
-@CLAUDE.md
+   @CLAUDE.md
 
 2. **Implementation Rules:**
-@.cursor/rules/backend.mdc
+   @.cursor/rules/backend.mdc
 
 3. **Frontend Standards:**
-@.cursor/rules/frontend.mdc
+   @.cursor/rules/frontend.mdc
 
 ## Decision Framework
 
 When evaluating architectural decisions, consider:
 
 ### 1. Problem Statement
+
 - What problem are we solving?
 - Why is this decision needed?
 - What are the constraints?
 
 ### 2. Options Analysis
+
 For each option, evaluate:
+
 - **Pros**: What advantages does this approach offer?
 - **Cons**: What trade-offs are involved?
 - **Complexity**: How difficult is implementation?
@@ -38,12 +41,14 @@ For each option, evaluate:
 - **Alignment**: Does it fit existing patterns?
 
 ### 3. Decision Rationale
+
 - Which option best solves the problem?
 - Why was this chosen over alternatives?
 - How does it align with existing architecture?
 - What are potential future impacts?
 
 ### 4. Implementation Guidance
+
 - How should this be implemented?
 - What files/modules are affected?
 - Are there examples in the codebase?
@@ -67,28 +72,35 @@ Document decisions as:
 # Architecture Decision Record: [Title]
 
 ## Problem Statement
+
 [What needs to be decided]
 
 ## Options Considered
+
 ### Option 1: [Name]
+
 - Pros: ...
 - Cons: ...
 - Complexity: ...
 
 ### Option 2: [Name]
+
 - Pros: ...
 - Cons: ...
 - Complexity: ...
 
 ## Decision
+
 **Chosen Option**: [Which option and why]
 
 ## Implementation Details
+
 - Files affected: ...
 - Pattern example: ...
 - Testing strategy: ...
 
 ## Future Considerations
+
 [Potential impacts or follow-up decisions]
 ```
 

@@ -23,6 +23,9 @@
     "db:generate": "pnpm --filter @gsd/backend db:generate",
     "db:seed": "pnpm --filter @gsd/backend db:seed",
     "db:studio": "pnpm --filter @gsd/backend db:studio",
+    "validate": "./scripts/validate.sh",
+    "validate:backend": "./scripts/validate.sh backend",
+    "validate:frontend": "./scripts/validate.sh frontend",
     "clean": "pnpm --recursive exec rm -rf dist node_modules"
   },
   "devDependencies": {

@@ -44,6 +44,7 @@ docker-compose up -d postgres
 ```
 
 Wait for PostgreSQL to be ready (about 5 seconds):
+
 ```bash
 docker exec gsd-postgres pg_isready -U gsd
 # Should output: /var/run/postgresql:5432 - accepting connections
@@ -81,19 +82,23 @@ Frontend runs on: http://localhost:4321
 ## Verification
 
 ### Check Backend Health
+
 ```bash
 curl http://localhost:3000
 # Should return: Hello World!
 ```
 
 ### Check Auth Integration
+
 ```bash
 curl -I http://localhost:3000/auth/google
 # Should return: 302 Found with redirect to Google OAuth
 ```
 
 ### Check Frontend
+
 Open browser to http://localhost:4321
+
 - Landing page should load
 - "Sign in with Google" button should be visible
 - Clicking button navigates to `/auth/google` (will show error without real OAuth credentials)
@@ -101,17 +106,20 @@ Open browser to http://localhost:4321
 ## Available API Endpoints
 
 ### Authentication
+
 - `GET /auth/google` - Initiate Google OAuth flow
 - `GET /auth/google/callback` - OAuth callback
 - `GET /auth/me` - Get current user
 - `POST /auth/signout` - Sign out
 
 ### Lists (v1 API)
+
 - `GET /v1/lists` - Get all lists
 - `POST /v1/lists` - Create list
 - `DELETE /v1/lists/:id` - Delete list
 
 ### Tasks (v1 API)
+
 - `GET /v1/tasks` - Get all tasks
 - `POST /v1/tasks` - Create task
 - `PATCH /v1/tasks/:id` - Update task
@@ -123,17 +131,22 @@ Open browser to http://localhost:4321
 ## Database Access
 
 ### Using Prisma Studio (GUI)
+
 ```bash
 pnpm --filter @gsd/backend db:studio
 ```
+
 Opens at: http://localhost:5555
 
 ### Using pgAdmin (Optional)
+
 ```bash
 cd tools/docker
 docker-compose --profile tools up -d pgadmin
 ```
+
 Opens at: http://localhost:5050
+
 - Email: dev@gsd.local
 - Password: admin
 
@@ -157,15 +170,18 @@ cd /path/to/gsd && pnpm --filter @gsd/frontend dev
 ## Stopping Services
 
 ### Stop Servers
+
 Press `Ctrl+C` in each terminal running dev servers
 
 ### Stop Docker
+
 ```bash
 cd tools/docker
 docker-compose down
 ```
 
 To also remove database volumes:
+
 ```bash
 docker-compose down -v
 ```
@@ -173,22 +189,26 @@ docker-compose down -v
 ## Troubleshooting
 
 ### Port Already in Use
+
 - Backend (3000): Check with `lsof -ti:3000` and kill with `kill -9 <PID>`
 - Frontend (4321): Check with `lsof -ti:4321` and kill with `kill -9 <PID>`
 - PostgreSQL (5432): Check with `lsof -ti:5432` and kill container
 
 ### Database Connection Issues
+
 - Verify Docker container is running: `docker ps | grep gsd-postgres`
 - Check .env DATABASE_URL matches docker-compose.yml credentials
 - Restart container: `docker-compose restart postgres`
 
 ### Migration Issues
+
 - Reset database: `npx prisma migrate reset` (WARNING: destroys all data)
 - Regenerate Prisma Client: `npx prisma generate`
 
 ## Next Steps
 
 With local integration verified, you can now:
+
 1. Implement Authentication Callback Page (`/auth/callback`)
 2. Create App Shell for authenticated views
 3. Build Plan Mode interface

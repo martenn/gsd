@@ -7,12 +7,14 @@ The App Shell is the authenticated React SPA container mounted at `/app/*` that 
 ## 2. View Routing
 
 The app shell is mounted at the following routes:
+
 - `/app` (redirects to `/app/plan`)
 - `/app/plan` - Plan Mode (full task and list management)
 - `/app/work` - Work Mode (focused execution)
 - `/app/done` - Done Archive (completed tasks)
 
 **Implementation Approach:**
+
 - Astro page at `apps/frontend/src/pages/app/[...slug].astro` that mounts the React app
 - Astro middleware validates JWT cookie and redirects unauthenticated users to landing page
 - React Router (or similar) handles client-side routing within `/app/*`
@@ -44,6 +46,7 @@ The app shell is mounted at the following routes:
 ## 4. Component Details
 
 ### AppShell
+
 - **Component description:** Root container for the authenticated application providing layout structure, global keyboard handling, and modal management. Wraps all authenticated views and manages global application state.
 - **Main elements:**
   - `<div className="h-screen flex flex-col">` - Full height container
@@ -69,6 +72,7 @@ The app shell is mounted at the following routes:
   ```
 
 ### AppHeader
+
 - **Component description:** Fixed header displaying logo, mode navigation, and user menu. Provides consistent navigation across all authenticated views.
 - **Main elements:**
   - `<header>` with fixed positioning
@@ -90,6 +94,7 @@ The app shell is mounted at the following routes:
   ```
 
 ### ModeNavigation
+
 - **Component description:** Horizontal navigation showing three mode buttons (Plan, Work, Done) with active state indication. Primary navigation mechanism for switching between views.
 - **Main elements:**
   - `<nav>` with flex layout
@@ -109,6 +114,7 @@ The app shell is mounted at the following routes:
   ```
 
 ### ModeButton
+
 - **Component description:** Individual navigation button for each mode with active/inactive states, keyboard shortcuts hint, and accessible labeling.
 - **Main elements:**
   - `<button>` with conditional styling based on active state
@@ -131,6 +137,7 @@ The app shell is mounted at the following routes:
   ```
 
 ### UserMenu
+
 - **Component description:** Dropdown menu in the header providing user info display, keyboard help access, and logout functionality.
 - **Main elements:**
   - `<DropdownMenu>` from shadcn/ui
@@ -154,6 +161,7 @@ The app shell is mounted at the following routes:
   ```
 
 ### KeyboardShortcutsHelp
+
 - **Component description:** Modal overlay displaying categorized keyboard shortcuts with search/filter functionality. Opened by pressing "?" from anywhere in the app.
 - **Main elements:**
   - `<Dialog>` from shadcn/ui
@@ -169,6 +177,7 @@ The app shell is mounted at the following routes:
   - `KeyboardShortcutsHelpProps`
   - `KeyboardShortcut` (internal type for shortcut definitions)
 - **Props:**
+
   ```typescript
   interface KeyboardShortcutsHelpProps {
     isOpen: boolean;
@@ -184,6 +193,7 @@ The app shell is mounted at the following routes:
   ```
 
 ### CommandPalette
+
 - **Component description:** Global command palette (Cmd+K) providing searchable access to all major actions and navigation. Improves discoverability and accessibility for mouse users.
 - **Main elements:**
   - `<Command>` component from shadcn/ui (cmdk)
@@ -201,6 +211,7 @@ The app shell is mounted at the following routes:
   - `CommandPaletteProps`
   - `CommandItem` (internal type)
 - **Props:**
+
   ```typescript
   interface CommandPaletteProps {
     isOpen: boolean;
@@ -217,6 +228,7 @@ The app shell is mounted at the following routes:
   ```
 
 ### GlobalKeyboardHandler
+
 - **Component description:** Invisible component that listens for global keyboard events and dispatches appropriate actions. Manages keyboard event priority and prevents conflicts.
 - **Main elements:**
   - React component with useEffect for event listener registration
@@ -343,6 +355,7 @@ export interface RouteConfig {
 ## 6. State Management
 
 ### Authentication State
+
 - **Hook:** `useAuth()` (custom hook)
 - **Location:** `apps/frontend/src/hooks/use-auth.ts`
 - **Responsibilities:**
@@ -351,12 +364,17 @@ export interface RouteConfig {
   - Provide logout function that calls `POST /auth/logout` and invalidates cache
   - Redirect to landing page if user is not authenticated
 - **Implementation:**
+
   ```typescript
   export function useAuth() {
     const navigate = useNavigate();
     const queryClient = useQueryClient();
 
-    const { data: user, isLoading, error } = useQuery({
+    const {
+      data: user,
+      isLoading,
+      error,
+    } = useQuery({
       queryKey: ['auth', 'me'],
       queryFn: () => getMe(), // API call
       retry: false,
@@ -381,6 +399,7 @@ export interface RouteConfig {
   ```
 
 ### Modal State
+
 - **Type:** Local component state (useState)
 - **Location:** `AppShell` component
 - **State Variables:**
@@ -391,12 +410,14 @@ export interface RouteConfig {
   - Reset by modal close callbacks
 
 ### Navigation State
+
 - **Type:** React Router (or similar) state
 - **Location:** URL parameter/path
 - **Current Mode:** Derived from current route (`/app/plan`, `/app/work`, `/app/done`)
 - **Persistence:** URL serves as source of truth, no additional state needed
 
 ### Session Persistence (Post-MVP)
+
 - **Scope:** Deferred to post-MVP
 - **Future Implementation:** localStorage for "last visited mode" to restore on app load
 
@@ -405,6 +426,7 @@ export interface RouteConfig {
 ### Authentication APIs
 
 **Get Current User:**
+
 - **Endpoint:** `GET /auth/me`
 - **Request Type:** None (no body)
 - **Response Type:** `GetMeResponseDto`
@@ -412,6 +434,7 @@ export interface RouteConfig {
 - **Error Handling:** 401 redirects to landing page
 
 **Logout:**
+
 - **Endpoint:** `POST /auth/logout`
 - **Request Type:** None (no body)
 - **Response Type:** `SignOutResponseDto`
@@ -438,6 +461,7 @@ export async function logout(): Promise<SignOutResponseDto> {
 ```
 
 **Base Client:** `apps/frontend/src/lib/api/client.ts`
+
 - Wraps native fetch with error handling
 - Automatically includes credentials (JWT cookie)
 - Handles common error responses (401, 500)
@@ -445,6 +469,7 @@ export async function logout(): Promise<SignOutResponseDto> {
 ## 8. User Interactions
 
 ### Mode Switching
+
 1. User clicks a mode button (Plan, Work, Done) in the header
 2. Or user presses keyboard shortcut (`Cmd+P`, `Cmd+W`, `Cmd+D`)
 3. Navigation handler calls `navigate()` with target route
@@ -452,6 +477,7 @@ export async function logout(): Promise<SignOutResponseDto> {
 5. Active mode indicator updates in header
 
 ### Opening Keyboard Help
+
 1. User presses `?` from anywhere in the app
 2. GlobalKeyboardHandler detects keypress
 3. Calls `setIsHelpOpen(true)` to show modal
@@ -460,6 +486,7 @@ export async function logout(): Promise<SignOutResponseDto> {
 6. User closes with `Esc` or close button
 
 ### Opening Command Palette
+
 1. User presses `Cmd+K` (or `Ctrl+K` on Windows/Linux)
 2. GlobalKeyboardHandler detects keypress
 3. Calls `setIsCommandPaletteOpen(true)` to show modal
@@ -469,6 +496,7 @@ export async function logout(): Promise<SignOutResponseDto> {
 7. Modal closes and command executes
 
 ### Logout Flow
+
 1. User clicks avatar in header to open user menu dropdown
 2. User clicks "Logout" menu item
 3. Logout mutation calls `POST /auth/logout`
@@ -477,6 +505,7 @@ export async function logout(): Promise<SignOutResponseDto> {
 6. Backend clears JWT cookie
 
 ### Keyboard Shortcut Handling
+
 - All global shortcuts are captured by GlobalKeyboardHandler
 - Mode-specific shortcuts are handled by child components (Plan, Work, Done)
 - Conflicts resolved by event priority (modals capture events first)
@@ -485,24 +514,28 @@ export async function logout(): Promise<SignOutResponseDto> {
 ## 9. Conditions and Validation
 
 ### Authentication Validation
+
 - **Condition:** User must be authenticated to access `/app/*`
 - **Components Affected:** AppShell (all)
 - **Validation Method:** Astro middleware checks JWT cookie before rendering
 - **Interface Effect:** Unauthenticated users redirected to `/` (landing page)
 
 ### User Data Loading State
+
 - **Condition:** User data must be loaded before rendering UI
 - **Components Affected:** AppShell, AppHeader, UserMenu
 - **Validation Method:** `useAuth()` hook returns `isLoading` state
 - **Interface Effect:** Show full-page loading spinner while `isLoading === true`
 
 ### Modal Exclusivity
+
 - **Condition:** Only one modal can be open at a time
 - **Components Affected:** KeyboardShortcutsHelp, CommandPalette
 - **Validation Method:** Close other modals before opening new one
 - **Interface Effect:** Opening command palette closes help overlay and vice versa
 
 ### Keyboard Shortcut Conflicts
+
 - **Condition:** Browser shortcuts must not conflict with app shortcuts
 - **Components Affected:** GlobalKeyboardHandler
 - **Validation Method:** `event.preventDefault()` on handled shortcuts
@@ -511,6 +544,7 @@ export async function logout(): Promise<SignOutResponseDto> {
 ## 10. Error Handling
 
 ### Authentication Errors
+
 - **Scenario:** User session expires or JWT is invalid
 - **Detection:** API returns 401 Unauthorized
 - **Handling:**
@@ -519,6 +553,7 @@ export async function logout(): Promise<SignOutResponseDto> {
   3. Show simple message: "Session expired. Please sign in again."
 
 ### Logout Errors
+
 - **Scenario:** Logout API call fails (network error, server error)
 - **Detection:** Mutation returns error
 - **Handling:**
@@ -527,6 +562,7 @@ export async function logout(): Promise<SignOutResponseDto> {
   3. Optional: Show toast notification (minimal, non-blocking)
 
 ### Network Errors
+
 - **Scenario:** Network connection lost during app usage
 - **Detection:** `navigator.onLine === false` or fetch fails
 - **Handling:**
@@ -535,6 +571,7 @@ export async function logout(): Promise<SignOutResponseDto> {
   3. TanStack Query will automatically retry on reconnection
 
 ### Modal Rendering Errors
+
 - **Scenario:** Modal component fails to render (unlikely)
 - **Detection:** React error boundary
 - **Handling:**
@@ -543,6 +580,7 @@ export async function logout(): Promise<SignOutResponseDto> {
   3. Provide "Refresh" button
 
 ### Keyboard Event Conflicts
+
 - **Scenario:** User in text input, global shortcut triggered
 - **Detection:** Check `event.target` type before handling
 - **Handling:**
@@ -553,6 +591,7 @@ export async function logout(): Promise<SignOutResponseDto> {
 ## 11. Implementation Steps
 
 ### Step 1: Setup Astro Page and Middleware
+
 1. Create `apps/frontend/src/pages/app/[...slug].astro`
 2. Implement Astro middleware at `apps/frontend/src/middleware.ts`
 3. Add JWT cookie validation logic
@@ -560,12 +599,14 @@ export async function logout(): Promise<SignOutResponseDto> {
 5. Mount React app in Astro page with TanStack Query provider
 
 ### Step 2: Create API Client and Auth Hook
+
 1. Create `apps/frontend/src/lib/api/client.ts` (base fetch wrapper)
 2. Create `apps/frontend/src/lib/api/auth.ts` (getMe, logout functions)
 3. Implement `apps/frontend/src/hooks/use-auth.ts` with TanStack Query
 4. Test authentication flow (loading, success, error states)
 
 ### Step 3: Build AppShell Container
+
 1. Create `apps/frontend/src/components/app-shell/AppShell.tsx`
 2. Implement layout structure (header + main content area)
 3. Add modal state management (useState for help and command palette)
@@ -573,6 +614,7 @@ export async function logout(): Promise<SignOutResponseDto> {
 5. Add loading state for initial user fetch
 
 ### Step 4: Implement AppHeader and Navigation
+
 1. Create `apps/frontend/src/components/app-shell/AppHeader.tsx`
 2. Create `apps/frontend/src/components/app-shell/ModeNavigation.tsx`
 3. Create `apps/frontend/src/components/app-shell/ModeButton.tsx`
@@ -580,6 +622,7 @@ export async function logout(): Promise<SignOutResponseDto> {
 5. Add click handlers for mode switching
 
 ### Step 5: Build UserMenu Component
+
 1. Create `apps/frontend/src/components/app-shell/UserMenu.tsx`
 2. Integrate shadcn/ui DropdownMenu components
 3. Add user avatar/name display
@@ -587,6 +630,7 @@ export async function logout(): Promise<SignOutResponseDto> {
 5. Wire up logout mutation and help modal trigger
 
 ### Step 6: Implement GlobalKeyboardHandler
+
 1. Create `apps/frontend/src/components/app-shell/GlobalKeyboardHandler.tsx`
 2. Add keydown event listener on component mount
 3. Implement key combination detection (Cmd/Ctrl modifiers)
@@ -595,6 +639,7 @@ export async function logout(): Promise<SignOutResponseDto> {
 6. Handle focus context (ignore shortcuts in text inputs)
 
 ### Step 7: Build KeyboardShortcutsHelp Modal
+
 1. Create `apps/frontend/src/components/app-shell/KeyboardShortcutsHelp.tsx`
 2. Integrate shadcn/ui Dialog component
 3. Create keyboard shortcuts data structure (categories, keys, descriptions)
@@ -603,6 +648,7 @@ export async function logout(): Promise<SignOutResponseDto> {
 6. Wire up open/close state to `?` shortcut
 
 ### Step 8: Build CommandPalette Modal
+
 1. Create `apps/frontend/src/components/app-shell/CommandPalette.tsx`
 2. Integrate shadcn/ui Command component (cmdk)
 3. Define command items (Navigation, Actions, Help)
@@ -611,18 +657,21 @@ export async function logout(): Promise<SignOutResponseDto> {
 6. Add icons from lucide-react for visual clarity
 
 ### Step 9: Implement Error Boundaries
+
 1. Create `apps/frontend/src/components/ErrorBoundary.tsx`
 2. Wrap AppShell in error boundary
 3. Implement fallback UI for rendering errors
 4. Add "Refresh Page" action
 
 ### Step 10: Add Loading States
+
 1. Implement full-page loading spinner for initial user fetch
 2. Show spinner centered in viewport while `isLoading === true`
 3. Use shadcn/ui Spinner or simple CSS animation
 4. Ensure smooth transition to app content on load
 
 ### Step 11: Style and Polish
+
 1. Apply Tailwind CSS for layout and spacing
 2. Ensure responsive design (mobile, tablet, desktop)
 3. Add focus indicators for accessibility
@@ -630,6 +679,7 @@ export async function logout(): Promise<SignOutResponseDto> {
 5. Verify color contrast ratios meet WCAG AA
 
 ### Step 12: Testing and Refinement
+
 1. Test all keyboard shortcuts in different browsers
 2. Verify authentication flow (login, logout, session expiry)
 3. Test modal open/close interactions
@@ -638,6 +688,7 @@ export async function logout(): Promise<SignOutResponseDto> {
 6. Test error scenarios (network failure, logout error)
 
 ### Step 13: Integration with Child Views
+
 1. Create placeholder components for Plan, Work, Done views
 2. Verify routing works correctly
 3. Test navigation between modes

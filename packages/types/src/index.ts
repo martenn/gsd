@@ -3,4 +3,5 @@ export * from './api/done';
 export * from './api/error';
 export * from './api/health';
 export * from './api/lists';
+export * from './api/metrics';
 export * from './api/tasks';

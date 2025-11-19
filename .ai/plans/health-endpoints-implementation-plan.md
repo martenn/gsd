@@ -5,6 +5,7 @@
 Health endpoints provide monitoring capabilities for the GSD application, enabling infrastructure to verify application status, readiness for traffic, and database connectivity. This is critical for orchestration platforms (Kubernetes, Docker Swarm) and monitoring systems.
 
 Two endpoints will be implemented:
+
 - **GET /health** (liveness): Basic application status check
 - **GET /health/ready** (readiness): Application readiness including database connectivity
 
@@ -13,12 +14,14 @@ These endpoints are unauthenticated and follow standard health check patterns fo
 ## 2. Inputs
 
 ### GET /health
+
 - **Parameters:** None
 - **Query Parameters:** None
 - **Headers:** None (unauthenticated)
 - **Request Body:** N/A
 
 ### GET /health/ready
+
 - **Parameters:** None
 - **Query Parameters:** None
 - **Headers:** None (unauthenticated)
@@ -54,7 +57,9 @@ Response classes will directly implement the shared interfaces.
 ## 4. Outputs
 
 ### GET /health
+
 **Success Response (200 OK):**
+
 ```json
 {
   "status": "ok",
@@ -64,10 +69,13 @@ Response classes will directly implement the shared interfaces.
 ```
 
 **Status Codes:**
+
 - `200 OK` - Application is running
 
 ### GET /health/ready
+
 **Success Response (200 OK):**
+
 ```json
 {
   "status": "ready",
@@ -79,6 +87,7 @@ Response classes will directly implement the shared interfaces.
 ```
 
 **Failure Response (503 Service Unavailable):**
+
 ```json
 {
   "status": "not_ready",
@@ -90,18 +99,21 @@ Response classes will directly implement the shared interfaces.
 ```
 
 **Status Codes:**
+
 - `200 OK` - Application is ready to serve traffic
 - `503 Service Unavailable` - Application is not ready (database unreachable)
 
 ## 5. Data Flow
 
 ### Liveness Check (/health)
+
 1. Controller receives GET request
 2. CheckLiveness use case executes
 3. Returns current timestamp and process uptime
 4. Controller returns 200 OK with status
 
 ### Readiness Check (/health/ready)
+
 1. Controller receives GET request
 2. CheckReadiness use case executes
 3. Use case calls HealthRepository to ping database
@@ -113,11 +125,13 @@ Response classes will directly implement the shared interfaces.
 ## 6. Security Considerations
 
 ### Authentication
+
 - **None required** - Health endpoints must be publicly accessible for monitoring
 - No JWT guard applied to these endpoints
 - No sensitive information exposed in responses
 
 ### Information Disclosure
+
 - Do not expose:
   - Database connection strings
   - Internal service names or IPs
@@ -126,11 +140,13 @@ Response classes will directly implement the shared interfaces.
 - Only expose minimal status information
 
 ### Rate Limiting
+
 - Apply lenient rate limiting (higher than standard endpoints)
 - Monitoring systems may poll frequently
 - Suggested: 300 requests/minute per IP
 
 ### DDoS Protection
+
 - Health checks are lightweight (minimal DB queries)
 - Database check uses simple `SELECT 1` query
 - No complex computations or heavy operations
@@ -138,6 +154,7 @@ Response classes will directly implement the shared interfaces.
 ## 7. Error Handling
 
 ### Liveness Endpoint Errors
+
 - **Scenario:** Process uptime calculation fails
 - **Handling:** Return static values (uptime: 0)
 - **Status Code:** 200 OK (endpoint should always return 200)
@@ -145,12 +162,12 @@ Response classes will directly implement the shared interfaces.
 
 ### Readiness Endpoint Errors
 
-| Error Scenario | Handling | Status Code | Logging |
-|----------------|----------|-------------|---------|
-| Database connection failure | Return `{ status: 'not_ready', checks: { database: 'down' } }` | 503 | Error level with connection details |
-| Database timeout | Return `{ status: 'not_ready', checks: { database: 'down' } }` | 503 | Error level with timeout |
-| Prisma query error | Return `{ status: 'not_ready', checks: { database: 'down' } }` | 503 | Error level with error message |
-| Unexpected errors | Return `{ status: 'not_ready', checks: { database: 'down' } }` | 503 | Error level with stack trace |
+| Error Scenario              | Handling                                                       | Status Code | Logging                             |
+| --------------------------- | -------------------------------------------------------------- | ----------- | ----------------------------------- |
+| Database connection failure | Return `{ status: 'not_ready', checks: { database: 'down' } }` | 503         | Error level with connection details |
+| Database timeout            | Return `{ status: 'not_ready', checks: { database: 'down' } }` | 503         | Error level with timeout            |
+| Prisma query error          | Return `{ status: 'not_ready', checks: { database: 'down' } }` | 503         | Error level with error message      |
+| Unexpected errors           | Return `{ status: 'not_ready', checks: { database: 'down' } }` | 503         | Error level with stack trace        |
 
 **Error Response Consistency:**
 All errors in readiness check result in 503 status with `not_ready` status, ensuring monitoring systems can treat any non-200 as "not ready".
@@ -158,11 +175,13 @@ All errors in readiness check result in 503 status with `not_ready` status, ensu
 ## 8. Performance Considerations
 
 ### Liveness Check
+
 - **Target:** <5ms response time (no I/O operations)
 - **Optimization:** Use `process.uptime()` directly (no async operations)
 - **Caching:** Not needed (stateless calculation)
 
 ### Readiness Check
+
 - **Target:** <50ms response time (includes database ping)
 - **Optimization:**
   - Use simplest possible database query (`SELECT 1`)
@@ -171,12 +190,14 @@ All errors in readiness check result in 503 status with `not_ready` status, ensu
 - **Caching:** Not recommended (defeats purpose of health check)
 
 ### Database Query
+
 ```sql
 -- Minimal query with no table access
 SELECT 1 as result
 ```
 
 ### Monitoring Impact
+
 - Health checks executed frequently (every 5-30 seconds by orchestrators)
 - Ensure minimal resource consumption
 - No logging on success (only failures) to reduce log volume
@@ -184,17 +205,20 @@ SELECT 1 as result
 ## 9. Implementation Steps
 
 ### Step 1: Create shared types in @gsd/types
+
 1. Create `packages/types/src/api/health.ts`
 2. Define `HealthStatus` interface
 3. Define `ReadinessStatus` interface
 4. Export from `packages/types/src/api/index.ts`
 
 ### Step 2: Create HealthModule structure
+
 1. Create `apps/backend/src/health/` directory
 2. Create subdirectories: `adapters/`, `use-cases/`, `infra/`
 3. Create `health.module.ts` with module definition
 
 ### Step 3: Implement HealthRepository
+
 1. Create `apps/backend/src/health/infra/health.repository.ts`
 2. Inject PrismaClient
 3. Implement `pingDatabase()` method:
@@ -203,6 +227,7 @@ SELECT 1 as result
    - Catch and log errors
 
 ### Step 4: Implement CheckLiveness use case
+
 1. Create `apps/backend/src/health/use-cases/check-liveness.ts`
 2. Inject AppLogger
 3. Implement `execute()` method:
@@ -212,6 +237,7 @@ SELECT 1 as result
 4. No error handling needed (always succeeds)
 
 ### Step 5: Implement CheckReadiness use case
+
 1. Create `apps/backend/src/health/use-cases/check-readiness.ts`
 2. Inject HealthRepository and AppLogger
 3. Implement `execute()` method:
@@ -222,6 +248,7 @@ SELECT 1 as result
 4. Wrap in try-catch for unexpected errors
 
 ### Step 6: Create HealthController
+
 1. Create `apps/backend/src/health/adapters/health.controller.ts`
 2. Controller path: `/health`
 3. Inject both use cases (CheckLiveness, CheckReadiness)
@@ -236,21 +263,25 @@ SELECT 1 as result
    - Use `@HttpCode()` decorator for conditional status
 
 ### Step 7: Configure HealthModule
+
 1. Update `apps/backend/src/health/health.module.ts`
 2. Providers: HealthRepository, CheckLiveness, CheckReadiness, PrismaClient
 3. Controllers: HealthController
 4. No exports (module is self-contained)
 
 ### Step 8: Register HealthModule in AppModule
+
 1. Import HealthModule in `apps/backend/src/app.module.ts`
 2. Add to imports array
 
 ### Step 9: Configure rate limiting exception
+
 1. Update rate limiting configuration (in main.ts or throttler config)
 2. Exclude `/health` and `/health/ready` from strict rate limits
 3. Apply lenient limits (300 req/min) if needed
 
 ### Step 10: Write unit tests
+
 1. Create `check-liveness.spec.ts`:
    - Test successful liveness check
    - Test uptime calculation
@@ -265,6 +296,7 @@ SELECT 1 as result
    - Test database timeout
 
 ### Step 11: Write E2E tests
+
 1. Create `apps/backend/test/health.e2e-spec.ts`
 2. Test `GET /health`:
    - Verify 200 response
@@ -276,6 +308,7 @@ SELECT 1 as result
    - Verify database check status
 
 ### Step 12: Update documentation
+
 1. Update `.ai/project-tracker.md`:
    - Mark health endpoints as ✅
    - Update infrastructure progress percentage
@@ -285,11 +318,13 @@ SELECT 1 as result
 ## 10. Testing Strategy
 
 ### Unit Tests (Target: 100% coverage)
+
 - **check-liveness.spec.ts:** 3 test cases
 - **check-readiness.spec.ts:** 4 test cases (ready, not ready, timeout, error)
 - **health.repository.spec.ts:** 3 test cases
 
 ### E2E Tests
+
 - **health.e2e-spec.ts:** 4 test cases
   - Liveness check returns 200
   - Liveness response has correct structure
@@ -297,6 +332,7 @@ SELECT 1 as result
   - Readiness check returns 503 when DB is down (simulate failure)
 
 ### Manual Testing
+
 1. Start application
 2. Verify `curl http://localhost:3000/health` returns 200
 3. Verify `curl http://localhost:3000/health/ready` returns 200
@@ -308,6 +344,7 @@ SELECT 1 as result
 ## 11. Monitoring Integration
 
 ### Kubernetes Liveness Probe
+
 ```yaml
 livenessProbe:
   httpGet:
@@ -320,6 +357,7 @@ livenessProbe:
 ```
 
 ### Kubernetes Readiness Probe
+
 ```yaml
 readinessProbe:
   httpGet:
@@ -332,9 +370,10 @@ readinessProbe:
 ```
 
 ### Docker Compose Health Check
+
 ```yaml
 healthcheck:
-  test: ["CMD", "curl", "-f", "http://localhost:3000/health/ready"]
+  test: ['CMD', 'curl', '-f', 'http://localhost:3000/health/ready']
   interval: 30s
   timeout: 5s
   retries: 3
@@ -344,6 +383,7 @@ healthcheck:
 ---
 
 ## Notes
+
 - Health endpoints are MVP-critical for production deployment
 - Required for Docker and Kubernetes orchestration
 - Should be implemented before Docker production image

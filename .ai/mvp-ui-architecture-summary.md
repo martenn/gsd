@@ -115,18 +115,21 @@ Based on the architectural decisions, the following recommendations align with t
 ### Main UI Architecture Requirements
 
 **Application Structure:**
+
 - Astro-based static site generation for landing, authentication, and legal pages
 - React 19 SPA mounted at `/app/*` for authenticated application shell
 - Client-side routing within React app for instant mode switching
 - Authenticated middleware enforcing JWT cookie validation
 
 **Core Views:**
+
 1. **Landing Page (Astro Static):** Minimal authentication entry point with Google OAuth
 2. **Plan Mode (/app/plan):** Full task and list management with keyboard-first navigation
 3. **Work Mode (/app/work):** Focused execution view with current task and forecast
 4. **Done Archive (/app/done):** Paginated completed tasks with embedded metrics
 
 **Design System:**
+
 - Tailwind CSS for utility-first styling
 - shadcn/ui for standard UI components (buttons, inputs, dialogs, dropdowns, command palette)
 - lucide-react for iconography
@@ -139,6 +142,7 @@ Based on the architectural decisions, the following recommendations align with t
 #### Plan Mode Layout
 
 **Desktop Layout:**
+
 - **Left Column (Fixed 280px):** Backlogs stacked vertically with independent vertical scroll
   - Distinct background/border to separate from intermediate lists
   - Each backlog displays as a full list with header and tasks
@@ -148,12 +152,14 @@ Based on the architectural decisions, the following recommendations align with t
   - Both areas support independent scrolling
 
 **Mobile Layout:**
+
 - One list at full viewport width
 - Header dropdown for backlog/list selection
 - Horizontal swipe gestures for navigation between sibling lists
 - Visual indicators showing current position in list sequence
 
 **Component Hierarchy:**
+
 ```
 <BoardLayout>
   <BacklogColumn>
@@ -170,6 +176,7 @@ Based on the architectural decisions, the following recommendations align with t
 #### Task Management Flows
 
 **Creating Tasks:**
+
 1. User presses `n` (new) or `Enter` on empty selection
 2. Inline editable row appears at top of selected list
 3. Title field autofocused, description expandable
@@ -177,6 +184,7 @@ Based on the architectural decisions, the following recommendations align with t
 5. No modal interruptions
 
 **Editing Tasks:**
+
 1. User presses `e` (edit) or `Enter` on selected task
 2. Task row expands to show title and description fields
 3. `Tab` to move between fields
@@ -184,12 +192,14 @@ Based on the architectural decisions, the following recommendations align with t
 5. Inline validation on blur
 
 **Moving Tasks:**
+
 1. User selects task with arrow keys
 2. User presses shortcut to move (TBD during implementation)
 3. Task moves to top of destination list
 4. Optimistic UI update with rollback on failure
 
 **Completing Tasks:**
+
 1. From any list: user selects task and presses complete shortcut
 2. Task moves to Done with completed_at timestamp
 3. Optimistic UI update with server confirmation
@@ -197,16 +207,19 @@ Based on the architectural decisions, the following recommendations align with t
 #### Work Mode Flow
 
 **Main View:**
+
 - Current task displayed prominently (large text, full width)
 - Read-only forecast showing next 2-3 tasks (smaller, below current)
 - Single action: "Complete" button (or keyboard shortcut)
 - Prominent "Switch to Plan Mode" button if reordering needed
 
 **Empty State:**
+
 - Message: "No tasks in [List Name]"
 - Actions: "Switch to Plan Mode" (`p`) and "Add Task" (`n`)
 
 **Completion Flow:**
+
 1. User presses Complete (or shortcut)
 2. Current task moves to Done
 3. Next task in forecast becomes current task
@@ -215,10 +228,12 @@ Based on the architectural decisions, the following recommendations align with t
 #### Dump Mode Flow
 
 **Access:**
+
 1. User presses `Cmd+Shift+D` from any view
 2. Modal overlay appears over current view
 
 **Interaction:**
+
 1. Textarea autofocused (max 10 lines)
 2. Backlog selector dropdown (remembers last used)
 3. User types or pastes multiple task titles (one per line)
@@ -230,6 +245,7 @@ Based on the architectural decisions, the following recommendations align with t
 #### Done Archive Flow
 
 **Viewing:**
+
 1. User navigates to Done view via mode switcher
 2. Header shows metrics: "Today: X tasks • This week: Y tasks • Last week: Z tasks"
 3. Completed tasks listed in reverse chronological order (newest first)
@@ -237,6 +253,7 @@ Based on the architectural decisions, the following recommendations align with t
 5. Tasks display with origin backlog color (left border)
 
 **Retention:**
+
 - System automatically retains last 500 completed tasks per user
 - Oldest tasks beyond 500 are automatically deleted
 - Timestamps stored in UTC, rendered in user's local timezone
@@ -244,6 +261,7 @@ Based on the architectural decisions, the following recommendations align with t
 #### Navigation Flows
 
 **Mode Switching (Global Shortcuts):**
+
 - `Cmd+P` → Plan Mode
 - `Cmd+W` → Work Mode
 - `Cmd+D` → Done View
@@ -251,6 +269,7 @@ Based on the architectural decisions, the following recommendations align with t
 - `Cmd+K` → Command palette
 
 **Keyboard Navigation (Plan Mode):**
+
 - Arrow keys (↑↓←→) → Navigate between tasks and lists (primary)
 - `h/j/k/l` → Vim-style alternates
 - `n` → New task in selected list
@@ -259,6 +278,7 @@ Based on the architectural decisions, the following recommendations align with t
 - Selection state persisted in sessionStorage
 
 **Mobile Navigation:**
+
 - Swipe left/right → Navigate between adjacent lists
 - Tap header → Open list selector dropdown
 - Position indicators → Show current list in sequence
@@ -270,6 +290,7 @@ Based on the architectural decisions, the following recommendations align with t
 #### API Client Architecture
 
 **Structure:**
+
 ```
 apps/frontend/src/
 ├── lib/
@@ -282,6 +303,7 @@ apps/frontend/src/
 ```
 
 **Base Client (`lib/api/client.ts`):**
+
 - Fetch wrapper with automatic JWT cookie handling
 - Global error interceptor for auth/network issues
 - Response type validation against shared DTOs
@@ -289,36 +311,36 @@ apps/frontend/src/
 
 **API Modules:**
 Each module exports typed functions for API operations:
+
 ```typescript
 // lib/api/lists.ts
-export async function getLists(): Promise<GetListsResponseDto>
-export async function createList(req: CreateListRequest): Promise<ListDto>
-export async function updateList(id: string, req: UpdateListRequest): Promise<ListDto>
-export async function deleteList(id: string, destId?: string): Promise<void>
-export async function reorderLists(req: ReorderListsRequest): Promise<void>
+export async function getLists(): Promise<GetListsResponseDto>;
+export async function createList(req: CreateListRequest): Promise<ListDto>;
+export async function updateList(id: string, req: UpdateListRequest): Promise<ListDto>;
+export async function deleteList(id: string, destId?: string): Promise<void>;
+export async function reorderLists(req: ReorderListsRequest): Promise<void>;
 ```
 
 #### State Management with TanStack Query
 
 **Query Keys Convention:**
+
 ```typescript
 // Lists
-['lists', userId]           // All lists for user
-['lists', listId]           // Single list detail
-
-// Tasks
-['tasks', { listId, userId }]  // Tasks filtered by list
-['tasks', taskId]              // Single task detail
-
-// Done
-['done', { page, userId }]     // Paginated done tasks
-
-// Metrics
-['metrics', 'daily', { userId }]    // Daily completion counts
-['metrics', 'weekly', { userId }]   // Weekly completion counts
+['lists', userId][('lists', listId)][ // All lists for user // Single list detail
+  // Tasks
+  ('tasks', { listId, userId })
+][('tasks', taskId)][ // Tasks filtered by list // Single task detail
+  // Done
+  ('done', { page, userId })
+][ // Paginated done tasks
+  // Metrics
+  ('metrics', 'daily', { userId })
+][('metrics', 'weekly', { userId })]; // Daily completion counts // Weekly completion counts
 ```
 
 **Custom Hooks Structure:**
+
 ```
 apps/frontend/src/hooks/
 ├── use-lists.ts            # useListsQuery, useCreateListMutation, etc.
@@ -328,6 +350,7 @@ apps/frontend/src/hooks/
 ```
 
 **Example Hook Implementation:**
+
 ```typescript
 // hooks/use-lists.ts
 export function useListsQuery() {
@@ -376,18 +399,21 @@ export function useReorderTasksMutation() {
 #### Optimistic Updates Strategy
 
 **Apply Optimistic Updates For:**
+
 - ✅ Task completion (high confidence, fast feedback critical)
 - ✅ Task reordering within list (visual operation, reversible)
 - ✅ Task movement between lists (visual operation, clear intent)
 - ✅ List reordering (visual operation, low risk)
 
 **DO NOT Use Optimistic Updates For:**
+
 - ❌ Task/list creation (need server-assigned IDs and validation)
 - ❌ Task/list deletion (risky if fails, user expects confirmation)
 - ❌ Toggle backlog status (affects business rules and constraints)
 - ❌ Dump mode bulk creation (multiple validations, error handling complex)
 
 **Rollback Strategy:**
+
 - Store previous query data in mutation context
 - On error, restore previous data via `setQueryData`
 - Display inline error message near affected element
@@ -396,6 +422,7 @@ export function useReorderTasksMutation() {
 #### Additional State Management
 
 **Keyboard Navigation State (React Context):**
+
 ```typescript
 interface KeyboardNavigationContext {
   selectedListId: string | null;
@@ -406,16 +433,19 @@ interface KeyboardNavigationContext {
   setFocusMode: (mode: 'list' | 'task') => void;
 }
 ```
+
 - Persisted in sessionStorage
 - Restored on component mount
 - Independent of server data
 
 **Authentication State:**
+
 - JWT stored in HttpOnly cookie (managed by backend)
 - User info fetched on app load and cached
 - Logout clears cookie and invalidates all queries
 
 **Local UI State:**
+
 - Modal open/closed states (useState)
 - Form field values (react-hook-form)
 - Transient UI interactions (hover, focus)
@@ -427,11 +457,13 @@ interface KeyboardNavigationContext {
 #### Responsiveness
 
 **Breakpoints (Tailwind CSS):**
+
 - Mobile: < 768px (one list at a time, swipeable)
 - Tablet: 768px - 1024px (narrower columns, 240px lists)
 - Desktop: ≥ 1024px (full layout, 280px lists)
 
 **Mobile Optimizations:**
+
 - Touch targets minimum 44x44px
 - Simplified navigation (header dropdown + swipe)
 - Bottom-sheet modals for actions
@@ -439,12 +471,14 @@ interface KeyboardNavigationContext {
 - Larger tap zones for task selection
 
 **Desktop Optimizations:**
+
 - Keyboard shortcuts as primary interaction
 - Hover states for discoverability
 - Multi-column layout with fixed widths
 - Tooltips for explanatory text
 
 **Progressive Enhancement:**
+
 - Core functionality works without JavaScript (where possible)
 - CSS-only states for hover, focus, active
 - JavaScript enhances with keyboard shortcuts and optimistic updates
@@ -452,12 +486,14 @@ interface KeyboardNavigationContext {
 #### Accessibility
 
 **Keyboard Navigation:**
+
 - All interactive elements reachable via keyboard
 - Clear focus indicators (ring-2 ring-offset-2)
 - Logical tab order throughout application
 - Skip links for main content navigation
 
 **ARIA Attributes (via shadcn/ui):**
+
 - Proper roles for custom components (dialog, menu, combobox)
 - aria-label for icon-only buttons
 - aria-describedby for error messages
@@ -465,18 +501,21 @@ interface KeyboardNavigationContext {
 - aria-current for active mode/list indicators
 
 **Screen Reader Support:**
+
 - Semantic HTML (nav, main, article, button)
 - Live regions for dynamic updates (aria-live="polite" for task completion)
 - Descriptive link text and button labels
 - Form labels properly associated with inputs
 
 **Visual Accessibility:**
+
 - Color contrast ratios meeting WCAG AA (4.5:1 for text)
 - Color not sole indicator (task origin uses both color and label)
 - Focus indicators visible on all interactive elements
 - Text resizable up to 200% without loss of functionality
 
 **Help and Documentation:**
+
 - Keyboard shortcuts help overlay (`?`)
 - Tooltips explaining disabled controls
 - Clear error messages with recovery instructions
@@ -485,36 +524,42 @@ interface KeyboardNavigationContext {
 #### Security Considerations
 
 **Authentication:**
+
 - Google OAuth 2.0 for secure third-party authentication
 - JWT stored in HttpOnly cookie (prevents XSS access)
 - Secure, SameSite=Strict cookie attributes
 - Automatic token refresh handled by backend
 
 **Authorization:**
+
 - All API requests require valid JWT
 - Backend enforces user data isolation (userId scoping)
 - Unauthenticated requests redirect to login
 - Expired sessions clear state and redirect
 
 **Data Validation:**
+
 - Frontend validation with react-hook-form + zod
 - Backend validation with class-validator (defense in depth)
 - Sanitize user input before rendering (React does this automatically)
 - Validate all API responses against expected types
 
 **CORS and CSRF:**
+
 - CORS configured to allow only frontend origin
 - SameSite cookie attribute prevents CSRF
 - Helmet middleware for security headers
 - Rate limiting via @nestjs/throttler
 
 **XSS Prevention:**
+
 - React escapes all rendered content by default
 - No dangerouslySetInnerHTML usage
 - Sanitize any external data before rendering
 - Content Security Policy headers (via Helmet)
 
 **Network Security:**
+
 - HTTPS only in production
 - Secure WebSocket connections if added later
 - API rate limiting to prevent abuse
@@ -533,72 +578,84 @@ interface KeyboardNavigationContext {
 The following questions remain open and should be resolved during implementation:
 
 ### 1. Task Virtualization Strategy
+
 **Question:** Do we need virtual scrolling for 100-task lists, or is DOM performance acceptable?
 **Impact:** Performance at scale, bundle size
 **Decision Point:** Test with 100 tasks rendered, monitor scroll performance on low-end devices
 **Recommendation:** Start without virtualization, add react-window if scroll performance degrades
 
 ### 2. Keyboard Shortcut Conflicts
+
 **Question:** How to handle browser shortcuts (e.g., `Cmd+W` closes window)?
 **Impact:** User experience, shortcut discoverability
 **Decision Point:** Document conflicts in help overlay, consider alternative shortcuts
 **Recommendation:** Use `preventDefault()` cautiously, provide escape hatch via command palette
 
 ### 3. Animation Library Choice
+
 **Question:** Do we need framer-motion or are CSS transitions sufficient?
 **Impact:** Bundle size, animation complexity
 **Decision Point:** Start with CSS transitions, evaluate need after initial implementation
 **Recommendation:** CSS for simple transitions (fade, slide), framer-motion only if complex orchestration needed
 
 ### 4. Offline Handling
+
 **Question:** Should we show offline indicator even though offline mode is out of scope?
 **Impact:** User experience during network issues
 **Decision Point:** Consider basic offline detection for better error UX
 **Recommendation:** Add simple navigator.onLine detection with banner notification
 
 ### 5. Dark Mode Support
+
 **Question:** Should we add dark mode toggle in MVP or defer to post-MVP?
 **Impact:** User preference, implementation effort
 **Decision Point:** Defer to post-MVP unless trivial with Tailwind
 **Recommendation:** Implement class-based dark mode (Tailwind makes this easy), add toggle in settings
 
 ### 6. Order Indexing Strategy
+
 **Question:** Fractional vs stepped integers for order_index; reindexing approach?
 **Impact:** Reordering performance, database queries
 **Decision Point:** Backend implementation decision
 **Recommendation:** Stepped integers (1000, 2000, 3000) with reindexing when gaps exhausted
 
 ### 7. Final Keyboard Shortcut Map
+
 **Question:** Complete list of all keyboard shortcuts for help overlay?
 **Impact:** User documentation, shortcut conflicts
 **Decision Point:** Document during implementation as shortcuts are added
 **Recommendation:** Maintain living document of shortcuts, review for conflicts before finalizing
 
 ### 8. Active List Indicator (Backlogs Only)
+
 **Question:** How to indicate active list clearly when only backlogs and Done exist (no intermediate lists)?
 **Impact:** User orientation in Work Mode
 **Decision Point:** UX design for visual indicator
 **Recommendation:** Highlight rightmost backlog with distinct border/background, show "Active" badge
 
 ### 9. Mobile Long-Press Behaviors
+
 **Question:** Should long-press on mobile open action menu or other gestures?
 **Impact:** Mobile UX, touch interaction patterns
 **Decision Point:** Test with users, evaluate discoverability
 **Recommendation:** Long-press for context menu (Edit, Delete, Move), swipe for quick actions
 
 ### 10. Backlog Color Palette Specifics
+
 **Question:** What are the exact 10 colors for backlog palette?
 **Impact:** Visual design, brand consistency
 **Decision Point:** Review backend implementation, ensure accessibility
 **Recommendation:** Use Tailwind's color palette (e.g., blue-500, green-500, etc.) with WCAG AA contrast ratios
 
 ### 11. Error Retry Strategy
+
 **Question:** Should failed mutations auto-retry or require manual retry?
 **Impact:** User experience during network issues
 **Decision Point:** Balance between automation and user control
 **Recommendation:** Auto-retry once for network errors, manual retry button for persistent failures
 
 ### 12. Session Persistence
+
 **Question:** Implement "remember last active mode" in MVP or defer?
 **Impact:** User experience, development time
 **Decision Point:** Marked as post-MVP in plan, confirm priority

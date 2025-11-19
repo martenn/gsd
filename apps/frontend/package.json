@@ -17,6 +17,7 @@
   "dependencies": {
     "@gsd/types": "workspace:^",
     "@astrojs/react": "^4.4.0",
+    "@gsd/types": "workspace:^",
     "@tanstack/react-query": "^5.90.9",
     "@types/react": "^19.2.2",
     "@types/react-dom": "^19.2.2",

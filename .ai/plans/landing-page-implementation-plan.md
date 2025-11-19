@@ -32,6 +32,7 @@ Landing Page (index.astro)
 ## 4. Component Details
 
 ### Landing Page (Main Container)
+
 - **Description**: The root Astro page component that contains all other components
 - **Main elements**:
   - `<html>` with proper lang attribute
@@ -43,6 +44,7 @@ Landing Page (index.astro)
 - **Props**: None (top-level page)
 
 ### Header Component
+
 - **Description**: Simple header with logo and product name
 - **Main elements**:
   - `<header>` semantic element
@@ -56,6 +58,7 @@ Landing Page (index.astro)
 **Simplified Implementation**: For MVP, use text-based logo instead of SVG/image.
 
 ### Hero Section
+
 - **Description**: Central content area with value proposition and call-to-action
 - **Main elements**:
   - `<main>` semantic element with ARIA landmark
@@ -68,10 +71,12 @@ Landing Page (index.astro)
 - **Props**: None
 
 **Simplified Text Content**:
+
 - Headline: "GSD - Getting Shit Done"
 - Tagline: "A simple, keyboard-first productivity app for focused work."
 
 ### GoogleSignInButton Component
+
 - **Description**: Primary call-to-action button that initiates OAuth flow
 - **Main elements**:
   - `<a>` element styled as button (href to `/auth/google`)
@@ -84,12 +89,14 @@ Landing Page (index.astro)
 - **Props**: None
 
 **Simplified Implementation**:
+
 - Use `<a>` tag instead of button (simpler, works without JavaScript)
 - Href: `/auth/google` (backend endpoint)
 - Style with Tailwind as button-like element
 - No icon for MVP, just text: "Sign in with Google"
 
 ### Footer Component
+
 - **Description**: Bottom section with legal links
 - **Main elements**:
   - `<footer>` semantic element
@@ -100,6 +107,7 @@ Landing Page (index.astro)
 - **Props**: None
 
 **Simplified Implementation**:
+
 - Plain text links, minimal styling
 - Links: `/privacy` and `/terms` (will create later)
 - For MVP, links can be non-functional stubs
@@ -117,11 +125,13 @@ Landing Page (index.astro)
 **No API integration** on this page. The Google sign-in button links directly to the backend OAuth endpoint at `/auth/google`, which is handled entirely server-side.
 
 **Backend endpoint** (already implemented):
+
 - `GET /auth/google` - Initiates Google OAuth flow
 
 ## 8. User Interactions
 
 ### Sign In Flow
+
 1. User lands on the page
 2. User clicks "Sign in with Google" button
 3. Browser navigates to `/auth/google` (backend endpoint)
@@ -139,6 +149,7 @@ Landing Page (index.astro)
 ## 10. Error Handling
 
 ### Minimal Error Handling for MVP
+
 - No error states on this page itself
 - If `/auth/google` endpoint fails, backend handles the error
 - User would remain on this page if navigation fails (browser default behavior)
@@ -148,58 +159,75 @@ Landing Page (index.astro)
 ## 11. Implementation Steps
 
 ### Step 1: Create Basic Astro Page Structure
+
 Create `apps/frontend/src/pages/index.astro` with:
+
 - HTML boilerplate
 - Semantic structure (`<header>`, `<main>`, `<footer>`)
 - Basic meta tags (title, charset, viewport)
 
 **Acceptance criteria**:
+
 - File exists and Astro dev server renders it without errors
 - Page displays in browser at http://localhost:4321/
 
 ### Step 2: Add Header with Logo
+
 Inside the Astro file, add:
+
 - `<header>` element
 - Text logo "GSD" (can enhance with styling later)
 - Basic Tailwind classes for spacing
 
 **Acceptance criteria**:
+
 - Header visible at top of page
 - Logo text displays correctly
 
 ### Step 3: Add Hero Section with Content
+
 Add to `<main>`:
+
 - `<h1>` with "GSD - Getting Shit Done"
 - `<p>` with tagline
 - Center content with Tailwind utility classes
 
 **Acceptance criteria**:
+
 - Headline and tagline visible and centered
 - Text is readable (good font size and contrast)
 
 ### Step 4: Add Google Sign-In Button
+
 Add to Hero section:
+
 - `<a href="/auth/google">` styled as button
 - Text: "Sign in with Google"
 - Tailwind button styling (background color, padding, hover state)
 
 **Acceptance criteria**:
+
 - Button displays below tagline
 - Clicking button navigates to `/auth/google`
 - Button has hover effect
 
 ### Step 5: Add Footer with Legal Links
+
 Add `<footer>` with:
+
 - Privacy Policy link (href="/privacy")
 - Terms of Service link (href="/terms")
 - Basic styling (small text, centered, bottom of page)
 
 **Acceptance criteria**:
+
 - Footer visible at bottom of page
 - Links display (even if destinations don't exist yet)
 
 ### Step 6: Add Basic Styling and Accessibility
+
 Apply final touches:
+
 - Tailwind classes for spacing, colors, typography
 - Ensure semantic HTML is used throughout
 - Add `lang="en"` to `<html>`
@@ -207,11 +235,13 @@ Apply final touches:
 - Ensure minimum 44x44px touch target for button
 
 **Acceptance criteria**:
+
 - Page looks clean and professional (don't over-style)
 - Passes basic accessibility checks (semantic HTML, contrast)
 - Button is easily clickable on mobile and desktop
 
 ### Step 7: Test Manually
+
 1. Start Astro dev server: `pnpm --filter @gsd/frontend dev`
 2. Open browser to http://localhost:4321/
 3. Verify:
@@ -221,6 +251,7 @@ Apply final touches:
    - Layout works on different screen sizes (resize browser)
 
 **Acceptance criteria**:
+
 - No console errors
 - Page displays correctly
 - Button click navigates (even if backend returns 404, navigation should work)
@@ -237,6 +268,7 @@ Apply final touches:
 ## Beginner-Friendly Notes
 
 ### What Makes This Simple?
+
 - **No React**: Uses Astro's simpler .astro file format
 - **No TypeScript**: No types or interfaces needed
 - **No State**: No useState, useEffect, or complex logic
@@ -245,6 +277,7 @@ Apply final touches:
 - **Minimal Styling**: Basic Tailwind classes only
 
 ### Things to Skip for MVP
+
 - ❌ Google logo/icon (use text only)
 - ❌ Animations or transitions
 - ❌ Dark mode toggle
@@ -254,11 +287,13 @@ Apply final touches:
 - ❌ Error messages
 
 ### Questions to Ask
+
 - **Styling**: What specific colors should be used? (For now, use Tailwind defaults: blue-600 for button)
 - **Logo**: Should it be text or do we need a logo file? (Use text for MVP)
 - **Legal pages**: Should the links work now or later? (Later is fine)
 
 ### Expected Time
+
 - **Estimated**: 30-60 minutes for complete implementation
 - **Breakdown**:
   - File creation and structure: 10 mins
@@ -267,7 +302,9 @@ Apply final touches:
   - Testing: 10-20 mins
 
 ### Success Criteria
+
 You're done when:
+
 1. ✅ Page loads at http://localhost:4321/
 2. ✅ "Sign in with Google" button is visible and clickable
 3. ✅ Clicking button navigates to `/auth/google`
@@ -277,6 +314,7 @@ You're done when:
 ## Next Steps After Landing Page
 
 After successfully implementing the landing page:
+
 1. Implement Authentication Callback page (`/auth/callback`)
 2. Create basic App Shell for authenticated views
 3. Implement Plan Mode (most complex view)
@@ -289,6 +327,7 @@ apps/frontend/src/pages/
 ```
 
 Future files (not part of this implementation):
+
 ```
 apps/frontend/src/pages/
 ├── index.astro          # ← We're implementing this

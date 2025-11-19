@@ -53,6 +53,7 @@ docker compose -f tools/docker/docker-compose.yml up -d
 ```
 
 Services:
+
 - Postgres on `localhost:5432` (user `gsd`, password `gsd_dev_password`, db `gsd_dev`)
 - Optional pgAdmin on `localhost:5050` (email `dev@gsd.local`, password `admin`)
 
@@ -82,10 +83,12 @@ pnpm dev
 ```
 
 Default URLs:
+
 - Frontend (Astro): `http://localhost:4321`
 - Backend (NestJS): `http://localhost:3000`
 
 Optional tools:
+
 - Prisma Studio: `pnpm db:studio`
 - pgAdmin: open `http://localhost:5050`
 
@@ -140,6 +143,7 @@ Optional tools:
 - Complex error handling, advanced onboarding/coaching UX
 
 Constraints and limits:
+
 - Up to 10 non-Done lists, up to 100 tasks per list
 
 See the full [PRD](./.ai/prd.md) for user stories and acceptance criteria.
@@ -151,6 +155,7 @@ See the full [PRD](./.ai/prd.md) for user stories and acceptance criteria.
 - Planned next: Implement auth (Google + JWT), lists/tasks modules and endpoints, UI for plan/work/done modes, metrics, retention jobs, keyboard help overlay, Swagger docs, CI
 
 Known gaps for local dev:
+
 - No `.env.example` yet; set `DATABASE_URL` as documented above
 - OAuth credentials, JWT secret, and security middleware configuration pending
 
