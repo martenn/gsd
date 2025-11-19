@@ -9,7 +9,9 @@ import { MoveTask } from './use-cases/move-task';
 import { CompleteTask } from './use-cases/complete-task';
 import { ReorderTask } from './use-cases/reorder-task';
 import { TasksRepository } from './infra/tasks.repository';
+import { TaskMapper } from './mappers/task.mapper';
 import { ListsModule } from '../lists/lists.module';
+import { AppLogger } from '../logger/app-logger';
 
 @Module({
   imports: [ListsModule],
@@ -23,6 +25,8 @@ import { ListsModule } from '../lists/lists.module';
     CompleteTask,
     ReorderTask,
     TasksRepository,
+    TaskMapper,
+    AppLogger,
     {
       provide: PrismaClient,
       useValue: new PrismaClient(),
@@ -37,6 +41,7 @@ import { ListsModule } from '../lists/lists.module';
     CompleteTask,
     ReorderTask,
     TasksRepository,
+    TaskMapper,
   ],
 })
 export class TasksModule {}

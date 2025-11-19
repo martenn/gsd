@@ -11,6 +11,7 @@ export interface CreateTaskData {
   title: string;
   description?: string | null;
   listId: string;
+  originBacklogId: string;
   userId: string;
   orderIndex: number;
 }
@@ -30,6 +31,7 @@ export class TasksRepository {
         title: data.title,
         description: data.description ?? null,
         listId: data.listId,
+        originBacklogId: data.originBacklogId,
         userId: data.userId,
         orderIndex: data.orderIndex,
       },
