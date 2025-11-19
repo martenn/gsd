@@ -7,6 +7,7 @@ import {
 import { TaskDto } from '@gsd/types';
 import { UpdateTaskDto } from '../dto/update-task.dto';
 import { TasksRepository } from '../infra/tasks.repository';
+import { TaskMapper } from '../mappers/task.mapper';
 import { Task } from '@prisma/client';
 import { AppLogger } from '../../logger/app-logger';
 
@@ -14,6 +15,7 @@ import { AppLogger } from '../../logger/app-logger';
 export class UpdateTask {
   constructor(
     private readonly tasksRepository: TasksRepository,
+    private readonly taskMapper: TaskMapper,
     private readonly logger: AppLogger,
   ) {
     this.logger.setContext(UpdateTask.name);
@@ -34,7 +36,7 @@ export class UpdateTask {
 
       this.logger.log(`Task ${taskId} updated successfully`);
 
-      return this.toDto(updatedTask);
+      return this.taskMapper.toDto(updatedTask);
     } catch (error) {
       this.logger.error(
         `Failed to update task ${taskId} for user ${userId}: ${error instanceof Error ? error.message : 'Unknown error'}`,
@@ -68,21 +70,5 @@ export class UpdateTask {
     if (task.completedAt !== null) {
       throw new BadRequestException('Cannot modify a completed task');
     }
-  }
-
-  private toDto(task: Task): TaskDto {
-    return {
-      id: task.id,
-      userId: task.userId,
-      listId: task.listId,
-      originBacklogId: task.listId,
-      title: task.title,
-      description: task.description,
-      orderIndex: task.orderIndex,
-      color: '#3B82F6',
-      isCompleted: task.completedAt !== null,
-      createdAt: task.createdAt,
-      completedAt: task.completedAt,
-    };
   }
 }

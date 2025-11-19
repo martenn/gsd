@@ -3,6 +3,7 @@ import { PrismaClient, Task, List } from '@prisma/client';
 
 export interface CompletedTaskWithList extends Task {
   list: List;
+  originBacklog: List | null;
 }
 
 @Injectable()
@@ -23,6 +24,7 @@ export class DoneRepository {
       },
       include: {
         list: true,
+        originBacklog: true,
       },
       orderBy: {
         completedAt: 'desc',

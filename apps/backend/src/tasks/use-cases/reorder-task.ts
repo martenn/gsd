@@ -1,14 +1,15 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { TaskDto } from '@gsd/types';
 import { TasksRepository } from '../infra/tasks.repository';
+import { TaskMapper } from '../mappers/task.mapper';
 import { AppLogger } from '../../logger/app-logger';
 import { ReorderTaskDto } from '../dto/reorder-task.dto';
-import { Task } from '@prisma/client';
 
 @Injectable()
 export class ReorderTask {
   constructor(
     private readonly tasksRepository: TasksRepository,
+    private readonly taskMapper: TaskMapper,
     private readonly logger: AppLogger,
   ) {
     this.logger.setContext(ReorderTask.name);
@@ -59,7 +60,7 @@ export class ReorderTask {
 
       this.logger.log(`Successfully reordered task ${taskId} to orderIndex ${newOrderIndex}`);
 
-      return this.toDto(reorderedTask);
+      return this.taskMapper.toDto(reorderedTask);
     } catch (error) {
       this.logger.error(
         `Failed to reorder task ${taskId} for user ${userId}: ${error instanceof Error ? error.message : 'Unknown error'}`,
@@ -67,21 +68,5 @@ export class ReorderTask {
       );
       throw error;
     }
-  }
-
-  private toDto(task: Task): TaskDto {
-    return {
-      id: task.id,
-      userId: task.userId,
-      listId: task.listId,
-      originBacklogId: task.listId,
-      title: task.title,
-      description: task.description,
-      orderIndex: task.orderIndex,
-      color: '#3B82F6',
-      isCompleted: task.completedAt !== null,
-      createdAt: task.createdAt,
-      completedAt: task.completedAt,
-    };
   }
 }

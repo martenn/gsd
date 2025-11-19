@@ -1,9 +1,9 @@
 import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
-import { Task } from '@prisma/client';
-import { TaskDto, GetTasksResponseDto } from '@gsd/types';
+import { GetTasksResponseDto } from '@gsd/types';
 import { TasksRepository } from '../infra/tasks.repository';
 import { ListsRepository } from '../../lists/infra/lists.repository';
 import { GetTasksQueryDto } from '../dto/get-tasks-query.dto';
+import { TaskMapper } from '../mappers/task.mapper';
 import { AppLogger } from '../../logger/app-logger';
 
 @Injectable()
@@ -11,6 +11,7 @@ export class GetTasks {
   constructor(
     private readonly tasksRepository: TasksRepository,
     private readonly listsRepository: ListsRepository,
+    private readonly taskMapper: TaskMapper,
     private readonly logger: AppLogger,
   ) {
     this.logger.setContext(GetTasks.name);
@@ -40,8 +41,10 @@ export class GetTasks {
 
       this.logger.log(`Found ${tasks.length} tasks (total: ${total}) for user ${userId}`);
 
+      const taskDtos = await this.taskMapper.toDtos(tasks);
+
       return {
-        tasks: tasks.map((task) => this.toDto(task)),
+        tasks: taskDtos,
         total,
         limit,
         offset,
@@ -65,21 +68,5 @@ export class GetTasks {
     if (list.userId !== userId) {
       throw new ForbiddenException("You don't have permission to access this list");
     }
-  }
-
-  private toDto(task: Task): TaskDto {
-    return {
-      id: task.id,
-      userId: task.userId,
-      listId: task.listId,
-      originBacklogId: task.listId,
-      title: task.title,
-      description: task.description,
-      orderIndex: task.orderIndex,
-      color: '#3B82F6',
-      isCompleted: task.completedAt !== null,
-      createdAt: task.createdAt,
-      completedAt: task.completedAt,
-    };
   }
 }
