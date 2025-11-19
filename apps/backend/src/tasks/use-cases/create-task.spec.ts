@@ -1,7 +1,13 @@
-import { BadRequestException, ForbiddenException, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  NotFoundException,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { CreateTask } from './create-task';
 import { TasksRepository } from '../infra/tasks.repository';
 import { ListsRepository } from '../../lists/infra/lists.repository';
+import { TaskMapper } from '../mappers/task.mapper';
 import { CreateTaskDto } from '../dto/create-task.dto';
 import { AppLogger } from '../../logger/app-logger';
 
@@ -9,10 +15,12 @@ describe('CreateTask', () => {
   let createTask: CreateTask;
   let tasksRepository: jest.Mocked<TasksRepository>;
   let listsRepository: jest.Mocked<ListsRepository>;
+  let taskMapper: jest.Mocked<TaskMapper>;
   let logger: jest.Mocked<AppLogger>;
 
   const userId = 'user-123';
   const listId = 'list-456';
+  const backlogId = 'backlog-123';
   const taskId = 'task-789';
 
   beforeEach(() => {
@@ -24,6 +32,13 @@ describe('CreateTask', () => {
 
     listsRepository = {
       findById: jest.fn(),
+      findBacklogs: jest.fn(),
+    } as any;
+
+    taskMapper = {
+      toDto: jest.fn(),
+      toDtoWithOrigin: jest.fn(),
+      toDtos: jest.fn(),
     } as any;
 
     logger = {
@@ -35,7 +50,7 @@ describe('CreateTask', () => {
       setContext: jest.fn(),
     } as any;
 
-    createTask = new CreateTask(tasksRepository, listsRepository, logger);
+    createTask = new CreateTask(tasksRepository, listsRepository, taskMapper, logger);
   });
 
   describe('execute', () => {
@@ -61,6 +76,7 @@ describe('CreateTask', () => {
       id: taskId,
       userId,
       listId,
+      originBacklogId: backlogId,
       title: 'Test Task',
       description: 'Test Description',
       orderIndex: 2000,
@@ -69,29 +85,39 @@ describe('CreateTask', () => {
       updatedAt: new Date(),
     };
 
-    it('should create task successfully', async () => {
+    const mockTaskDto = {
+      id: taskId,
+      userId,
+      listId,
+      originBacklogId: backlogId,
+      title: 'Test Task',
+      description: 'Test Description',
+      orderIndex: 2000,
+      color: '#3B82F6',
+      isCompleted: false,
+      createdAt: mockTask.createdAt,
+      completedAt: null,
+    };
+
+    it('should create task successfully in backlog list', async () => {
       listsRepository.findById.mockResolvedValue(mockList);
       tasksRepository.countByList.mockResolvedValue(5);
       tasksRepository.findMaxOrderIndex.mockResolvedValue(1000);
       tasksRepository.create.mockResolvedValue(mockTask);
+      taskMapper.toDto.mockResolvedValue(mockTaskDto);
 
       const result = await createTask.execute(userId, validDto);
 
-      expect(result).toMatchObject({
-        id: taskId,
-        title: 'Test Task',
-        description: 'Test Description',
-        orderIndex: 2000,
-        isCompleted: false,
-      });
-
+      expect(result).toEqual(mockTaskDto);
       expect(tasksRepository.create).toHaveBeenCalledWith({
         title: 'Test Task',
         description: 'Test Description',
         listId,
+        originBacklogId: listId,
         userId,
         orderIndex: 2000,
       });
+      expect(taskMapper.toDto).toHaveBeenCalledWith(mockTask);
     });
 
     it('should create task with initial order index when list is empty', async () => {
@@ -99,14 +125,53 @@ describe('CreateTask', () => {
       tasksRepository.countByList.mockResolvedValue(0);
       tasksRepository.findMaxOrderIndex.mockResolvedValue(null);
       tasksRepository.create.mockResolvedValue({ ...mockTask, orderIndex: 1000 });
+      taskMapper.toDto.mockResolvedValue({ ...mockTaskDto, orderIndex: 1000 });
 
       await createTask.execute(userId, validDto);
 
       expect(tasksRepository.create).toHaveBeenCalledWith(
         expect.objectContaining({
           orderIndex: 1000,
+          originBacklogId: listId,
         }),
       );
+    });
+
+    it('should create task in intermediate list using topmost backlog', async () => {
+      const intermediateList = { ...mockList, isBacklog: false };
+      const mockBacklog = { ...mockList, id: backlogId, isBacklog: true };
+
+      listsRepository.findById.mockResolvedValue(intermediateList);
+      listsRepository.findBacklogs.mockResolvedValue([mockBacklog]);
+      tasksRepository.countByList.mockResolvedValue(0);
+      tasksRepository.findMaxOrderIndex.mockResolvedValue(null);
+      tasksRepository.create.mockResolvedValue(mockTask);
+      taskMapper.toDto.mockResolvedValue(mockTaskDto);
+
+      await createTask.execute(userId, validDto);
+
+      expect(tasksRepository.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          originBacklogId: backlogId,
+        }),
+      );
+      expect(logger.log).toHaveBeenCalledWith(
+        expect.stringContaining('using topmost backlog'),
+      );
+    });
+
+    it('should throw InternalServerErrorException when no backlog exists for intermediate list', async () => {
+      const intermediateList = { ...mockList, isBacklog: false };
+
+      listsRepository.findById.mockResolvedValue(intermediateList);
+      listsRepository.findBacklogs.mockResolvedValue([]);
+      tasksRepository.countByList.mockResolvedValue(0);
+
+      await expect(createTask.execute(userId, validDto)).rejects.toThrow(
+        new InternalServerErrorException('No backlog found for user. This is a data integrity issue.'),
+      );
+
+      expect(tasksRepository.create).not.toHaveBeenCalled();
     });
 
     it('should throw NotFoundException when list does not exist', async () => {
@@ -169,6 +234,10 @@ describe('CreateTask', () => {
         ...mockTask,
         description: null,
       });
+      taskMapper.toDto.mockResolvedValue({
+        ...mockTaskDto,
+        description: null,
+      });
 
       const result = await createTask.execute(userId, dtoWithoutDescription);
 
@@ -176,6 +245,7 @@ describe('CreateTask', () => {
       expect(tasksRepository.create).toHaveBeenCalledWith(
         expect.objectContaining({
           description: null,
+          originBacklogId: listId,
         }),
       );
     });
