@@ -94,27 +94,16 @@ describe('TaskMapper', () => {
 
       expect(result.color).toBe('#3B82F6');
       expect(logger.warn).toHaveBeenCalledWith(
-        'No origin backlog color found, using default: #3B82F6',
+        `Origin backlog ${mockBacklog.id} has no color, using default: #3B82F6`,
       );
     });
 
-    it('should use default color when origin backlog not found', async () => {
+    it('should throw error when origin backlog not found', async () => {
       listsRepository.findById.mockResolvedValue(null);
 
-      const result = await mapper.toDto(mockTask);
-
-      expect(result.color).toBe('#3B82F6');
-      expect(result.originBacklogId).toBe('backlog-1');
-      expect(logger.warn).toHaveBeenCalled();
-    });
-
-    it('should fallback to listId when originBacklogId is null', async () => {
-      const taskWithoutOrigin = { ...mockTask, originBacklogId: null };
-
-      const result = await mapper.toDto(taskWithoutOrigin);
-
-      expect(result.originBacklogId).toBe('list-1');
-      expect(result.color).toBe('#3B82F6');
+      await expect(mapper.toDto(mockTask)).rejects.toThrow(
+        'Origin backlog backlog-1 not found for task task-1',
+      );
     });
 
     it('should set isCompleted to true when completedAt is set', async () => {
@@ -156,23 +145,9 @@ describe('TaskMapper', () => {
       const result = mapper.toDtoWithOrigin(taskWithOrigin);
 
       expect(result.color).toBe('#3B82F6');
-    });
-
-    it('should use default color when origin backlog is null', () => {
-      const taskWithOrigin = { ...mockTask, originBacklog: null };
-
-      const result = mapper.toDtoWithOrigin(taskWithOrigin);
-
-      expect(result.color).toBe('#3B82F6');
-      expect(result.originBacklogId).toBe('backlog-1');
-    });
-
-    it('should fallback to listId when originBacklogId is null', () => {
-      const taskWithoutOrigin = { ...mockTask, originBacklogId: null, originBacklog: null };
-
-      const result = mapper.toDtoWithOrigin(taskWithoutOrigin);
-
-      expect(result.originBacklogId).toBe('list-1');
+      expect(logger.warn).toHaveBeenCalledWith(
+        `Origin backlog ${mockBacklog.id} has no color, using default: #3B82F6`,
+      );
     });
   });
 
@@ -239,27 +214,12 @@ describe('TaskMapper', () => {
       expect(listsRepository.findManyByIds).toHaveBeenCalledWith('user-1', ['backlog-1']);
     });
 
-    it('should handle tasks with null originBacklogId', async () => {
-      const taskWithoutOrigin = { ...mockTask, originBacklogId: null };
-
+    it('should throw error when backlog not found', async () => {
       listsRepository.findManyByIds.mockResolvedValue([]);
 
-      const result = await mapper.toDtos([taskWithoutOrigin]);
-
-      expect(result).toHaveLength(1);
-      expect(result[0].originBacklogId).toBe('list-1');
-      expect(result[0].color).toBe('#3B82F6');
-      expect(listsRepository.findManyByIds).toHaveBeenCalledWith('user-1', []);
-    });
-
-    it('should handle missing backlogs with default color', async () => {
-      listsRepository.findManyByIds.mockResolvedValue([]);
-
-      const result = await mapper.toDtos([mockTask]);
-
-      expect(result).toHaveLength(1);
-      expect(result[0].color).toBe('#3B82F6');
-      expect(logger.warn).toHaveBeenCalled();
+      await expect(mapper.toDtos([mockTask])).rejects.toThrow(
+        'Origin backlog backlog-1 not found for task task-1',
+      );
     });
 
     it('should handle mixed completed and incomplete tasks', async () => {

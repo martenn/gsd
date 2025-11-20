@@ -204,4 +204,22 @@ export class TasksRepository {
       },
     });
   }
+
+  async reassignOriginBacklog(
+    userId: string,
+    oldOriginBacklogId: string,
+    newOriginBacklogId: string,
+  ): Promise<number> {
+    const result = await this.prisma.task.updateMany({
+      where: {
+        userId,
+        originBacklogId: oldOriginBacklogId,
+      },
+      data: {
+        originBacklogId: newOriginBacklogId,
+      },
+    });
+
+    return result.count;
+  }
 }

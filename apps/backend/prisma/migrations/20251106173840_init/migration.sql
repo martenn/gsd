@@ -32,6 +32,7 @@ CREATE TABLE "tasks" (
     "description" TEXT,
     "order_index" DOUBLE PRECISION NOT NULL,
     "list_id" TEXT NOT NULL,
+    "origin_backlog_id" TEXT NOT NULL,
     "user_id" TEXT NOT NULL,
     "completed_at" TIMESTAMP(3),
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -61,11 +62,17 @@ CREATE INDEX "tasks_user_id_list_id_order_index_idx" ON "tasks"("user_id", "list
 -- CreateIndex
 CREATE INDEX "tasks_user_id_completed_at_idx" ON "tasks"("user_id", "completed_at");
 
+-- CreateIndex
+CREATE INDEX "tasks_user_id_origin_backlog_id_idx" ON "tasks"("user_id", "origin_backlog_id");
+
 -- AddForeignKey
 ALTER TABLE "lists" ADD CONSTRAINT "lists_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "tasks" ADD CONSTRAINT "tasks_list_id_fkey" FOREIGN KEY ("list_id") REFERENCES "lists"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "tasks" ADD CONSTRAINT "tasks_origin_backlog_id_fkey" FOREIGN KEY ("origin_backlog_id") REFERENCES "lists"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "tasks" ADD CONSTRAINT "tasks_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;

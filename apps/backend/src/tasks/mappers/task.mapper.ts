@@ -5,7 +5,7 @@ import { ListsRepository } from '../../lists/infra/lists.repository';
 import { AppLogger } from '../../logger/app-logger';
 
 export type TaskWithOrigin = Task & {
-  originBacklog?: List | null;
+  originBacklog: List;
 };
 
 @Injectable()
@@ -20,22 +20,26 @@ export class TaskMapper {
   }
 
   async toDto(task: Task): Promise<TaskDto> {
-    const originBacklog = task.originBacklogId
-      ? await this.listsRepository.findById(task.userId, task.originBacklogId)
-      : null;
+    const originBacklog = await this.listsRepository.findById(
+      task.userId,
+      task.originBacklogId,
+    );
+
+    if (!originBacklog) {
+      throw new Error(`Origin backlog ${task.originBacklogId} not found for task ${task.id}`);
+    }
 
     return this.toDtoWithOrigin({ ...task, originBacklog });
   }
 
   toDtoWithOrigin(task: TaskWithOrigin): TaskDto {
     const color = this.getTaskColor(task.originBacklog);
-    const originBacklogId = task.originBacklogId || task.listId;
 
     return {
       id: task.id,
       userId: task.userId,
       listId: task.listId,
-      originBacklogId,
+      originBacklogId: task.originBacklogId,
       title: task.title,
       description: task.description,
       orderIndex: task.orderIndex,
@@ -50,25 +54,32 @@ export class TaskMapper {
     if (tasks.length === 0) return [];
 
     const userId = tasks[0].userId;
-    const backlogIds = [
-      ...new Set(tasks.map((t) => t.originBacklogId).filter((id): id is string => !!id)),
-    ];
+    const backlogIds = [...new Set(tasks.map((t) => t.originBacklogId))];
 
     const backlogs = await this.listsRepository.findManyByIds(userId, backlogIds);
     const backlogMap = new Map(backlogs.map((b) => [b.id, b]));
 
     return tasks.map((task) => {
-      const originBacklog = task.originBacklogId ? backlogMap.get(task.originBacklogId) : null;
+      const originBacklog = backlogMap.get(task.originBacklogId);
+
+      if (!originBacklog) {
+        throw new Error(
+          `Origin backlog ${task.originBacklogId} not found for task ${task.id}`,
+        );
+      }
+
       return this.toDtoWithOrigin({ ...task, originBacklog });
     });
   }
 
-  private getTaskColor(originBacklog: List | null | undefined): string {
-    if (originBacklog?.color) {
+  private getTaskColor(originBacklog: List): string {
+    if (originBacklog.color) {
       return originBacklog.color;
     }
 
-    this.logger.warn(`No origin backlog color found, using default: ${TaskMapper.DEFAULT_COLOR}`);
+    this.logger.warn(
+      `Origin backlog ${originBacklog.id} has no color, using default: ${TaskMapper.DEFAULT_COLOR}`,
+    );
     return TaskMapper.DEFAULT_COLOR;
   }
 }

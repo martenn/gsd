@@ -3,7 +3,7 @@ import { PrismaClient, Task, List } from '@prisma/client';
 
 export interface CompletedTaskWithList extends Task {
   list: List;
-  originBacklog: List | null;
+  originBacklog: List;
 }
 
 @Injectable()

@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { TasksController } from './adapters/tasks.controller';
 import { CreateTask } from './use-cases/create-task';
 import { GetTasks } from './use-cases/get-tasks';
@@ -13,7 +13,7 @@ import { ListsModule } from '../lists/lists.module';
 import { AppLogger } from '../logger/app-logger';
 
 @Module({
-  imports: [ListsModule],
+  imports: [forwardRef(() => ListsModule)],
   controllers: [TasksController],
   providers: [
     CreateTask,

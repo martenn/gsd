@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { NotFoundException, BadRequestException } from '@nestjs/common';
 import { DeleteList } from './delete-list';
 import { ListsRepository } from '../infra/lists.repository';
+import { TasksRepository } from '../../tasks/infra/tasks.repository';
 import { ColorPool } from '../../colors/color-pool';
 import { Color } from '../../colors/color';
 import { AppLogger } from '../../logger/app-logger';
@@ -9,6 +10,7 @@ import { AppLogger } from '../../logger/app-logger';
 describe('DeleteList', () => {
   let useCase: DeleteList;
   let repository: ListsRepository;
+  let tasksRepository: TasksRepository;
   let colorPool: ColorPool;
 
   beforeEach(async () => {
@@ -17,10 +19,15 @@ describe('DeleteList', () => {
       countBacklogs: jest.fn(),
       findFirstIntermediate: jest.fn(),
       findFirstBacklog: jest.fn(),
+      findBacklogs: jest.fn(),
       promoteToBacklog: jest.fn(),
       deleteWithTaskMove: jest.fn(),
       findManyByUserId: jest.fn(),
     } as unknown as ListsRepository;
+
+    tasksRepository = {
+      reassignOriginBacklog: jest.fn(),
+    } as unknown as TasksRepository;
 
     colorPool = {
       getNextColor: jest.fn(),
@@ -45,6 +52,10 @@ describe('DeleteList', () => {
         {
           provide: ListsRepository,
           useValue: repository,
+        },
+        {
+          provide: TasksRepository,
+          useValue: tasksRepository,
         },
         {
           provide: ColorPool,
@@ -130,6 +141,18 @@ describe('DeleteList', () => {
         updatedAt: now,
       };
 
+      const otherBacklog = {
+        id: 'other-backlog-id',
+        name: 'Other Backlog',
+        orderIndex: 0.5,
+        isBacklog: true,
+        isDone: false,
+        color: '#8B5CF6',
+        userId,
+        createdAt: now,
+        updatedAt: now,
+      };
+
       const destinationList = {
         id: destListId,
         name: 'Destination List',
@@ -148,12 +171,20 @@ describe('DeleteList', () => {
         .mockResolvedValueOnce(destinationList);
 
       jest.spyOn(repository, 'countBacklogs').mockResolvedValue(2); // Multiple backlogs exist
+      jest.spyOn(repository, 'findBacklogs').mockResolvedValue([backlogList, otherBacklog]);
+      jest.spyOn(tasksRepository, 'reassignOriginBacklog').mockResolvedValue(5);
       jest.spyOn(repository, 'deleteWithTaskMove').mockResolvedValue(undefined);
       jest.spyOn(colorPool, 'releaseColor').mockImplementation(() => {});
 
       await useCase.execute(userId, listId, destListId);
 
       expect(repository.countBacklogs).toHaveBeenCalledWith(userId);
+      expect(repository.findBacklogs).toHaveBeenCalledWith(userId);
+      expect(tasksRepository.reassignOriginBacklog).toHaveBeenCalledWith(
+        userId,
+        listId,
+        otherBacklog.id,
+      );
       expect(repository.deleteWithTaskMove).toHaveBeenCalledWith(listId, destListId, userId);
       expect(colorPool.releaseColor).toHaveBeenCalledWith(Color.of('#10B981'));
     });
@@ -205,12 +236,16 @@ describe('DeleteList', () => {
         .mockResolvedValueOnce(lastBacklog)
         .mockResolvedValueOnce(destinationList);
 
-      jest.spyOn(repository, 'countBacklogs').mockResolvedValue(1); // Last backlog
-      jest.spyOn(repository, 'findFirstIntermediate').mockResolvedValue(intermediateToPromote);
-      jest.spyOn(repository, 'promoteToBacklog').mockResolvedValue({
+      const promotedBacklog = {
         ...intermediateToPromote,
         isBacklog: true,
-      });
+      };
+
+      jest.spyOn(repository, 'countBacklogs').mockResolvedValue(1); // Last backlog
+      jest.spyOn(repository, 'findFirstIntermediate').mockResolvedValue(intermediateToPromote);
+      jest.spyOn(repository, 'promoteToBacklog').mockResolvedValue(promotedBacklog);
+      jest.spyOn(repository, 'findBacklogs').mockResolvedValue([lastBacklog, promotedBacklog]);
+      jest.spyOn(tasksRepository, 'reassignOriginBacklog').mockResolvedValue(3);
       jest.spyOn(repository, 'deleteWithTaskMove').mockResolvedValue(undefined);
       jest.spyOn(colorPool, 'releaseColor').mockImplementation(() => {});
 
@@ -218,6 +253,13 @@ describe('DeleteList', () => {
 
       expect(repository.countBacklogs).toHaveBeenCalledWith(userId);
       expect(repository.findFirstIntermediate).toHaveBeenCalledWith(userId);
+      expect(repository.promoteToBacklog).toHaveBeenCalledWith(intermediateToPromote.id);
+      expect(repository.findBacklogs).toHaveBeenCalledWith(userId);
+      expect(tasksRepository.reassignOriginBacklog).toHaveBeenCalledWith(
+        userId,
+        listId,
+        promotedBacklog.id,
+      );
       expect(repository.promoteToBacklog).toHaveBeenCalledWith('intermediate-to-promote');
       expect(repository.deleteWithTaskMove).toHaveBeenCalledWith(listId, destListId, userId);
     });
