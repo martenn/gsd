@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { List } from '@prisma/client';
 import { ListsRepository } from '../infra/lists.repository';
+import { TasksRepository } from '../../tasks/infra/tasks.repository';
 import { ColorPool } from '../../colors/color-pool';
 import { Color } from '../../colors/color';
 import { AppLogger } from '../../logger/app-logger';
@@ -9,6 +10,7 @@ import { AppLogger } from '../../logger/app-logger';
 export class DeleteList {
   constructor(
     private readonly repository: ListsRepository,
+    private readonly tasksRepository: TasksRepository,
     private readonly colorPool: ColorPool,
     private readonly logger: AppLogger,
   ) {
@@ -23,6 +25,11 @@ export class DeleteList {
     try {
       const list = await this.repository.findById(listId, userId);
       await this.checkPrerequisites(list, userId);
+
+      // Reassign origin backlog for all tasks if deleting a backlog
+      if (list?.isBacklog) {
+        await this.reassignOriginBacklog(userId, listId);
+      }
 
       const destination = await this.resolveDestination(userId, listId, destListId);
       // TODO where should this be done? now it's DB level, but maybe we should make it on domain level and then persist
@@ -138,5 +145,32 @@ export class DeleteList {
     }
 
     return dest;
+  }
+
+  private async reassignOriginBacklog(userId: string, deletedBacklogId: string): Promise<void> {
+    // Find the new topmost backlog (excluding the one being deleted)
+    const backlogs = await this.repository.findBacklogs(userId);
+    const newTopBacklog = backlogs.find((b) => b.id !== deletedBacklogId);
+
+    if (!newTopBacklog) {
+      // This should never happen due to backlog constraint, but log for safety
+      this.logger.warn(
+        `No alternative backlog found when deleting ${deletedBacklogId}, tasks may lose origin`,
+      );
+      return;
+    }
+
+    // Reassign all tasks with this origin backlog to the new topmost backlog
+    const reassignedCount = await this.tasksRepository.reassignOriginBacklog(
+      userId,
+      deletedBacklogId,
+      newTopBacklog.id,
+    );
+
+    if (reassignedCount > 0) {
+      this.logger.log(
+        `Reassigned ${reassignedCount} tasks from origin backlog ${deletedBacklogId} to ${newTopBacklog.id}`,
+      );
+    }
   }
 }

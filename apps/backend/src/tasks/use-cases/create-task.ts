@@ -3,13 +3,15 @@ import {
   BadRequestException,
   ForbiddenException,
   NotFoundException,
+  InternalServerErrorException,
 } from '@nestjs/common';
 import { TaskDto } from '@gsd/types';
 import { CreateTaskDto } from '../dto/create-task.dto';
 import { TasksRepository } from '../infra/tasks.repository';
 import { ListsRepository } from '../../lists/infra/lists.repository';
 import { OrderIndexHelper } from '../infra/order-index.helper';
-import { Task } from '@prisma/client';
+import { TaskMapper } from '../mappers/task.mapper';
+import { List } from '@prisma/client';
 import { AppLogger } from '../../logger/app-logger';
 
 const MAX_TASKS_PER_LIST = 100;
@@ -19,6 +21,7 @@ export class CreateTask {
   constructor(
     private readonly tasksRepository: TasksRepository,
     private readonly listsRepository: ListsRepository,
+    private readonly taskMapper: TaskMapper,
     private readonly logger: AppLogger,
   ) {
     this.logger.setContext(CreateTask.name);
@@ -28,22 +31,26 @@ export class CreateTask {
     this.logger.log(`Creating task for user ${userId} in list ${dto.listId}: ${dto.title}`);
 
     try {
-      await this.validateList(userId, dto.listId);
+      const list = await this.validateList(userId, dto.listId);
       await this.validateTaskCapacity(userId, dto.listId);
 
+      const originBacklogId = await this.resolveOriginBacklog(userId, list);
       const orderIndex = await this.calculateOrderIndex(userId, dto.listId);
 
       const task = await this.tasksRepository.create({
         title: dto.title,
         description: dto.description ?? null,
         listId: dto.listId,
+        originBacklogId,
         userId,
         orderIndex,
       });
 
-      this.logger.log(`Task created successfully: ${task.id}`);
+      this.logger.log(
+        `Task created successfully: ${task.id} with origin backlog ${originBacklogId}`,
+      );
 
-      return this.toDto(task);
+      return this.taskMapper.toDto(task);
     } catch (error) {
       this.logger.error(
         `Failed to create task for user ${userId}: ${error instanceof Error ? error.message : 'Unknown error'}`,
@@ -53,7 +60,7 @@ export class CreateTask {
     }
   }
 
-  private async validateList(userId: string, listId: string): Promise<void> {
+  private async validateList(userId: string, listId: string): Promise<List> {
     const list = await this.listsRepository.findById(listId, userId);
 
     if (!list) {
@@ -67,6 +74,8 @@ export class CreateTask {
     if (list.isDone) {
       throw new BadRequestException('Cannot create tasks in Done list directly');
     }
+
+    return list;
   }
 
   private async validateTaskCapacity(userId: string, listId: string): Promise<void> {
@@ -82,19 +91,22 @@ export class CreateTask {
     return OrderIndexHelper.calculateTopPosition(maxOrderIndex);
   }
 
-  private toDto(task: Task): TaskDto {
-    return {
-      id: task.id,
-      userId: task.userId,
-      listId: task.listId,
-      originBacklogId: task.listId,
-      title: task.title,
-      description: task.description,
-      orderIndex: task.orderIndex,
-      color: '#3B82F6',
-      isCompleted: task.completedAt !== null,
-      createdAt: task.createdAt,
-      completedAt: task.completedAt,
-    };
+  private async resolveOriginBacklog(userId: string, targetList: List): Promise<string> {
+    if (targetList.isBacklog) {
+      return targetList.id;
+    }
+
+    const backlogs = await this.listsRepository.findBacklogs(userId);
+    if (backlogs.length === 0) {
+      throw new InternalServerErrorException(
+        'No backlog found for user. This is a data integrity issue.',
+      );
+    }
+
+    const defaultBacklog = backlogs[0];
+    this.logger.log(
+      `Task created in intermediate list ${targetList.id}, using topmost backlog ${defaultBacklog.id}`,
+    );
+    return defaultBacklog.id;
   }
 }

@@ -28,11 +28,24 @@ describe('GetDoneTasks', () => {
   });
 
   describe('execute', () => {
+    const mockBacklog = {
+      id: 'backlog-1',
+      userId,
+      name: 'Main Backlog',
+      isDone: false,
+      isBacklog: true,
+      orderIndex: 1,
+      color: '#22C55E',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+
     const mockCompletedTasks = [
       {
         id: 'task-1',
         userId,
         listId: 'list-1',
+        originBacklogId: 'backlog-1',
         title: 'Completed Task 1',
         description: 'Description 1',
         orderIndex: 1000,
@@ -50,11 +63,13 @@ describe('GetDoneTasks', () => {
           createdAt: new Date(),
           updatedAt: new Date(),
         },
+        originBacklog: mockBacklog,
       },
       {
         id: 'task-2',
         userId,
         listId: 'list-1',
+        originBacklogId: 'backlog-1',
         title: 'Completed Task 2',
         description: null,
         orderIndex: 2000,
@@ -72,6 +87,7 @@ describe('GetDoneTasks', () => {
           createdAt: new Date(),
           updatedAt: new Date(),
         },
+        originBacklog: mockBacklog,
       },
     ];
 
@@ -92,7 +108,7 @@ describe('GetDoneTasks', () => {
             listId: 'list-1',
             listName: 'Done',
             color: '#22C55E',
-            originBacklogId: 'list-1',
+            originBacklogId: 'backlog-1',
           }),
           expect.objectContaining({
             id: 'task-2',
@@ -101,7 +117,7 @@ describe('GetDoneTasks', () => {
             listId: 'list-1',
             listName: 'Done',
             color: '#22C55E',
-            originBacklogId: 'list-1',
+            originBacklogId: 'backlog-1',
           }),
         ],
         total: 2,
@@ -175,12 +191,12 @@ describe('GetDoneTasks', () => {
       expect(repository.findCompletedTasks).toHaveBeenCalledWith(userId, 50, 200);
     });
 
-    it('should handle tasks with null color by providing default', async () => {
+    it('should handle tasks with null origin backlog color by providing default', async () => {
       const tasksWithNullColor = [
         {
           ...mockCompletedTasks[0],
-          list: {
-            ...mockCompletedTasks[0].list,
+          originBacklog: {
+            ...mockBacklog,
             color: null,
           },
         },

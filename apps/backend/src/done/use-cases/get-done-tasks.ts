@@ -43,6 +43,8 @@ export class GetDoneTasks {
   }
 
   private toDto(task: CompletedTaskWithList): DoneTaskDto {
+    const color = task.originBacklog.color || '#3B82F6';
+
     return {
       id: task.id,
       title: task.title,
@@ -50,8 +52,8 @@ export class GetDoneTasks {
       completedAt: task.completedAt!,
       listId: task.listId,
       listName: task.list.name,
-      color: task.list.color || '#3B82F6',
-      originBacklogId: task.listId,
+      color,
+      originBacklogId: task.originBacklogId,
     };
   }
 }

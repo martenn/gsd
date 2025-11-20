@@ -150,4 +150,26 @@ export class ListsRepository {
       data,
     });
   }
+
+  async findManyByIds(userId: string, listIds: string[]): Promise<List[]> {
+    return this.prisma.list.findMany({
+      where: {
+        userId,
+        id: { in: listIds },
+      },
+    });
+  }
+
+  async findBacklogs(userId: string): Promise<List[]> {
+    return this.prisma.list.findMany({
+      where: {
+        userId,
+        isBacklog: true,
+        isDone: false,
+      },
+      orderBy: {
+        orderIndex: 'asc',
+      },
+    });
+  }
 }
