@@ -13,6 +13,7 @@ import { JwtPayload } from '../dto/jwt-payload.dto';
 import type { JwtUser } from '../dto/jwt-user.dto';
 import { AppLogger } from '../../logger/app-logger';
 import { THROTTLER_AUTH } from '../../config/throttler.config';
+import { TokenExpiration } from '../domain/token-expiration';
 
 @Controller('auth')
 export class AuthController {
@@ -47,13 +48,13 @@ export class AuthController {
       const token = this.jwtService.sign(payload);
 
       const isProduction = process.env.NODE_ENV === 'production';
-      const maxAge = 7 * 24 * 60 * 60 * 1000; // 7 days in milliseconds
+      const expiration = TokenExpiration.fromEnv();
 
       response.cookie('jwt', token, {
         httpOnly: true,
         secure: isProduction,
         sameSite: 'lax',
-        maxAge,
+        maxAge: expiration.toMilliseconds(),
       });
 
       const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:4321';

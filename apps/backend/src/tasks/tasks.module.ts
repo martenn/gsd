@@ -1,5 +1,4 @@
 import { Module } from '@nestjs/common';
-import { PrismaClient } from '@prisma/client';
 import { TasksController } from './adapters/tasks.controller';
 import { CreateTask } from './use-cases/create-task';
 import { GetTasks } from './use-cases/get-tasks';
@@ -27,10 +26,6 @@ import { AppLogger } from '../logger/app-logger';
     TasksRepository,
     TaskMapper,
     AppLogger,
-    {
-      provide: PrismaClient,
-      useValue: new PrismaClient(),
-    },
   ],
   exports: [
     CreateTask,
