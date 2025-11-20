@@ -1,5 +1,4 @@
 import { Module } from '@nestjs/common';
-import { PrismaClient } from '@prisma/client';
 import { TasksController } from './adapters/tasks.controller';
 import { CreateTask } from './use-cases/create-task';
 import { GetTasks } from './use-cases/get-tasks';
@@ -23,10 +22,6 @@ import { ListsModule } from '../lists/lists.module';
     CompleteTask,
     ReorderTask,
     TasksRepository,
-    {
-      provide: PrismaClient,
-      useValue: new PrismaClient(),
-    },
   ],
   exports: [
     CreateTask,
