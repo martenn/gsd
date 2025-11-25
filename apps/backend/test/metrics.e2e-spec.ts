@@ -49,6 +49,16 @@ describe('MetricsController (e2e)', () => {
     });
 
     it('should return daily metrics with default parameters', async () => {
+      const backlogList = await prisma.list.create({
+        data: {
+          name: 'Backlog',
+          orderIndex: 1,
+          userId,
+          isBacklog: true,
+          isDone: false,
+        },
+      });
+
       const doneList = await prisma.list.create({
         data: {
           name: 'Done',
@@ -65,6 +75,7 @@ describe('MetricsController (e2e)', () => {
             title: 'Task 1',
             orderIndex: 1000,
             listId: doneList.id,
+            originBacklogId: backlogList.id,
             userId,
             completedAt: new Date('2025-01-15T10:00:00Z'),
           },
@@ -72,6 +83,7 @@ describe('MetricsController (e2e)', () => {
             title: 'Task 2',
             orderIndex: 2000,
             listId: doneList.id,
+            originBacklogId: backlogList.id,
             userId,
             completedAt: new Date('2025-01-15T14:00:00Z'),
           },
@@ -79,6 +91,7 @@ describe('MetricsController (e2e)', () => {
             title: 'Task 3',
             orderIndex: 3000,
             listId: doneList.id,
+            originBacklogId: backlogList.id,
             userId,
             completedAt: new Date('2025-01-16T08:00:00Z'),
           },
@@ -161,6 +174,16 @@ describe('MetricsController (e2e)', () => {
     });
 
     it('should return weekly metrics with default parameters', async () => {
+      const backlogList = await prisma.list.create({
+        data: {
+          name: 'Backlog',
+          orderIndex: 1,
+          userId,
+          isBacklog: true,
+          isDone: false,
+        },
+      });
+
       const doneList = await prisma.list.create({
         data: {
           name: 'Done',
@@ -177,6 +200,7 @@ describe('MetricsController (e2e)', () => {
             title: 'Task 1',
             orderIndex: 1000,
             listId: doneList.id,
+            originBacklogId: backlogList.id,
             userId,
             completedAt: new Date('2025-01-06T10:00:00Z'),
           },
@@ -184,6 +208,7 @@ describe('MetricsController (e2e)', () => {
             title: 'Task 2',
             orderIndex: 2000,
             listId: doneList.id,
+            originBacklogId: backlogList.id,
             userId,
             completedAt: new Date('2025-01-13T14:00:00Z'),
           },
@@ -224,6 +249,16 @@ describe('MetricsController (e2e)', () => {
     });
 
     it('should return weekly metrics with Monday-Sunday weeks', async () => {
+      const backlogList = await prisma.list.create({
+        data: {
+          name: 'Backlog',
+          orderIndex: 1,
+          userId,
+          isBacklog: true,
+          isDone: false,
+        },
+      });
+
       const doneList = await prisma.list.create({
         data: {
           name: 'Done',
@@ -239,6 +274,7 @@ describe('MetricsController (e2e)', () => {
           title: 'Task 1',
           orderIndex: 1000,
           listId: doneList.id,
+          originBacklogId: backlogList.id,
           userId,
           completedAt: new Date('2025-01-06T10:00:00Z'),
         },

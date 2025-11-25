@@ -34,6 +34,7 @@ describe('DeleteTask', () => {
       id: taskId,
       userId,
       listId: 'list-456',
+      originBacklogId: 'backlog-1',
       title: 'Test Task',
       description: 'Test Description',
       orderIndex: 1000,

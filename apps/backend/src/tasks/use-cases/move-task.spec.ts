@@ -2,12 +2,14 @@ import { NotFoundException, BadRequestException } from '@nestjs/common';
 import { MoveTask } from './move-task';
 import { TasksRepository } from '../infra/tasks.repository';
 import { ListsRepository } from '../../lists/infra/lists.repository';
+import { TaskMapper } from '../mappers/task.mapper';
 import { AppLogger } from '../../logger/app-logger';
 
 describe('MoveTask', () => {
   let moveTask: MoveTask;
   let tasksRepository: jest.Mocked<TasksRepository>;
   let listsRepository: jest.Mocked<ListsRepository>;
+  let taskMapper: jest.Mocked<TaskMapper>;
   let logger: jest.Mocked<AppLogger>;
 
   const userId = 'user-123';
@@ -26,6 +28,10 @@ describe('MoveTask', () => {
       findById: jest.fn(),
     } as any;
 
+    taskMapper = {
+      toDto: jest.fn(),
+    } as any;
+
     logger = {
       log: jest.fn(),
       error: jest.fn(),
@@ -35,7 +41,7 @@ describe('MoveTask', () => {
       setContext: jest.fn(),
     } as any;
 
-    moveTask = new MoveTask(tasksRepository, listsRepository, logger);
+    moveTask = new MoveTask(tasksRepository, listsRepository, taskMapper, logger);
   });
 
   describe('execute', () => {
@@ -43,6 +49,7 @@ describe('MoveTask', () => {
       id: taskId,
       userId,
       listId: 'list-original',
+      originBacklogId: 'backlog-1',
       title: 'Test Task',
       description: 'Test Description',
       orderIndex: 1000,
@@ -64,37 +71,54 @@ describe('MoveTask', () => {
     };
 
     it('should move task to target list successfully', async () => {
+      const movedTask = {
+        ...mockTask,
+        listId: targetListId,
+        orderIndex: 3000,
+      };
+      const mockTaskDto = {
+        ...movedTask,
+        isCompleted: false,
+        color: '#3B82F6',
+      };
+
       tasksRepository.findById.mockResolvedValue(mockTask);
       listsRepository.findById.mockResolvedValue(mockTargetList);
       tasksRepository.countByList.mockResolvedValue(50);
       tasksRepository.findMaxOrderIndex.mockResolvedValue(2000);
-      tasksRepository.moveTask.mockResolvedValue({
-        ...mockTask,
-        listId: targetListId,
-        orderIndex: 3000,
-      });
+      tasksRepository.moveTask.mockResolvedValue(movedTask);
+      taskMapper.toDto.mockResolvedValue(mockTaskDto);
 
       const result = await moveTask.execute(userId, taskId, targetListId);
 
-      expect(result.listId).toBe(targetListId);
-      expect(result.orderIndex).toBe(3000);
+      expect(result).toEqual(mockTaskDto);
+      expect(taskMapper.toDto).toHaveBeenCalledWith(movedTask);
       expect(tasksRepository.moveTask).toHaveBeenCalledWith(userId, taskId, targetListId, 3000);
     });
 
     it('should insert at orderIndex 1000 when target list is empty', async () => {
+      const movedTask = {
+        ...mockTask,
+        listId: targetListId,
+        orderIndex: 1000,
+      };
+      const mockTaskDto = {
+        ...movedTask,
+        isCompleted: false,
+        color: '#3B82F6',
+      };
+
       tasksRepository.findById.mockResolvedValue(mockTask);
       listsRepository.findById.mockResolvedValue(mockTargetList);
       tasksRepository.countByList.mockResolvedValue(0);
       tasksRepository.findMaxOrderIndex.mockResolvedValue(null);
-      tasksRepository.moveTask.mockResolvedValue({
-        ...mockTask,
-        listId: targetListId,
-        orderIndex: 1000,
-      });
+      tasksRepository.moveTask.mockResolvedValue(movedTask);
+      taskMapper.toDto.mockResolvedValue(mockTaskDto);
 
       const result = await moveTask.execute(userId, taskId, targetListId);
 
       expect(result.orderIndex).toBe(1000);
+      expect(taskMapper.toDto).toHaveBeenCalledWith(movedTask);
       expect(tasksRepository.moveTask).toHaveBeenCalledWith(userId, taskId, targetListId, 1000);
     });
 

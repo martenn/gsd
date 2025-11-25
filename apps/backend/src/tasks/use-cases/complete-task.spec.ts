@@ -2,12 +2,14 @@ import { NotFoundException, InternalServerErrorException } from '@nestjs/common'
 import { CompleteTask } from './complete-task';
 import { TasksRepository } from '../infra/tasks.repository';
 import { ListsRepository } from '../../lists/infra/lists.repository';
+import { TaskMapper } from '../mappers/task.mapper';
 import { AppLogger } from '../../logger/app-logger';
 
 describe('CompleteTask', () => {
   let completeTask: CompleteTask;
   let tasksRepository: jest.Mocked<TasksRepository>;
   let listsRepository: jest.Mocked<ListsRepository>;
+  let taskMapper: jest.Mocked<TaskMapper>;
   let logger: jest.Mocked<AppLogger>;
 
   const userId = 'user-123';
@@ -24,6 +26,10 @@ describe('CompleteTask', () => {
       findDoneList: jest.fn(),
     } as any;
 
+    taskMapper = {
+      toDto: jest.fn(),
+    } as any;
+
     logger = {
       log: jest.fn(),
       error: jest.fn(),
@@ -33,7 +39,7 @@ describe('CompleteTask', () => {
       setContext: jest.fn(),
     } as any;
 
-    completeTask = new CompleteTask(tasksRepository, listsRepository, logger);
+    completeTask = new CompleteTask(tasksRepository, listsRepository, taskMapper, logger);
   });
 
   describe('execute', () => {
@@ -41,6 +47,7 @@ describe('CompleteTask', () => {
       id: taskId,
       userId,
       listId: 'list-today',
+      originBacklogId: 'backlog-1',
       title: 'Test Task',
       description: 'Test Description',
       orderIndex: 1000,
@@ -70,23 +77,29 @@ describe('CompleteTask', () => {
         orderIndex: 2000,
       };
 
-      tasksRepository.findById.mockResolvedValue(mockTask);
-      listsRepository.findDoneList.mockResolvedValue(mockDoneList);
-      tasksRepository.completeTask.mockResolvedValue(completedTask);
-
-      const result = await completeTask.execute(userId, taskId);
-
-      expect(result).toMatchObject({
+      const mockTaskDto = {
         id: taskId,
         userId,
         listId: doneListId,
+        originBacklogId: 'backlog-1',
         title: 'Test Task',
         description: 'Test Description',
         orderIndex: 2000,
         isCompleted: true,
-      });
-      expect(result.completedAt).toEqual(completedAt);
+        completedAt,
+        createdAt: mockTask.createdAt,
+        color: '#3B82F6',
+      };
 
+      tasksRepository.findById.mockResolvedValue(mockTask);
+      listsRepository.findDoneList.mockResolvedValue(mockDoneList);
+      tasksRepository.completeTask.mockResolvedValue(completedTask);
+      taskMapper.toDto.mockResolvedValue(mockTaskDto);
+
+      const result = await completeTask.execute(userId, taskId);
+
+      expect(result).toEqual(mockTaskDto);
+      expect(taskMapper.toDto).toHaveBeenCalledWith(completedTask);
       expect(tasksRepository.completeTask).toHaveBeenCalledWith(userId, taskId, doneListId);
       expect(logger.log).toHaveBeenCalledWith(`Completing task ${taskId} for user ${userId}`);
       expect(logger.log).toHaveBeenCalledWith(
