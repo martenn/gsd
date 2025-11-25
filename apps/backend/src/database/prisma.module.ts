@@ -35,7 +35,10 @@ export class PrismaModule implements OnModuleInit, OnModuleDestroy {
       await this.prisma.$connect();
       this.logger.log('Database connection established');
     } catch (error) {
-      this.logger.error('Failed to connect to database', error.stack);
+      this.logger.error(
+        'Failed to connect to database',
+        error instanceof Error ? error.stack : undefined,
+      );
       throw error;
     }
   }
@@ -45,7 +48,10 @@ export class PrismaModule implements OnModuleInit, OnModuleDestroy {
       await this.prisma.$disconnect();
       this.logger.log('Database connection closed');
     } catch (error) {
-      this.logger.error('Failed to disconnect from database', error.stack);
+      this.logger.error(
+        'Failed to disconnect from database',
+        error instanceof Error ? error.stack : undefined,
+      );
     }
   }
 }

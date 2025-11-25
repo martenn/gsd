@@ -20,10 +20,7 @@ export class TaskMapper {
   }
 
   async toDto(task: Task): Promise<TaskDto> {
-    const originBacklog = await this.listsRepository.findById(
-      task.userId,
-      task.originBacklogId,
-    );
+    const originBacklog = await this.listsRepository.findById(task.userId, task.originBacklogId);
 
     if (!originBacklog) {
       throw new Error(`Origin backlog ${task.originBacklogId} not found for task ${task.id}`);
@@ -39,7 +36,7 @@ export class TaskMapper {
       id: task.id,
       userId: task.userId,
       listId: task.listId,
-      originBacklogId: task.originBacklogId,
+      originBacklogId: task.originBacklog.id,
       title: task.title,
       description: task.description,
       orderIndex: task.orderIndex,
@@ -63,9 +60,7 @@ export class TaskMapper {
       const originBacklog = backlogMap.get(task.originBacklogId);
 
       if (!originBacklog) {
-        throw new Error(
-          `Origin backlog ${task.originBacklogId} not found for task ${task.id}`,
-        );
+        throw new Error(`Origin backlog ${task.originBacklogId} not found for task ${task.id}`);
       }
 
       return this.toDtoWithOrigin({ ...task, originBacklog });

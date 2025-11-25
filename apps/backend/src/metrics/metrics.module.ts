@@ -7,12 +7,7 @@ import { AppLogger } from '../logger/app-logger';
 
 @Module({
   controllers: [MetricsController],
-  providers: [
-    GetDailyMetrics,
-    GetWeeklyMetrics,
-    MetricsRepository,
-    AppLogger,
-  ],
+  providers: [GetDailyMetrics, GetWeeklyMetrics, MetricsRepository, AppLogger],
   exports: [GetDailyMetrics, GetWeeklyMetrics],
 })
 export class MetricsModule {}

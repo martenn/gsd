@@ -53,7 +53,7 @@ export class GetDoneTasks {
       listId: task.listId,
       listName: task.list.name,
       color,
-      originBacklogId: task.originBacklogId,
+      originBacklogId: task.originBacklog.id,
     };
   }
 }

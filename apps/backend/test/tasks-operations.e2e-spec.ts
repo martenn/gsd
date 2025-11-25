@@ -60,6 +60,7 @@ describe('Tasks Operations (e2e)', () => {
       data: {
         userId,
         listId: backlogListId,
+        originBacklogId: backlogListId,
         title: 'Test Task for Moving',
         description: 'This task will be moved',
         orderIndex: 1000,
@@ -158,6 +159,7 @@ describe('Tasks Operations (e2e)', () => {
         data: Array.from({ length: 100 }, (_, i) => ({
           userId,
           listId: fullList.id,
+          originBacklogId: backlogListId,
           title: `Task ${i}`,
           orderIndex: (i + 1) * 1000,
         })),

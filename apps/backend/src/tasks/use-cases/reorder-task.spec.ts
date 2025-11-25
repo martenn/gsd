@@ -1,12 +1,14 @@
 import { NotFoundException, BadRequestException } from '@nestjs/common';
 import { ReorderTask } from './reorder-task';
 import { TasksRepository } from '../infra/tasks.repository';
+import { TaskMapper } from '../mappers/task.mapper';
 import { AppLogger } from '../../logger/app-logger';
 import { ReorderTaskDto } from '../dto/reorder-task.dto';
 
 describe('ReorderTask', () => {
   let reorderTask: ReorderTask;
   let tasksRepository: jest.Mocked<TasksRepository>;
+  let taskMapper: jest.Mocked<TaskMapper>;
   let logger: jest.Mocked<AppLogger>;
 
   const userId = 'user-123';
@@ -19,6 +21,10 @@ describe('ReorderTask', () => {
       updateOrderIndex: jest.fn(),
     } as any;
 
+    taskMapper = {
+      toDto: jest.fn(),
+    } as any;
+
     logger = {
       log: jest.fn(),
       error: jest.fn(),
@@ -28,7 +34,7 @@ describe('ReorderTask', () => {
       setContext: jest.fn(),
     } as any;
 
-    reorderTask = new ReorderTask(tasksRepository, logger);
+    reorderTask = new ReorderTask(tasksRepository, taskMapper, logger);
   });
 
   describe('execute', () => {
@@ -36,6 +42,7 @@ describe('ReorderTask', () => {
       id: taskId,
       userId,
       listId,
+      originBacklogId: 'backlog-1',
       title: 'Test Task',
       description: 'Test Description',
       orderIndex: 1000,
@@ -51,34 +58,40 @@ describe('ReorderTask', () => {
           ...mockTask,
           orderIndex: 2000,
         };
+        const mockTaskDto = {
+          ...reorderedTask,
+          isCompleted: false,
+          color: '#3B82F6',
+        };
         tasksRepository.findById.mockResolvedValue(mockTask);
         tasksRepository.updateOrderIndex.mockResolvedValue(reorderedTask);
+        taskMapper.toDto.mockResolvedValue(mockTaskDto);
 
         const result = await reorderTask.execute(userId, taskId, dto);
 
-        expect(result).toMatchObject({
-          id: taskId,
-          userId,
-          listId,
-          title: 'Test Task',
-          description: 'Test Description',
-          orderIndex: 2000,
-          isCompleted: false,
-        });
-
+        expect(result).toEqual(mockTaskDto);
+        expect(taskMapper.toDto).toHaveBeenCalledWith(reorderedTask);
         expect(tasksRepository.updateOrderIndex).toHaveBeenCalledWith(userId, taskId, 2000);
       });
 
       it('should accept orderIndex of 0', async () => {
         const dto: ReorderTaskDto = { newOrderIndex: 0 };
-        tasksRepository.findById.mockResolvedValue(mockTask);
-        tasksRepository.updateOrderIndex.mockResolvedValue({
+        const reorderedTask = {
           ...mockTask,
           orderIndex: 0,
-        });
+        };
+        const mockTaskDto = {
+          ...reorderedTask,
+          isCompleted: false,
+          color: '#3B82F6',
+        };
+        tasksRepository.findById.mockResolvedValue(mockTask);
+        tasksRepository.updateOrderIndex.mockResolvedValue(reorderedTask);
+        taskMapper.toDto.mockResolvedValue(mockTaskDto);
 
         await reorderTask.execute(userId, taskId, dto);
 
+        expect(taskMapper.toDto).toHaveBeenCalledWith(reorderedTask);
         expect(tasksRepository.updateOrderIndex).toHaveBeenCalledWith(userId, taskId, 0);
       });
 
@@ -100,6 +113,7 @@ describe('ReorderTask', () => {
         id: afterTaskId,
         userId,
         listId,
+        originBacklogId: 'backlog-1',
         title: 'Reference Task',
         description: null,
         orderIndex: 1500,
@@ -114,22 +128,21 @@ describe('ReorderTask', () => {
           ...mockTask,
           orderIndex: 1501,
         };
+        const mockTaskDto = {
+          ...reorderedTask,
+          isCompleted: false,
+          color: '#3B82F6',
+        };
         tasksRepository.findById
           .mockResolvedValueOnce(mockTask)
           .mockResolvedValueOnce(mockAfterTask);
         tasksRepository.updateOrderIndex.mockResolvedValue(reorderedTask);
+        taskMapper.toDto.mockResolvedValue(mockTaskDto);
 
         const result = await reorderTask.execute(userId, taskId, dto);
 
-        expect(result).toMatchObject({
-          id: taskId,
-          userId,
-          listId,
-          title: 'Test Task',
-          orderIndex: 1501,
-          isCompleted: false,
-        });
-
+        expect(result).toEqual(mockTaskDto);
+        expect(taskMapper.toDto).toHaveBeenCalledWith(reorderedTask);
         expect(tasksRepository.updateOrderIndex).toHaveBeenCalledWith(userId, taskId, 1501);
       });
 

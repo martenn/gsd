@@ -2,6 +2,7 @@ import { NotFoundException, ForbiddenException } from '@nestjs/common';
 import { GetTasks } from './get-tasks';
 import { TasksRepository } from '../infra/tasks.repository';
 import { ListsRepository } from '../../lists/infra/lists.repository';
+import { TaskMapper } from '../mappers/task.mapper';
 import { GetTasksQueryDto } from '../dto/get-tasks-query.dto';
 import { AppLogger } from '../../logger/app-logger';
 
@@ -9,6 +10,7 @@ describe('GetTasks', () => {
   let getTasks: GetTasks;
   let tasksRepository: jest.Mocked<TasksRepository>;
   let listsRepository: jest.Mocked<ListsRepository>;
+  let taskMapper: jest.Mocked<TaskMapper>;
   let logger: jest.Mocked<AppLogger>;
 
   const userId = 'user-123';
@@ -24,6 +26,10 @@ describe('GetTasks', () => {
       findById: jest.fn(),
     } as any;
 
+    taskMapper = {
+      toDtos: jest.fn(),
+    } as any;
+
     logger = {
       log: jest.fn(),
       error: jest.fn(),
@@ -33,7 +39,7 @@ describe('GetTasks', () => {
       setContext: jest.fn(),
     } as any;
 
-    getTasks = new GetTasks(tasksRepository, listsRepository, logger);
+    getTasks = new GetTasks(tasksRepository, listsRepository, taskMapper, logger);
   });
 
   describe('execute', () => {
@@ -54,6 +60,7 @@ describe('GetTasks', () => {
         id: 'task-1',
         userId,
         listId,
+        originBacklogId: 'backlog-1',
         title: 'Task 1',
         description: 'Description 1',
         orderIndex: 2000,
@@ -65,6 +72,7 @@ describe('GetTasks', () => {
         id: 'task-2',
         userId,
         listId,
+        originBacklogId: 'backlog-1',
         title: 'Task 2',
         description: null,
         orderIndex: 1000,
@@ -74,35 +82,53 @@ describe('GetTasks', () => {
       },
     ];
 
+    const mockTaskDtos = [
+      {
+        id: 'task-1',
+        userId,
+        listId,
+        originBacklogId: 'backlog-1',
+        title: 'Task 1',
+        description: 'Description 1',
+        orderIndex: 2000,
+        isCompleted: false,
+        completedAt: null,
+        createdAt: mockTasks[0].createdAt,
+        color: '#3B82F6',
+      },
+      {
+        id: 'task-2',
+        userId,
+        listId,
+        originBacklogId: 'backlog-1',
+        title: 'Task 2',
+        description: null,
+        orderIndex: 1000,
+        isCompleted: false,
+        completedAt: null,
+        createdAt: mockTasks[1].createdAt,
+        color: '#3B82F6',
+      },
+    ];
+
     it('should get tasks for a specific list', async () => {
       const query: GetTasksQueryDto = { listId };
 
       listsRepository.findById.mockResolvedValue(mockList);
       tasksRepository.findManyByList.mockResolvedValue(mockTasks);
       tasksRepository.countByList.mockResolvedValue(2);
+      taskMapper.toDtos.mockResolvedValue(mockTaskDtos);
 
       const result = await getTasks.execute(userId, query);
 
       expect(result).toEqual({
-        tasks: [
-          expect.objectContaining({
-            id: 'task-1',
-            title: 'Task 1',
-            description: 'Description 1',
-            isCompleted: false,
-          }),
-          expect.objectContaining({
-            id: 'task-2',
-            title: 'Task 2',
-            description: null,
-            isCompleted: false,
-          }),
-        ],
+        tasks: mockTaskDtos,
         total: 2,
         limit: 100,
         offset: 0,
       });
 
+      expect(taskMapper.toDtos).toHaveBeenCalledWith(mockTasks);
       expect(tasksRepository.findManyByList).toHaveBeenCalledWith(userId, listId, {
         limit: 100,
         offset: 0,
@@ -116,6 +142,7 @@ describe('GetTasks', () => {
       listsRepository.findById.mockResolvedValue(mockList);
       tasksRepository.findManyByList.mockResolvedValue(mockTasks);
       tasksRepository.countByList.mockResolvedValue(50);
+      taskMapper.toDtos.mockResolvedValue(mockTaskDtos);
 
       const result = await getTasks.execute(userId, query);
 
@@ -136,6 +163,7 @@ describe('GetTasks', () => {
       listsRepository.findById.mockResolvedValue(mockList);
       tasksRepository.findManyByList.mockResolvedValue(mockTasks);
       tasksRepository.countByList.mockResolvedValue(2);
+      taskMapper.toDtos.mockResolvedValue(mockTaskDtos);
 
       await getTasks.execute(userId, query);
 
