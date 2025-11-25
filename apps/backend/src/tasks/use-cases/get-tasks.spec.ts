@@ -177,6 +177,8 @@ describe('GetTasks', () => {
     it('should return empty array when no listId provided', async () => {
       const query: GetTasksQueryDto = {};
 
+      taskMapper.toDtos.mockResolvedValue([]);
+
       const result = await getTasks.execute(userId, query);
 
       expect(result).toEqual({
@@ -186,6 +188,7 @@ describe('GetTasks', () => {
         offset: 0,
       });
 
+      expect(taskMapper.toDtos).toHaveBeenCalledWith([]);
       expect(listsRepository.findById).not.toHaveBeenCalled();
       expect(tasksRepository.findManyByList).not.toHaveBeenCalled();
     });
