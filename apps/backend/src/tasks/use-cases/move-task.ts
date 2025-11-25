@@ -2,14 +2,15 @@ import { Injectable, NotFoundException, BadRequestException } from '@nestjs/comm
 import { TaskDto } from '@gsd/types';
 import { TasksRepository } from '../infra/tasks.repository';
 import { ListsRepository } from '../../lists/infra/lists.repository';
+import { TaskMapper } from '../mappers/task.mapper';
 import { AppLogger } from '../../logger/app-logger';
-import { Task } from '@prisma/client';
 
 @Injectable()
 export class MoveTask {
   constructor(
     private readonly tasksRepository: TasksRepository,
     private readonly listsRepository: ListsRepository,
+    private readonly taskMapper: TaskMapper,
     private readonly logger: AppLogger,
   ) {
     this.logger.setContext(MoveTask.name);
@@ -54,7 +55,7 @@ export class MoveTask {
         `Successfully moved task ${taskId} to list ${targetListId} with orderIndex ${newOrderIndex}`,
       );
 
-      return this.toDto(updatedTask);
+      return this.taskMapper.toDto(updatedTask);
     } catch (error) {
       this.logger.error(
         `Failed to move task ${taskId} for user ${userId}: ${error instanceof Error ? error.message : 'Unknown error'}`,
@@ -62,21 +63,5 @@ export class MoveTask {
       );
       throw error;
     }
-  }
-
-  private toDto(task: Task): TaskDto {
-    return {
-      id: task.id,
-      userId: task.userId,
-      listId: task.listId,
-      originBacklogId: task.listId,
-      title: task.title,
-      description: task.description,
-      orderIndex: task.orderIndex,
-      color: '#3B82F6',
-      isCompleted: task.completedAt !== null,
-      createdAt: task.createdAt,
-      completedAt: task.completedAt,
-    };
   }
 }

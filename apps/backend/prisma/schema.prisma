@@ -36,8 +36,9 @@ model List {
   createdAt  DateTime @default(now()) @map("created_at")
   updatedAt  DateTime @updatedAt @map("updated_at")
 
-  user  User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  tasks Task[]
+  user        User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tasks       Task[] @relation("TaskList")
+  originTasks Task[] @relation("TaskOriginBacklog")
 
   @@index([userId, orderIndex])
   @@index([userId, isDone])
@@ -45,20 +46,23 @@ model List {
 }
 
 model Task {
-  id          String    @id @default(uuid())
-  title       String
-  description String?
-  orderIndex  Float     @map("order_index")
-  listId      String    @map("list_id")
-  userId      String    @map("user_id")
-  completedAt DateTime? @map("completed_at")
-  createdAt   DateTime  @default(now()) @map("created_at")
-  updatedAt   DateTime  @updatedAt @map("updated_at")
+  id              String    @id @default(uuid())
+  title           String
+  description     String?
+  orderIndex      Float     @map("order_index")
+  listId          String    @map("list_id")
+  originBacklogId String    @map("origin_backlog_id")
+  userId          String    @map("user_id")
+  completedAt     DateTime? @map("completed_at")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
 
-  list List @relation(fields: [listId], references: [id], onDelete: Cascade)
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  list          List @relation("TaskList", fields: [listId], references: [id], onDelete: Cascade)
+  originBacklog List @relation("TaskOriginBacklog", fields: [originBacklogId], references: [id], onDelete: Restrict)
+  user          User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, listId, orderIndex])
   @@index([userId, completedAt])
+  @@index([userId, originBacklogId])
   @@map("tasks")
 }
