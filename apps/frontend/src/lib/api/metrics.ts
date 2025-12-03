@@ -6,9 +6,6 @@ import type {
 } from '@gsd/types';
 import { apiClient } from './client';
 
-/**
- * Fetch daily task completion metrics
- */
 export async function getDailyMetrics(
   query?: GetDailyMetricsQuery,
 ): Promise<DailyMetricsResponseDto> {
@@ -28,9 +25,6 @@ export async function getDailyMetrics(
   return result;
 }
 
-/**
- * Fetch weekly task completion metrics
- */
 export async function getWeeklyMetrics(
   query?: GetWeeklyMetricsQuery,
 ): Promise<WeeklyMetricsResponseDto> {

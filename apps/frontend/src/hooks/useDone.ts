@@ -2,9 +2,6 @@ import { useQuery } from '@tanstack/react-query';
 import type { GetDoneQuery } from '@gsd/types';
 import { getDoneTasks } from '../lib/api/done';
 
-/**
- * Fetch completed tasks with pagination
- */
 export function useDoneQuery(query?: GetDoneQuery) {
   return useQuery({
     queryKey: ['done', query],

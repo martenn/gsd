@@ -18,9 +18,6 @@ import {
   updateTask,
 } from '../lib/api/tasks';
 
-/**
- * Fetch tasks with optional filtering
- */
 export function useTasksQuery(query?: GetTasksQuery) {
   return useQuery({
     queryKey: ['tasks', query],
@@ -29,9 +26,6 @@ export function useTasksQuery(query?: GetTasksQuery) {
   });
 }
 
-/**
- * Create a new task
- */
 export function useCreateTask() {
   const queryClient = useQueryClient();
 
@@ -43,9 +37,6 @@ export function useCreateTask() {
   });
 }
 
-/**
- * Update a task's title or description
- */
 export function useUpdateTask() {
   const queryClient = useQueryClient();
 
@@ -58,9 +49,6 @@ export function useUpdateTask() {
   });
 }
 
-/**
- * Delete a task
- */
 export function useDeleteTask() {
   const queryClient = useQueryClient();
 
@@ -72,9 +60,6 @@ export function useDeleteTask() {
   });
 }
 
-/**
- * Move a task to a different list
- */
 export function useMoveTask() {
   const queryClient = useQueryClient();
 
@@ -87,9 +72,6 @@ export function useMoveTask() {
   });
 }
 
-/**
- * Reorder a task within its list
- */
 export function useReorderTask() {
   const queryClient = useQueryClient();
 
@@ -102,9 +84,6 @@ export function useReorderTask() {
   });
 }
 
-/**
- * Mark a task as complete
- */
 export function useCompleteTask() {
   const queryClient = useQueryClient();
 
@@ -118,9 +97,6 @@ export function useCompleteTask() {
   });
 }
 
-/**
- * Bulk add tasks (dump mode)
- */
 export function useBulkAddTasks() {
   const queryClient = useQueryClient();
 

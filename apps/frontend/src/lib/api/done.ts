@@ -1,9 +1,6 @@
 import type { GetDoneQuery, GetDoneResponseDto } from '@gsd/types';
 import { apiClient } from './client';
 
-/**
- * Fetch completed tasks with pagination
- */
 export async function getDoneTasks(query?: GetDoneQuery): Promise<GetDoneResponseDto> {
   const params = new URLSearchParams();
 

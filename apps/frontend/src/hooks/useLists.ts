@@ -9,9 +9,6 @@ import {
   updateList,
 } from '../lib/api/lists';
 
-/**
- * Fetch all lists for the current user
- */
 export function useListsQuery() {
   return useQuery({
     queryKey: ['lists'],
@@ -20,9 +17,6 @@ export function useListsQuery() {
   });
 }
 
-/**
- * Create a new list
- */
 export function useCreateList() {
   const queryClient = useQueryClient();
 
@@ -34,9 +28,6 @@ export function useCreateList() {
   });
 }
 
-/**
- * Update a list's name
- */
 export function useUpdateList() {
   const queryClient = useQueryClient();
 
@@ -49,9 +40,6 @@ export function useUpdateList() {
   });
 }
 
-/**
- * Delete a list and move its tasks
- */
 export function useDeleteList() {
   const queryClient = useQueryClient();
 
@@ -65,9 +53,6 @@ export function useDeleteList() {
   });
 }
 
-/**
- * Toggle a list's backlog status
- */
 export function useToggleBacklog() {
   const queryClient = useQueryClient();
 
@@ -79,9 +64,6 @@ export function useToggleBacklog() {
   });
 }
 
-/**
- * Reorder a list
- */
 export function useReorderList() {
   const queryClient = useQueryClient();
 

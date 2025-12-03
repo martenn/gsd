@@ -15,9 +15,6 @@ import type {
 } from '@gsd/types';
 import { apiClient } from './client';
 
-/**
- * Fetch tasks with optional filtering
- */
 export async function getTasks(query?: GetTasksQuery): Promise<GetTasksResponseDto> {
   const params = new URLSearchParams();
 
@@ -37,9 +34,6 @@ export async function getTasks(query?: GetTasksQuery): Promise<GetTasksResponseD
   return result;
 }
 
-/**
- * Create a new task
- */
 export async function createTask(data: CreateTaskRequest): Promise<CreateTaskResponseDto> {
   const result = await apiClient.post<CreateTaskResponseDto>('/v1/tasks', data);
   if (!result) {
@@ -48,9 +42,6 @@ export async function createTask(data: CreateTaskRequest): Promise<CreateTaskRes
   return result;
 }
 
-/**
- * Update a task's title or description
- */
 export async function updateTask(
   taskId: string,
   data: UpdateTaskRequest,
@@ -62,16 +53,10 @@ export async function updateTask(
   return result;
 }
 
-/**
- * Delete a task
- */
 export async function deleteTask(taskId: string): Promise<void> {
   await apiClient.delete(`/v1/tasks/${taskId}`);
 }
 
-/**
- * Move a task to a different list
- */
 export async function moveTask(
   taskId: string,
   data: MoveTaskRequest,
@@ -83,9 +68,6 @@ export async function moveTask(
   return result;
 }
 
-/**
- * Reorder a task within its list
- */
 export async function reorderTask(
   taskId: string,
   data: ReorderTaskRequest,
@@ -97,9 +79,6 @@ export async function reorderTask(
   return result;
 }
 
-/**
- * Mark a task as complete (moves to Done list)
- */
 export async function completeTask(taskId: string): Promise<CompleteTaskResponseDto> {
   const result = await apiClient.post<CompleteTaskResponseDto>(`/v1/tasks/${taskId}/complete`);
   if (!result) {
@@ -108,9 +87,6 @@ export async function completeTask(taskId: string): Promise<CompleteTaskResponse
   return result;
 }
 
-/**
- * Bulk add tasks (dump mode - optional for MVP)
- */
 export async function bulkAddTasks(data: BulkAddTasksRequest): Promise<BulkAddTasksResponseDto> {
   const result = await apiClient.post<BulkAddTasksResponseDto>('/v1/tasks/bulk-add', data);
   if (!result) {
