@@ -1,15 +1,15 @@
 # GSD Project Tracker
 
-**Last Updated:** 2025-11-18 (Metrics & Analytics Complete - Backend 100%!)
-**Current Sprint:** Frontend Implementation
+**Last Updated:** 2025-12-04 (API Client & Hooks Complete - Frontend Data Layer Ready!)
+**Current Sprint:** Frontend UI Implementation
 
 ## 📊 MVP Progress Overview
 
 ```
-Overall MVP Completion: ██████████░░░░░░ 39% (49/124 features)
+Overall MVP Completion: ███████████░░░░░ 44% (55/124 features)
 
 Backend:  ████████████████████ 100% (29/29 features) ✅ COMPLETE!
-Frontend: ██░░░░░░░░░░░░░░░░░░ 12% (9/73 features)
+Frontend: ████░░░░░░░░░░░░░░░░ 21% (15/73 features)
 Infra:    ███████████████░░░░░ 82% (14/17 features)
 ```
 
@@ -20,20 +20,21 @@ Infra:    ███████████████░░░░░ 82% (14/1
 
 ## 🎯 Current Sprint Goals
 
-### Sprint: Core Features & Frontend Prep
+### Sprint: Frontend UI Components
 
-**Status:** 🟢 Authentication Complete, Ready for Frontend
-**Duration:** TBD
-**Goal:** Prepare remaining backend features and begin frontend implementation
+**Status:** 🟢 Data Layer Complete, Ready for UI Implementation
+**Duration:** TBD (Weeks 1-8)
+**Goal:** Implement core UI components for Plan/Work/Done modes
 
 **Deliverables:**
 
-- [x] Google OAuth 2.0 integration ✅
-- [x] JWT session management ✅
-- [x] Auth guards implementation ✅
-- [ ] Replace mock userId across all controllers (remaining work)
-- [x] User onboarding flow (create default lists) ✅
-- [ ] Begin frontend App Shell implementation
+- [x] API Client & All Hooks ✅
+- [x] TanStack Query Integration ✅
+- [ ] Done Archive View (Week 1 - Simplest, validates API)
+- [ ] Work Mode View (Week 2 - Core execution flow)
+- [ ] Plan Mode View (Weeks 3-6 - Most complex)
+- [ ] Keyboard Navigation (Week 7)
+- [ ] Mobile Responsive (Week 8)
 
 ---
 
@@ -291,7 +292,7 @@ Infra:    ███████████████░░░░░ 82% (14/1
 ## 🎨 Phase 7: Frontend (MVP UI)
 
 **Goal:** Responsive web UI for plan/work modes
-**Progress:** ██░░░░░░░░░░░░░░░░░░ 12% (9/73)
+**Progress:** ████░░░░░░░░░░░░░░░░ 21% (15/73)
 
 ### 7.0 Static Pages & Infrastructure (Astro)
 
@@ -321,14 +322,14 @@ Infra:    ███████████████░░░░░ 82% (14/1
 | Status | Feature                        | Est. | Notes                                  | PRD Ref | Owner |
 | ------ | ------------------------------ | ---- | -------------------------------------- | ------- | ----- |
 | ✅     | TanStack Query setup           | -    | QueryProvider with config              | -       | ✅    |
-| ⚪     | API client (fetch wrapper)     | 1d   | Typed DTOs, error handling             | -       | -     |
+| ✅     | API client (fetch wrapper)     | -    | Typed DTOs, error handling, credentials| -       | ✅    |
 | ⚪     | KeyboardNavigationProvider     | 1d   | Context for selection state            | 3.3     | -     |
-| 🟡     | Custom hooks: useAuth          | -    | Auth hook implemented, useMe endpoint  | -       | 🟡    |
-| ⚪     | Custom hooks: useListsQuery    | 0.5d | Fetch lists with caching               | -       | -     |
-| ⚪     | Custom hooks: useTasksQuery    | 0.5d | Fetch tasks (filtered by list)         | -       | -     |
-| ⚪     | Custom hooks: useDoneQuery     | 0.5d | Paginated completed tasks              | -       | -     |
-| ⚪     | Custom hooks: useMetricsQuery  | 0.5d | Daily/weekly metrics                   | -       | -     |
-| ⚪     | Mutation hooks (create/update) | 1d   | Optimistic updates, cache invalidation | -       | -     |
+| ✅     | Custom hooks: useAuth          | -    | getMe, logout hooks                    | -       | ✅    |
+| ✅     | Custom hooks: useListsQuery    | -    | All CRUD + mutations with invalidation | -       | ✅    |
+| ✅     | Custom hooks: useTasksQuery    | -    | All CRUD + move/complete/reorder       | -       | ✅    |
+| ✅     | Custom hooks: useDoneQuery     | -    | Paginated completed tasks              | -       | ✅    |
+| ✅     | Custom hooks: useMetricsQuery  | -    | Daily/weekly metrics                   | -       | ✅    |
+| ✅     | Mutation hooks (create/update) | -    | All mutations with cache invalidation  | -       | ✅    |
 
 ### 7.3 Plan Mode Components
 
@@ -761,6 +762,77 @@ Infra:    ███████████████░░░░░ 82% (14/1
 ---
 
 ## 📈 Change Log
+
+### 2025-12-03 (API Client & Hooks Complete - Frontend Data Layer Ready!)
+
+- 🎉 **Frontend Data Layer 100% Complete!** - Phase 7.2 now COMPLETE (8/9 features in section)
+  - 🎉 **API CLIENT & ALL HOOKS IMPLEMENTED!** - Frontend ready for UI component development!
+  - ✅ **API Client Infrastructure (`client.ts`)**
+    - Implemented fetch wrapper with typed DTOs from @gsd/types
+    - Custom ApiError class with statusCode and errorResponse
+    - All HTTP methods: GET, POST, PATCH, DELETE
+    - Credentials included for JWT cookie authentication
+    - Proper 204 No Content handling
+    - Comprehensive error handling with typed responses
+    - Files: `apps/frontend/src/lib/api/client.ts`
+  - ✅ **Auth API & Hooks**
+    - Functions: `getMe()`, `logout()`
+    - Hook: `useAuth` for authentication state
+    - Files: `apps/frontend/src/lib/api/auth.ts`, `apps/frontend/src/hooks/useAuth.ts`
+  - ✅ **Lists API & Hooks (Complete CRUD)**
+    - Functions: `getLists()`, `createList()`, `updateList()`, `deleteList()`, `toggleBacklog()`, `reorderList()`
+    - Hooks: `useListsQuery`, `useCreateList`, `useUpdateList`, `useDeleteList`, `useToggleBacklog`, `useReorderList`
+    - All mutations with proper cache invalidation
+    - Files: `apps/frontend/src/lib/api/lists.ts`, `apps/frontend/src/hooks/useLists.ts`
+  - ✅ **Tasks API & Hooks (Complete CRUD + Operations)**
+    - Functions: `getTasks()`, `createTask()`, `updateTask()`, `deleteTask()`, `moveTask()`, `reorderTask()`, `completeTask()`, `bulkAddTasks()`
+    - Hooks: `useTasksQuery`, `useCreateTask`, `useUpdateTask`, `useDeleteTask`, `useMoveTask`, `useReorderTask`, `useCompleteTask`, `useBulkAddTasks`
+    - All 8 task operations implemented
+    - Multi-query invalidation on complete (tasks + done + metrics)
+    - Files: `apps/frontend/src/lib/api/tasks.ts`, `apps/frontend/src/hooks/useTasks.ts`
+  - ✅ **Done Archive API & Hooks**
+    - Function: `getDoneTasks()` with pagination support
+    - Hook: `useDoneQuery` with limit/offset query params
+    - Files: `apps/frontend/src/lib/api/done.ts`, `apps/frontend/src/hooks/useDone.ts`
+  - ✅ **Metrics API & Hooks**
+    - Functions: `getDailyMetrics()`, `getWeeklyMetrics()`
+    - Hooks: `useDailyMetricsQuery`, `useWeeklyMetricsQuery`
+    - Timezone and date range query support
+    - Files: `apps/frontend/src/lib/api/metrics.ts`, `apps/frontend/src/hooks/useMetrics.ts`
+  - 📝 **TanStack Query Integration:**
+    - All hooks use TanStack Query for server state management
+    - Proper stale time configuration (30s lists/tasks, 60s metrics)
+    - Query key patterns: domain-based with filters
+    - Optimistic updates ready (cache invalidation implemented)
+  - 📝 **Type Safety:**
+    - All API functions use shared types from @gsd/types
+    - Request interfaces and Response DTOs
+    - Compile-time safety between frontend and backend
+  - 🏗️ **Architecture Consistency:**
+    - Separation: API functions (fetch logic) + Hooks (React Query wrapper)
+    - Consistent error handling with ApiError
+    - Credentials included for authenticated requests
+    - Query invalidation patterns for related data
+  - ✅ **Cache Invalidation Strategy:**
+    - Lists mutations → invalidate `['lists']`
+    - Tasks mutations → invalidate `['tasks']`
+    - Delete list → invalidate both `['lists']` and `['tasks']`
+    - Complete task → invalidate `['tasks']`, `['done']`, `['metrics']`
+    - Ensures UI stays in sync with server state
+  - 🧹 **Code Quality:**
+    - Removed all redundant JSDoc comments (per CLAUDE.md standards)
+    - Function names are self-documenting
+    - Clean, readable code without unnecessary comments
+- 📊 **Progress Update:**
+  - Frontend: 12% → **21%** (9/73 → 15/73 features)
+  - Overall MVP: 39% → **44%** (49/124 → 55/124 features)
+  - **Phase 7.2 (State Management & API): 22% → 89% (2/9 → 8/9 features)**
+- 🎯 **What's Next:**
+  - Frontend data layer complete - all backend APIs accessible!
+  - Ready to implement UI components (Plan Mode, Work Mode, Done Archive)
+  - Remaining Phase 7.2: KeyboardNavigationProvider context
+  - Recommended next: Done Archive view (simplest, validates API integration)
+  - Then: Work Mode → Plan Mode → Keyboard Navigation → Mobile
 
 ### 2025-11-18 (Metrics & Analytics Complete - Backend 100%!)
 
