@@ -9,11 +9,11 @@ import '../../styles/global.css';
     <meta name="viewport" content="width=device-width" />
     <title>Success - GSD</title>
   </head>
-  <body class="min-h-screen bg-gray-50 flex flex-col">
+  <body class="min-h-screen flex flex-col">
     <!-- Header -->
-    <header class="w-full py-6 px-4 border-b border-gray-200">
+    <header class="w-full py-6 px-4 border-b">
       <div class="max-w-7xl mx-auto">
-        <h1 class="text-2xl font-bold text-gray-900">GSD</h1>
+        <h1 class="text-2xl font-bold">GSD</h1>
       </div>
     </header>
 
@@ -21,18 +21,18 @@ import '../../styles/global.css';
     <main class="flex-1 flex items-center justify-center px-4" role="main">
       <div class="max-w-md w-full text-center space-y-6">
         <div class="text-6xl">✅</div>
-        <h2 class="text-3xl font-bold text-gray-900">You're signed in!</h2>
-        <p class="text-lg text-gray-600">
+        <h2 class="text-3xl font-bold">You're signed in!</h2>
+        <p class="text-lg text-muted-foreground">
           Your authentication was successful. You now have an active session.
         </p>
         <div class="pt-4 space-y-3">
-          <p class="text-sm text-gray-500">
+          <p class="text-sm text-muted-foreground">
             The authenticated app (Plan Mode) will be implemented next.
           </p>
-          <p class="text-sm text-gray-500">
+          <p class="text-sm text-muted-foreground">
             For now, you can verify your session by checking the API:
           </p>
-          <code class="block bg-gray-100 p-3 rounded text-xs text-left overflow-x-auto">
+          <code class="block bg-muted p-3 rounded text-xs text-left overflow-x-auto">
             curl http://localhost:3000/auth/me --cookie-jar -
           </code>
         </div>
@@ -40,9 +40,9 @@ import '../../styles/global.css';
     </main>
 
     <!-- Footer -->
-    <footer class="w-full py-6 px-4 border-t border-gray-200">
-      <div class="max-w-7xl mx-auto text-center text-sm text-gray-500">
-        <a href="/" class="hover:text-gray-700 transition-colors"> Back to Home </a>
+    <footer class="w-full py-6 px-4 border-t">
+      <div class="max-w-7xl mx-auto text-center text-sm text-muted-foreground">
+        <a href="/" class="hover:text-foreground transition-colors"> Back to Home </a>
       </div>
     </footer>
   </body>

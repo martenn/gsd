@@ -18,24 +18,26 @@ const redirectUrl = success ? '/app/plan' : '/';
     <title>Authenticating - GSD</title>
     <meta http-equiv="refresh" content={`0;url=${redirectUrl}`} />
   </head>
-  <body class="min-h-screen bg-gray-50 flex items-center justify-center">
+  <body class="min-h-screen flex items-center justify-center">
     <div class="text-center">
       {
         success ? (
           <div>
-            <h1 class="text-2xl font-bold text-gray-900 mb-4">Authentication successful!</h1>
-            <p class="text-gray-600 mb-4">Redirecting to your dashboard...</p>
+            <h1 class="text-2xl font-bold mb-4">Authentication successful!</h1>
+            <p class="text-muted-foreground mb-4">Redirecting to your dashboard...</p>
           </div>
         ) : (
           <div>
-            <h1 class="text-2xl font-bold text-gray-900 mb-4">Authentication failed</h1>
-            <p class="text-gray-600 mb-4">{error || 'Something went wrong. Please try again.'}</p>
-            <p class="text-gray-600">Redirecting to home page...</p>
+            <h1 class="text-2xl font-bold mb-4">Authentication failed</h1>
+            <p class="text-muted-foreground mb-4">
+              {error || 'Something went wrong. Please try again.'}
+            </p>
+            <p class="text-muted-foreground">Redirecting to home page...</p>
           </div>
         )
       }
       <div class="mt-4">
-        <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900">
+        <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-foreground">
         </div>
       </div>
     </div>
