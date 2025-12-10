@@ -1,15 +1,22 @@
+import { Button } from '../ui/button';
+
 export function EmptyDoneState() {
   const handleGoToWorkMode = () => {
     window.location.href = '/app/work';
   };
 
   return (
-    <div className="flex flex-col items-center justify-center py-12 text-center">
+    <div
+      className="flex flex-col items-center justify-center py-12 text-center"
+      role="status"
+      aria-label="No completed tasks"
+    >
       <svg
-        className="h-16 w-16 text-gray-400 mb-4"
+        className="h-16 w-16 text-muted-foreground mb-4"
         fill="none"
         stroke="currentColor"
         viewBox="0 0 24 24"
+        aria-hidden="true"
       >
         <path
           strokeLinecap="round"
@@ -19,18 +26,13 @@ export function EmptyDoneState() {
         />
       </svg>
 
-      <h2 className="text-xl font-semibold text-gray-900 mb-2">No completed tasks yet</h2>
+      <h2 className="text-xl font-semibold text-foreground mb-2">No completed tasks yet</h2>
 
-      <p className="text-gray-600 mb-6 max-w-sm">
+      <p className="text-muted-foreground mb-6 max-w-sm">
         Start completing tasks in Work Mode to see them here.
       </p>
 
-      <button
-        onClick={handleGoToWorkMode}
-        className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-      >
-        Go to Work Mode
-      </button>
+      <Button onClick={handleGoToWorkMode}>Go to Work Mode</Button>
     </div>
   );
 }
