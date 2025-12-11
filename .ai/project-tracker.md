@@ -1,15 +1,15 @@
 # GSD Project Tracker
 
-**Last Updated:** 2025-12-10 (shadcn/ui & Tailwind Theme Complete - UI Foundation Ready!)
+**Last Updated:** 2025-12-11 (Done Archive Complete - 9 components with full functionality!)
 **Current Sprint:** Frontend UI Implementation
 
 ## 📊 MVP Progress Overview
 
 ```
-Overall MVP Completion: ███████████░░░░░ 46% (57/124 features)
+Overall MVP Completion: ████████████░░░░ 53% (66/124 features)
 
 Backend:  ████████████████████ 100% (29/29 features) ✅ COMPLETE!
-Frontend: █████░░░░░░░░░░░░░░░ 23% (17/73 features)
+Frontend: ███████░░░░░░░░░░░░░ 36% (26/73 features)
 Infra:    ███████████████░░░░░ 82% (14/17 features)
 ```
 
@@ -30,8 +30,8 @@ Infra:    ███████████████░░░░░ 82% (14/1
 
 - [x] API Client & All Hooks ✅
 - [x] TanStack Query Integration ✅
-- [ ] Done Archive View (Week 1 - Simplest, validates API)
-- [ ] Work Mode View (Week 2 - Core execution flow)
+- [x] Done Archive View ✅ (Week 1 Complete - All components with theme, timezone, pagination)
+- [ ] Work Mode View (Week 2 - Core execution flow) 🎯 NEXT
 - [ ] Plan Mode View (Weeks 3-6 - Most complex)
 - [ ] Keyboard Navigation (Week 7)
 - [ ] Mobile Responsive (Week 8)
@@ -384,17 +384,19 @@ Infra:    ███████████████░░░░░ 82% (14/1
 | ⚪     | CompleteButton component   | 0.5d | Primary CTA with keyboard shortcut  | 3.4     | -     |
 | ⚪     | EmptyWorkState component   | 0.5d | Shown when active list has no tasks | -       | -     |
 
-### 7.5 Done Archive Components
+### 7.5 Done Archive Components ✅ COMPLETE
 
-| Status | Feature                      | Est. | Notes                                  | PRD Ref | Owner |
-| ------ | ---------------------------- | ---- | -------------------------------------- | ------- | ----- |
-| ⚪     | DoneArchiveLayout component  | 1d   | Full-width with metrics header         | 3.5     | -     |
-| ⚪     | MetricsHeader component      | 1d   | Today/week/last week counts            | 3.8     | -     |
-| ⚪     | MetricBadge component        | 0.5d | Individual metric with icon            | 3.8     | -     |
-| ⚪     | CompletedTaskList component  | 1d   | Paginated reverse chronological list   | 3.5     | -     |
-| ⚪     | CompletedTaskCard component  | 1d   | Read-only with completion timestamp    | 3.5     | -     |
-| ⚪     | PaginationControls component | 1d   | Prev/Next, page numbers, results count | 3.5     | -     |
-| ⚪     | EmptyDoneState component     | 0.5d | Shown when no tasks completed yet      | -       | -     |
+| Status | Feature                      | Est. | Notes                                           | PRD Ref | Owner |
+| ------ | ---------------------------- | ---- | ----------------------------------------------- | ------- | ----- |
+| ✅     | DoneArchiveLayout component  | -    | DoneView with mobile responsive layout          | 3.5     | ✅    |
+| ✅     | MetricsHeader component      | -    | Today/week/last week with timezone detection    | 3.8     | ✅    |
+| ✅     | MetricBadge component        | -    | Theme colors, icon support                      | 3.8     | ✅    |
+| ✅     | CompletedTaskList component  | -    | Pagination, timezone, skeleton loaders          | 3.5     | ✅    |
+| ✅     | CompletedTaskCard component  | -    | Relative/absolute timestamps, color indicators  | 3.5     | ✅    |
+| ✅     | PaginationControls component | -    | shadcn Button, mobile responsive                | 3.5     | ✅    |
+| ✅     | EmptyDoneState component     | -    | Theme colors, CTA button                        | -       | ✅    |
+| ✅     | Utility Hooks                | -    | useTimezoneDetection, useRelativeTime, usePagination | -  | ✅    |
+| ✅     | Utility Components           | -    | TaskColorIndicator, CompletionTimestamp         | -       | ✅    |
 
 ### 7.6 Modals & Overlays
 
