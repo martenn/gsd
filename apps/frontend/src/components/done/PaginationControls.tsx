@@ -1,3 +1,5 @@
+import { Button } from '../ui/button';
+
 interface PaginationControlsProps {
   currentPage: number;
   totalPages: number;
@@ -56,29 +58,30 @@ export function PaginationControls({
 
   return (
     <nav
-      className="flex items-center justify-between border-t border-gray-200 pt-4"
+      className="flex flex-col md:flex-row items-center justify-between gap-4 border-t border-border pt-4"
       aria-label="Pagination"
     >
-      <div className="text-sm text-gray-700">
+      <div className="text-sm text-foreground">
         Showing <span className="font-medium">{start}</span> to{' '}
         <span className="font-medium">{end}</span> of <span className="font-medium">{total}</span>{' '}
         results
       </div>
 
-      <div className="flex gap-1">
-        <button
+      <div className="flex flex-wrap gap-1 justify-center">
+        <Button
           onClick={() => onPageChange(currentPage - 1)}
           disabled={!hasPrevious}
-          className="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+          variant="outline"
+          size="sm"
           aria-label="Previous page"
         >
           Previous
-        </button>
+        </Button>
 
         {pageNumbers.map((page, index) => {
           if (page === '...') {
             return (
-              <span key={`ellipsis-${index}`} className="px-3 py-1 text-gray-500">
+              <span key={`ellipsis-${index}`} className="px-3 py-1 text-muted-foreground">
                 …
               </span>
             );
@@ -88,30 +91,28 @@ export function PaginationControls({
           const isActive = pageNum === currentPage;
 
           return (
-            <button
+            <Button
               key={pageNum}
               onClick={() => onPageChange(pageNum)}
-              className={`px-3 py-1 border rounded-md text-sm font-medium ${
-                isActive
-                  ? 'bg-blue-600 text-white border-blue-600'
-                  : 'border-gray-300 text-gray-700 hover:bg-gray-50'
-              }`}
+              variant={isActive ? 'default' : 'outline'}
+              size="sm"
               aria-current={isActive ? 'page' : undefined}
               aria-label={`Page ${pageNum}`}
             >
               {pageNum}
-            </button>
+            </Button>
           );
         })}
 
-        <button
+        <Button
           onClick={() => onPageChange(currentPage + 1)}
           disabled={!hasNext}
-          className="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+          variant="outline"
+          size="sm"
           aria-label="Next page"
         >
           Next
-        </button>
+        </Button>
       </div>
     </nav>
   );

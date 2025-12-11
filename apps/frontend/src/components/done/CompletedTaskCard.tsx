@@ -1,43 +1,34 @@
 import type { DoneTaskDto } from '@gsd/types';
-import { formatDistanceToNow, format, differenceInDays } from 'date-fns';
+import { TaskColorIndicator } from './TaskColorIndicator';
+import { CompletionTimestamp } from './CompletionTimestamp';
 
 interface CompletedTaskCardProps {
   task: DoneTaskDto;
+  timezone: string;
 }
 
-export function CompletedTaskCard({ task }: CompletedTaskCardProps) {
+export function CompletedTaskCard({ task, timezone }: CompletedTaskCardProps) {
   const completedDate = new Date(task.completedAt);
-  const now = new Date();
-  const diffDays = differenceInDays(now, completedDate);
-  const useRelative = diffDays < 7;
-
-  const relativeTime = formatDistanceToNow(completedDate, { addSuffix: true });
-  const absoluteTime = format(completedDate, 'MMM d, yyyy h:mm a');
-  const displayTime = useRelative ? relativeTime : absoluteTime;
 
   return (
-    <li className="group relative border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors">
-      <div
-        className="absolute left-0 top-0 bottom-0 w-1 rounded-l-lg"
-        style={{ backgroundColor: task.color }}
-        aria-hidden="true"
-      />
+    <li className="group relative border border-border rounded-lg p-4 hover:bg-muted/50 transition-colors">
+      <TaskColorIndicator color={task.color} />
 
       <div className="pl-3">
-        <h3 className="text-base font-semibold text-gray-900 mb-1">{task.title}</h3>
+        <h3 className="text-base font-semibold text-foreground mb-1">{task.title}</h3>
 
         {task.description && (
-          <p className="text-sm text-gray-600 mb-2 line-clamp-3">{task.description}</p>
+          <p className="text-sm text-muted-foreground mb-2 line-clamp-3">{task.description}</p>
         )}
 
-        <div className="flex items-center gap-4 text-xs text-gray-500">
-          <time dateTime={completedDate.toISOString()} title={absoluteTime}>
-            Completed {displayTime}
-          </time>
+        <div className="flex items-center gap-4">
+          <CompletionTimestamp completedAt={completedDate} timezone={timezone} />
 
-          <span className="text-gray-400">•</span>
+          <span className="text-muted-foreground/50" aria-hidden="true">
+            •
+          </span>
 
-          <span>{task.listName}</span>
+          <span className="text-xs text-muted-foreground">{task.listName}</span>
         </div>
       </div>
     </li>

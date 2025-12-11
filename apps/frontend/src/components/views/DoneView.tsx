@@ -1,10 +1,13 @@
 import { useState, useEffect } from 'react';
 import { useDoneQuery } from '../../hooks/useDone';
+import { useTimezoneDetection } from '../../hooks/useTimezoneDetection';
 import { MetricsHeader } from '../done/MetricsHeader';
 import { CompletedTaskList } from '../done/CompletedTaskList';
 import { PaginationControls } from '../done/PaginationControls';
 
 export function DoneView() {
+  const timezone = useTimezoneDetection();
+
   const [currentPage, setCurrentPage] = useState(() => {
     if (typeof window !== 'undefined') {
       const params = new URLSearchParams(window.location.search);
@@ -40,14 +43,15 @@ export function DoneView() {
   const totalPages = data ? Math.ceil(data.total / limit) : 0;
 
   return (
-    <div className="max-w-4xl mx-auto p-8">
-      <h1 className="text-3xl font-bold text-gray-900 mb-6">Done Archive</h1>
+    <div className="max-w-4xl mx-auto p-4 md:p-8">
+      <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-4 md:mb-6">Done Archive</h1>
 
       <MetricsHeader />
 
       <div className="mt-6">
         <CompletedTaskList
           tasks={data?.tasks ?? []}
+          timezone={timezone}
           isLoading={isLoading}
           error={error}
           onRetry={() => refetch()}
