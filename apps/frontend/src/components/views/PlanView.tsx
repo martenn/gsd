@@ -1,6 +1,7 @@
 import { useListsQuery } from '../../hooks/useLists';
 import { useTasksQuery } from '../../hooks/useTasks';
 import { BoardLayout } from '../plan/BoardLayout';
+import { Skeleton } from '../ui/skeleton';
 
 export function PlanView() {
   const { data: listsData, isLoading: listsLoading } = useListsQuery();
@@ -10,8 +11,19 @@ export function PlanView() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-screen">
-        <div className="text-gray-600">Loading your workspace...</div>
+      <div className="h-full flex flex-col">
+        <div className="border-b border-border px-6 py-4 bg-background">
+          <Skeleton className="h-8 w-48" />
+        </div>
+        <div className="flex-1 p-6 flex gap-6">
+          <div className="w-80 space-y-4">
+            <Skeleton className="h-64" />
+          </div>
+          <div className="flex-1 flex gap-4">
+            <Skeleton className="w-80 h-64" />
+            <Skeleton className="w-80 h-64" />
+          </div>
+        </div>
       </div>
     );
   }
@@ -31,10 +43,7 @@ export function PlanView() {
   );
 
   return (
-    <div className="h-screen flex flex-col">
-      <div className="border-b border-gray-200 px-6 py-4 bg-white">
-        <h1 className="text-2xl font-bold text-gray-900">Plan Mode</h1>
-      </div>
+    <div className="h-full flex flex-col overflow-hidden">
       <div className="flex-1 overflow-hidden">
         <BoardLayout lists={lists} tasksByListId={tasksByListId} />
       </div>
