@@ -1,15 +1,15 @@
 # GSD Project Tracker
 
-**Last Updated:** 2025-12-11 (Work Mode Complete - Now 32% Frontend Complete!)
-**Current Sprint:** Frontend UI Implementation - Plan Mode Next
+**Last Updated:** 2025-12-12 (Plan Mode CRUD UI Complete - Now 42% Frontend Complete!)
+**Current Sprint:** Frontend UI Implementation - Plan Mode Keyboard Nav Next
 
 ## 📊 MVP Progress Overview
 
 ```
-Overall MVP Completion: █████████████░░░ 56% (69/124 features)
+Overall MVP Completion: ██████████████░░ 61% (76/124 features)
 
 Backend:  ████████████████████ 100% (29/29 features) ✅ COMPLETE!
-Frontend: ████████░░░░░░░░░░░░ 32% (23/73 features)
+Frontend: █████████░░░░░░░░░░░ 42% (30/73 features)
 Infra:    ███████████████░░░░░ 82% (14/17 features)
 ```
 
@@ -32,9 +32,10 @@ Infra:    ███████████████░░░░░ 82% (14/1
 - [x] TanStack Query Integration ✅
 - [x] Done Archive View ✅ (Week 1 Complete - All components with theme, timezone, pagination)
 - [x] Work Mode View ✅ (Week 2 Complete - Full execution flow with forecast)
-- [ ] Plan Mode View (Weeks 3-6 - Most complex) 🎯 NEXT
-- [ ] Keyboard Navigation (Week 7)
-- [ ] Mobile Responsive (Week 8)
+- [x] Plan Mode CRUD UI ✅ (Week 3 Complete - Create/complete/delete lists & tasks)
+- [ ] Plan Mode Keyboard Navigation (Week 4-5) 🎯 NEXT
+- [ ] Plan Mode Polish (Week 6)
+- [ ] Mobile Responsive (Week 7)
 
 ---
 
@@ -337,21 +338,21 @@ Infra:    ███████████████░░░░░ 82% (14/1
 
 | Status | Feature                    | Est. | Notes                                | PRD Ref | Owner |
 | ------ | -------------------------- | ---- | ------------------------------------ | ------- | ----- |
-| ⚪     | PlanModeLayout             | 1d   | Two-column layout (backlogs + lists) | 3.3     | -     |
-| ⚪     | BoardLayout component      | 1d   | Backlog column + horizontal scroll   | 3.3     | -     |
-| ⚪     | BacklogColumn component    | 1d   | Fixed-width left column (280px)      | 3.1     | -     |
-| ⚪     | IntermediateListsContainer | 1d   | Horizontal scrollable area           | 3.3     | -     |
+| ✅     | PlanModeLayout             | -    | Two-column layout (backlogs + lists) | 3.3     | ✅    |
+| ✅     | BoardLayout component      | -    | Backlog column + horizontal scroll   | 3.3     | ✅    |
+| ✅     | BacklogColumn component    | -    | Fixed-width left column (280px)      | 3.1     | ✅    |
+| ✅     | IntermediateListsContainer | -    | Horizontal scrollable area           | 3.3     | ✅    |
 
 #### List Components
 
 | Status | Feature                     | Est. | Notes                                   | PRD Ref | Owner |
 | ------ | --------------------------- | ---- | --------------------------------------- | ------- | ----- |
-| ⚪     | ListColumn component        | 1d   | Individual list container (280px)       | 3.3     | -     |
+| ✅     | ListColumn component        | -    | Individual list container (280px)       | 3.3     | ✅    |
 | ⚪     | ListHeader component        | 1d   | Name, count badge, actions menu         | 3.1     | -     |
 | ⚪     | EditableListName component  | 0.5d | Inline editable list title              | 3.1     | -     |
 | ⚪     | TaskCountBadge component    | 0.5d | Count with color coding (80%, 100%)     | 3.1     | -     |
 | ⚪     | ListActionsMenu component   | 1d   | Rename, delete, toggle backlog, reorder | 3.1     | -     |
-| ⚪     | CreateListButton component  | 0.5d | Disabled at 10 lists                    | 3.1     | -     |
+| ✅     | CreateListButton component  | -    | Inline form with validation             | 3.1     | ✅    |
 | ⚪     | TaskListContainer component | 1d   | Scrollable task container               | 3.2     | -     |
 | ⚪     | EmptyListState component    | 0.5d | Placeholder when list has no tasks      | -       | -     |
 
@@ -359,11 +360,11 @@ Infra:    ███████████████░░░░░ 82% (14/1
 
 | Status | Feature                      | Est. | Notes                                  | PRD Ref | Owner |
 | ------ | ---------------------------- | ---- | -------------------------------------- | ------- | ----- |
-| ⚪     | TaskRow component            | 1d   | Task card with selection state         | 3.2     | -     |
+| ✅     | TaskRow component            | -    | Task card with hover actions           | 3.2     | ✅    |
 | ⚪     | TaskEditForm component       | 1d   | Inline editable form (react-hook-form) | 3.2     | -     |
-| ⚪     | TaskColorIndicator component | 0.5d | 4px left border with origin color      | 3.1     | -     |
-| ⚪     | TaskActionsMenu component    | 1d   | Edit, delete, move, complete           | 3.2     | -     |
-| ⚪     | InlineTaskCreator component  | 1d   | Appears at top on 'n' key press        | 3.2     | -     |
+| ✅     | TaskColorIndicator component | -    | 4px left border with origin color      | 3.1     | ✅    |
+| ✅     | TaskActionsMenu component    | -    | Complete, delete actions               | 3.2     | ✅    |
+| ✅     | InlineTaskCreator component  | -    | Inline form with auto-focus            | 3.2     | ✅    |
 
 #### Keyboard Navigation
 
@@ -417,7 +418,7 @@ Infra:    ███████████████░░░░░ 82% (14/1
 | ⚪     | ErrorBoundary component    | 0.5d | Catch React errors, display fallback | -       | -     |
 | ⚪     | LoadingSpinner component   | 0.5d | Animated spinner, skeleton variants  | -       | -     |
 | ⚪     | EmptyState component       | 0.5d | Generic empty state with actions     | -       | -     |
-| ✅     | shadcn/ui setup            | -    | Button, Card, Skeleton installed     | -       | ✅    |
+| ✅     | shadcn/ui setup            | -    | Button, Card, Skeleton, Input, DropdownMenu installed | -  | ✅    |
 | ✅     | Tailwind CSS configuration | -    | Theme with light/dark mode support   | -       | ✅    |
 
 ### 7.8 Forms & Validation
