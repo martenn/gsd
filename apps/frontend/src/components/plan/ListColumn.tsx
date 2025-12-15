@@ -3,34 +3,52 @@ import type { ListDto, TaskDto } from '@gsd/types';
 import { Plus } from 'lucide-react';
 import { TaskRow } from './TaskRow';
 import { InlineTaskCreator } from './InlineTaskCreator';
+import { ListHeader } from './ListHeader';
 import { Card } from '../ui/card';
 import { Button } from '../ui/button';
 
 interface ListColumnProps {
   list: ListDto;
+  lists: ListDto[];
   tasks: TaskDto[];
+  totalNonDoneLists: number;
+  backlogCount: number;
 }
 
-export function ListColumn({ list, tasks }: ListColumnProps) {
+export function ListColumn({
+  list,
+  lists,
+  tasks,
+  totalNonDoneLists,
+  backlogCount,
+}: ListColumnProps) {
   const [isCreatingTask, setIsCreatingTask] = useState(false);
+
+  const canDelete = totalNonDoneLists > 1;
+  const canToggleBacklog = list.isBacklog ? backlogCount > 1 : true;
+  const maxTasks = 100;
 
   return (
     <Card className="flex-shrink-0 w-80 flex flex-col">
-      <div className="border-b border-border px-4 py-3 bg-muted/50">
-        <div className="flex items-center justify-between">
-          <h3 className="text-sm font-semibold text-foreground">{list.name}</h3>
-          <div className="flex items-center gap-2">
-            <span className="text-xs text-muted-foreground">{tasks.length}</span>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-6 w-6 p-0"
-              onClick={() => setIsCreatingTask(true)}
-            >
-              <Plus className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
+      <ListHeader
+        list={list}
+        lists={lists}
+        taskCount={tasks.length}
+        maxTasks={maxTasks}
+        canDelete={canDelete}
+        canToggleBacklog={canToggleBacklog}
+      />
+      <div className="border-b border-border px-3 py-2 bg-background">
+        <Button
+          variant="ghost"
+          size="sm"
+          className="w-full h-7 justify-start text-xs"
+          onClick={() => setIsCreatingTask(true)}
+          disabled={tasks.length >= maxTasks}
+        >
+          <Plus className="h-3 w-3 mr-1" />
+          New Task
+        </Button>
       </div>
 
       <div className="flex-1 overflow-y-auto max-h-[600px]">

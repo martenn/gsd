@@ -4,10 +4,19 @@ import { CreateListButton } from './CreateListButton';
 
 interface BacklogColumnProps {
   backlogs: ListDto[];
+  lists: ListDto[];
   tasksByListId: Record<string, TaskDto[]>;
+  totalNonDoneLists: number;
+  backlogCount: number;
 }
 
-export function BacklogColumn({ backlogs, tasksByListId }: BacklogColumnProps) {
+export function BacklogColumn({
+  backlogs,
+  lists,
+  tasksByListId,
+  totalNonDoneLists,
+  backlogCount,
+}: BacklogColumnProps) {
   return (
     <aside className="flex-shrink-0 w-80 space-y-4 overflow-y-auto border-r border-border pr-4">
       <div className="sticky top-0 bg-background pb-2 z-10">
@@ -23,7 +32,14 @@ export function BacklogColumn({ backlogs, tasksByListId }: BacklogColumnProps) {
           </div>
         ) : (
           backlogs.map((list) => (
-            <ListColumn key={list.id} list={list} tasks={tasksByListId[list.id] || []} />
+            <ListColumn
+              key={list.id}
+              list={list}
+              lists={lists}
+              tasks={tasksByListId[list.id] || []}
+              totalNonDoneLists={totalNonDoneLists}
+              backlogCount={backlogCount}
+            />
           ))
         )}
       </div>
