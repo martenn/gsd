@@ -58,7 +58,7 @@ export function ListColumn({
         {tasks.length === 0 && !isCreatingTask ? (
           <div className="py-8 text-center text-sm text-muted-foreground">No tasks yet</div>
         ) : (
-          tasks.map((task) => <TaskRow key={task.id} task={task} />)
+          tasks.map((task) => <TaskRow key={task.id} task={task} lists={lists} />)
         )}
       </div>
     </Card>

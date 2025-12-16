@@ -1,11 +1,39 @@
-import type { TaskDto } from '@gsd/types';
+import { useState } from 'react';
+import type { TaskDto, ListDto } from '@gsd/types';
 import { TaskActionsMenu } from './TaskActionsMenu';
+import { TaskEditForm } from './TaskEditForm';
+import { useUpdateTask } from '../../hooks/useTasks';
 
 interface TaskRowProps {
   task: TaskDto;
+  lists: ListDto[];
 }
 
-export function TaskRow({ task }: TaskRowProps) {
+export function TaskRow({ task, lists }: TaskRowProps) {
+  const [isEditing, setIsEditing] = useState(false);
+  const updateTaskMutation = useUpdateTask();
+
+  const handleSave = async (data: { title: string; description?: string }) => {
+    try {
+      await updateTaskMutation.mutateAsync({
+        taskId: task.id,
+        data,
+      });
+      setIsEditing(false);
+    } catch (error) {
+      console.error('Failed to update task:', error);
+      throw error;
+    }
+  };
+
+  const handleEdit = () => {
+    setIsEditing(true);
+  };
+
+  if (isEditing) {
+    return <TaskEditForm task={task} onSave={handleSave} onCancel={() => setIsEditing(false)} />;
+  }
+
   return (
     <div className="group relative border-b border-border last:border-0 py-2 px-3 hover:bg-muted/50 transition-colors">
       <div
@@ -25,7 +53,7 @@ export function TaskRow({ task }: TaskRowProps) {
         </div>
 
         <div className="ml-2 opacity-0 group-hover:opacity-100 transition-opacity">
-          <TaskActionsMenu taskId={task.id} />
+          <TaskActionsMenu task={task} lists={lists} onEdit={handleEdit} />
         </div>
       </div>
     </div>
