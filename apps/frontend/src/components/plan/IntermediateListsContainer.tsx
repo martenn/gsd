@@ -4,12 +4,18 @@ import { CreateListButton } from './CreateListButton';
 
 interface IntermediateListsContainerProps {
   intermediateLists: ListDto[];
+  lists: ListDto[];
   tasksByListId: Record<string, TaskDto[]>;
+  totalNonDoneLists: number;
+  backlogCount: number;
 }
 
 export function IntermediateListsContainer({
   intermediateLists,
+  lists,
   tasksByListId,
+  totalNonDoneLists,
+  backlogCount,
 }: IntermediateListsContainerProps) {
   return (
     <section className="flex-1 overflow-x-auto overflow-y-hidden">
@@ -26,7 +32,14 @@ export function IntermediateListsContainer({
           </div>
         ) : (
           intermediateLists.map((list) => (
-            <ListColumn key={list.id} list={list} tasks={tasksByListId[list.id] || []} />
+            <ListColumn
+              key={list.id}
+              list={list}
+              lists={lists}
+              tasks={tasksByListId[list.id] || []}
+              totalNonDoneLists={totalNonDoneLists}
+              backlogCount={backlogCount}
+            />
           ))
         )}
       </div>
