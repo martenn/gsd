@@ -1,20 +1,20 @@
 # GSD Project Tracker
 
-**Last Updated:** 2025-12-12 (Plan Mode CRUD UI Complete - Now 42% Frontend Complete!)
-**Current Sprint:** Frontend UI Implementation - Plan Mode Keyboard Nav Next
+**Last Updated:** 2025-12-17 (Plan Mode List & Task Management Complete - Now 58% Frontend!)
+**Current Sprint:** Frontend UI Polish - Mobile Responsiveness Next
 
 ## 📊 MVP Progress Overview
 
 ```
-Overall MVP Completion: ██████████████░░ 61% (76/124 features)
+Overall MVP Completion: ████████████████░ 68% (84/124 features)
 
 Backend:  ████████████████████ 100% (29/29 features) ✅ COMPLETE!
-Frontend: █████████░░░░░░░░░░░ 42% (30/73 features)
+Frontend: ███████████░░░░░░░░░ 58% (42/73 features)
 Infra:    ███████████████░░░░░ 82% (14/17 features)
 ```
 
 **Target MVP Completion:** TBD
-**Current Blockers:** None - Backend complete, ready for frontend!
+**Current Blockers:** None - Plan Mode mouse/touch interactions complete!
 
 ---
 
@@ -22,20 +22,23 @@ Infra:    ███████████████░░░░░ 82% (14/1
 
 ### Sprint: Frontend UI Components
 
-**Status:** 🟢 Data Layer Complete, Ready for UI Implementation
+**Status:** 🟢 Core Features Complete, Polish & Mobile Next
 **Duration:** TBD (Weeks 1-8)
-**Goal:** Implement core UI components for Plan/Work/Done modes
+**Goal:** Complete MVP-required features (mobile, dump mode, polish)
 
 **Deliverables:**
 
 - [x] API Client & All Hooks ✅
 - [x] TanStack Query Integration ✅
-- [x] Done Archive View ✅ (Week 1 Complete - All components with theme, timezone, pagination)
-- [x] Work Mode View ✅ (Week 2 Complete - Full execution flow with forecast)
-- [x] Plan Mode CRUD UI ✅ (Week 3 Complete - Create/complete/delete lists & tasks)
-- [ ] Plan Mode Keyboard Navigation (Week 4-5) 🎯 NEXT
-- [ ] Plan Mode Polish (Week 6)
-- [ ] Mobile Responsive (Week 7)
+- [x] Done Archive View ✅ (Week 1 Complete)
+- [x] Work Mode View ✅ (Week 2 Complete)
+- [x] Plan Mode CRUD UI ✅ (Week 3 Complete)
+- [x] Plan Mode List Management UI ✅ (Week 4 Complete - Rename, delete, toggle backlog)
+- [x] Plan Mode Task Management UI ✅ (Week 4 Complete - Edit, move operations)
+- [ ] Mobile Responsiveness (Week 5) 🎯 NEXT - PRD Required!
+- [ ] Dump Mode (Week 5)
+- [ ] Keyboard Help Overlay (Week 6)
+- [ ] Plan Mode Keyboard Navigation (Final) - Power User Feature
 
 ---
 
@@ -348,22 +351,22 @@ Infra:    ███████████████░░░░░ 82% (14/1
 | Status | Feature                     | Est. | Notes                                   | PRD Ref | Owner |
 | ------ | --------------------------- | ---- | --------------------------------------- | ------- | ----- |
 | ✅     | ListColumn component        | -    | Individual list container (280px)       | 3.3     | ✅    |
-| ⚪     | ListHeader component        | 1d   | Name, count badge, actions menu         | 3.1     | -     |
-| ⚪     | EditableListName component  | 0.5d | Inline editable list title              | 3.1     | -     |
-| ⚪     | TaskCountBadge component    | 0.5d | Count with color coding (80%, 100%)     | 3.1     | -     |
-| ⚪     | ListActionsMenu component   | 1d   | Rename, delete, toggle backlog, reorder | 3.1     | -     |
+| ✅     | ListHeader component        | -    | Name, count badge, actions menu         | 3.1     | ✅    |
+| ✅     | EditableListName component  | -    | Inline editable list title              | 3.1     | ✅    |
+| ✅     | ListLimitIndicator          | -    | Count with color coding (80%, 100%)     | 3.1     | ✅    |
+| ✅     | ListActionsMenu component   | -    | Rename, delete, toggle backlog, move    | 3.1     | ✅    |
 | ✅     | CreateListButton component  | -    | Inline form with validation             | 3.1     | ✅    |
-| ⚪     | TaskListContainer component | 1d   | Scrollable task container               | 3.2     | -     |
-| ⚪     | EmptyListState component    | 0.5d | Placeholder when list has no tasks      | -       | -     |
+| 🟡     | TaskListContainer component | -    | Exists in ListColumn (inline)           | 3.2     | 🟡    |
+| 🟡     | EmptyListState component    | -    | Exists inline in ListColumn             | -       | 🟡    |
 
 #### Task Components
 
 | Status | Feature                      | Est. | Notes                                  | PRD Ref | Owner |
 | ------ | ---------------------------- | ---- | -------------------------------------- | ------- | ----- |
-| ✅     | TaskRow component            | -    | Task card with hover actions           | 3.2     | ✅    |
-| ⚪     | TaskEditForm component       | 1d   | Inline editable form (react-hook-form) | 3.2     | -     |
+| ✅     | TaskRow component            | -    | Task card with edit mode toggle        | 3.2     | ✅    |
+| ✅     | TaskEditForm component       | -    | Inline form with react-hook-form + zod | 3.2     | ✅    |
 | ✅     | TaskColorIndicator component | -    | 4px left border with origin color      | 3.1     | ✅    |
-| ✅     | TaskActionsMenu component    | -    | Complete, delete actions               | 3.2     | ✅    |
+| ✅     | TaskActionsMenu component    | -    | Edit, move, complete, delete           | 3.2     | ✅    |
 | ✅     | InlineTaskCreator component  | -    | Inline form with auto-focus            | 3.2     | ✅    |
 
 #### Keyboard Navigation
