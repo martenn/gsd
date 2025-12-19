@@ -1,10 +1,17 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import type { AppShellProps, Mode } from '../../types/app-shell';
 import { useAuth } from '../../hooks/useAuth';
+import { useGlobalKeyboardShortcut } from '../../hooks/useGlobalKeyboardShortcut';
 import { AppHeader } from './AppHeader';
+import { DumpModeModal } from '../modals/DumpModeModal';
 
 export function AppShell({ children }: AppShellProps) {
   const { user, isLoading, isAuthenticated, logout } = useAuth();
+  const [isDumpModeOpen, setIsDumpModeOpen] = useState(false);
+
+  useGlobalKeyboardShortcut('d', { cmd: true, shift: true }, () => {
+    setIsDumpModeOpen(true);
+  });
 
   useEffect(() => {
     console.log('AppShell auth state:', { isLoading, isAuthenticated, user });
@@ -39,6 +46,7 @@ export function AppShell({ children }: AppShellProps) {
     <div className="h-screen flex flex-col">
       <AppHeader currentMode={getCurrentMode()} user={user} onLogout={logout} />
       <main className="flex-1 overflow-auto bg-gray-50">{children}</main>
+      <DumpModeModal isOpen={isDumpModeOpen} onOpenChange={setIsDumpModeOpen} />
     </div>
   );
 }
