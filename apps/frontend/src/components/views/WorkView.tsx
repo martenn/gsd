@@ -5,7 +5,7 @@ import { CurrentTaskCard } from '../work/CurrentTaskCard';
 import { ForecastSection } from '../work/ForecastSection';
 import { CompleteButton } from '../work/CompleteButton';
 import { EmptyWorkState } from '../work/EmptyWorkState';
-import { Skeleton } from '../ui/skeleton';
+import { LoadingSpinner } from '../ui/LoadingSpinner';
 
 export function WorkView() {
   const { data: lists, isLoading: listsLoading } = useListsQuery();
@@ -32,8 +32,7 @@ export function WorkView() {
   if (listsLoading || tasksLoading) {
     return (
       <div className="max-w-3xl mx-auto px-4 py-8">
-        <Skeleton className="h-64 mb-8" />
-        <Skeleton className="h-12 w-48" />
+        <LoadingSpinner variant="skeleton-card" count={1} />
       </div>
     );
   }

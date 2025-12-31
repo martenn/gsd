@@ -2,7 +2,7 @@ import type { DoneTaskDto } from '@gsd/types';
 import { CompletedTaskCard } from './CompletedTaskCard';
 import { EmptyDoneState } from './EmptyDoneState';
 import { Button } from '../ui/button';
-import { Skeleton } from '../ui/skeleton';
+import { LoadingSpinner } from '../ui/LoadingSpinner';
 
 interface CompletedTaskListProps {
   tasks: DoneTaskDto[];
@@ -21,14 +21,8 @@ export function CompletedTaskList({
 }: CompletedTaskListProps) {
   if (isLoading) {
     return (
-      <div className="space-y-3" role="status" aria-label="Loading completed tasks">
-        {Array.from({ length: 5 }).map((_, i) => (
-          <div key={i} className="border border-border rounded-lg p-4">
-            <Skeleton className="h-5 w-3/4 mb-2" />
-            <Skeleton className="h-4 w-1/2 mb-2" />
-            <Skeleton className="h-3 w-1/4" />
-          </div>
-        ))}
+      <div role="status" aria-label="Loading completed tasks">
+        <LoadingSpinner variant="skeleton-card" count={5} />
       </div>
     );
   }
