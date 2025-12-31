@@ -5,7 +5,7 @@ import {
   NotFoundException,
   InternalServerErrorException,
 } from '@nestjs/common';
-import { BulkAddTasksResponseDto, TaskDto } from '@gsd/types';
+import { BulkAddTasksResponseDto } from '@gsd/types';
 import { BulkAddTasksDto } from '../dto/bulk-add-tasks.dto';
 import { TasksRepository } from '../infra/tasks.repository';
 import { ListsRepository } from '../../lists/infra/lists.repository';
