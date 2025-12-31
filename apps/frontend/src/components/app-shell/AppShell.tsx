@@ -4,6 +4,8 @@ import { useAuth } from '../../hooks/useAuth';
 import { useGlobalKeyboardShortcut } from '../../hooks/useGlobalKeyboardShortcut';
 import { AppHeader } from './AppHeader';
 import { DumpModeModal } from '../modals/DumpModeModal';
+import { ErrorBoundary } from '../errors/ErrorBoundary';
+import { LoadingSpinner } from '../ui/LoadingSpinner';
 
 export function AppShell({ children }: AppShellProps) {
   const { user, isLoading, isAuthenticated, logout } = useAuth();
@@ -24,9 +26,7 @@ export function AppShell({ children }: AppShellProps) {
   if (isLoading) {
     return (
       <div className="h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="text-lg text-gray-600">Loading...</div>
-        </div>
+        <LoadingSpinner variant="spinner" />
       </div>
     );
   }
@@ -43,10 +43,12 @@ export function AppShell({ children }: AppShellProps) {
   };
 
   return (
-    <div className="h-screen flex flex-col">
-      <AppHeader currentMode={getCurrentMode()} user={user} onLogout={logout} />
-      <main className="flex-1 overflow-auto bg-gray-50">{children}</main>
-      <DumpModeModal isOpen={isDumpModeOpen} onOpenChange={setIsDumpModeOpen} />
-    </div>
+    <ErrorBoundary>
+      <div className="h-screen flex flex-col">
+        <AppHeader currentMode={getCurrentMode()} user={user} onLogout={logout} />
+        <main className="flex-1 overflow-auto bg-gray-50">{children}</main>
+        <DumpModeModal isOpen={isDumpModeOpen} onOpenChange={setIsDumpModeOpen} />
+      </div>
+    </ErrorBoundary>
   );
 }
