@@ -1,6 +1,6 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
+import { bulkAddTasksSchema, type BulkAddTasksData, sanitizeText } from '@gsd/validation';
 import { Button } from '../ui/button';
 import { Textarea } from '../ui/textarea';
 import { Label } from '../ui/label';
@@ -8,29 +8,6 @@ import { useListsQuery } from '../../hooks/useLists';
 import { useBulkAddTasks } from '../../hooks/useTasks';
 import { BacklogSelector } from './BacklogSelector';
 import { LineCounter } from './LineCounter';
-
-const dumpModeFormSchema = z.object({
-  taskLines: z
-    .string()
-    .min(1, 'Please enter at least one task')
-    .refine(
-      (value) => {
-        const lines = value.split('\n').filter((line) => line.trim() !== '');
-        return lines.length <= 10;
-      },
-      { message: 'Maximum 10 tasks allowed' },
-    )
-    .refine(
-      (value) => {
-        const lines = value.split('\n').filter((line) => line.trim() !== '');
-        return lines.every((line) => line.length <= 500);
-      },
-      { message: 'Each task title must be 500 characters or less' },
-    ),
-  targetListId: z.string().min(1, 'Please select a backlog'),
-});
-
-type DumpModeFormData = z.infer<typeof dumpModeFormSchema>;
 
 const LAST_USED_BACKLOG_KEY = 'dump-mode-last-backlog';
 
@@ -66,8 +43,8 @@ export function DumpModeForm({ onSuccess, onCancel }: DumpModeFormProps) {
     handleSubmit,
     watch,
     formState: { errors },
-  } = useForm<DumpModeFormData>({
-    resolver: zodResolver(dumpModeFormSchema),
+  } = useForm<BulkAddTasksData>({
+    resolver: zodResolver(bulkAddTasksSchema),
     defaultValues: {
       taskLines: '',
       targetListId: defaultBacklogId,
@@ -80,15 +57,15 @@ export function DumpModeForm({ onSuccess, onCancel }: DumpModeFormProps) {
 
   const selectedBacklog = backlogs.find((b) => b.id === targetListId);
 
-  const onSubmit = (data: DumpModeFormData) => {
+  const onSubmit = (data: BulkAddTasksData) => {
     const lines = data.taskLines
       .split('\n')
-      .map((line) => line.trim())
-      .filter((line) => line !== '');
+      .map((line: string) => sanitizeText(line))
+      .filter((line: string) => line !== '');
 
     mutate(
       {
-        tasks: lines.map((line) => ({ title: line })),
+        tasks: lines.map((line: string) => ({ title: line })),
         listId: data.targetListId,
       },
       {

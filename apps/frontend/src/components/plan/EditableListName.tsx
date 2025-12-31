@@ -1,4 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { updateListSchema, type UpdateListData, sanitizeText } from '@gsd/validation';
 import { Input } from '../ui/input';
 import { useUpdateList } from '../../hooks/useLists';
 
@@ -9,54 +12,63 @@ interface EditableListNameProps {
 
 export function EditableListName({ listId, name }: EditableListNameProps) {
   const [isEditing, setIsEditing] = useState(false);
-  const [editedName, setEditedName] = useState(name);
   const updateListMutation = useUpdateList();
 
-  const handleSave = async () => {
-    if (!editedName.trim() || editedName === name) {
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm<UpdateListData>({
+    resolver: zodResolver(updateListSchema),
+    defaultValues: {
+      name,
+    },
+  });
+
+  useEffect(() => {
+    reset({ name });
+  }, [name, reset]);
+
+  const onSubmit = async (data: UpdateListData) => {
+    const sanitizedName = sanitizeText(data.name);
+    if (!sanitizedName || sanitizedName === name) {
       setIsEditing(false);
-      setEditedName(name);
+      reset({ name });
       return;
     }
 
     try {
       await updateListMutation.mutateAsync({
         listId,
-        data: { name: editedName.trim() },
+        data: { name: sanitizedName },
       });
       setIsEditing(false);
     } catch (error) {
       console.error('Failed to update list name:', error);
-      setEditedName(name);
+      reset({ name });
     }
   };
 
   const handleCancel = () => {
-    setEditedName(name);
+    reset({ name });
     setIsEditing(false);
   };
 
   if (isEditing) {
     return (
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          handleSave();
-        }}
-        className="flex-1"
-      >
+      <form onSubmit={handleSubmit(onSubmit)} className="flex-1">
         <Input
-          value={editedName}
-          onChange={(e) => setEditedName(e.target.value)}
-          maxLength={100}
+          {...register('name')}
           // eslint-disable-next-line jsx-a11y/no-autofocus -- User explicitly triggered edit, expects immediate focus
           autoFocus
           onKeyDown={(e) => {
             if (e.key === 'Escape') handleCancel();
           }}
-          onBlur={handleSave}
+          onBlur={handleSubmit(onSubmit)}
           className="h-7 text-sm"
         />
+        {errors.name && <p className="text-xs text-destructive mt-1">{errors.name.message}</p>}
       </form>
     );
   }

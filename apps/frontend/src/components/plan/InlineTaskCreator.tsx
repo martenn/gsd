@@ -1,4 +1,6 @@
-import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { createTaskSchema, type CreateTaskData, sanitizeText } from '@gsd/validation';
 import { Input } from '../ui/input';
 import { useCreateTask } from '../../hooks/useTasks';
 
@@ -8,19 +10,29 @@ interface InlineTaskCreatorProps {
 }
 
 export function InlineTaskCreator({ listId, onCancel }: InlineTaskCreatorProps) {
-  const [title, setTitle] = useState('');
   const createTaskMutation = useCreateTask();
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!title.trim()) return;
+  const {
+    register,
+    handleSubmit,
+    watch,
+    formState: { errors },
+  } = useForm<CreateTaskData>({
+    resolver: zodResolver(createTaskSchema),
+    defaultValues: {
+      title: '',
+      description: '',
+    },
+  });
 
+  const title = watch('title');
+
+  const onSubmit = async (data: CreateTaskData) => {
     try {
       await createTaskMutation.mutateAsync({
-        title: title.trim(),
+        title: sanitizeText(data.title),
         listId,
       });
-      setTitle('');
       onCancel();
     } catch (error) {
       console.error('Failed to create task:', error);
@@ -28,21 +40,20 @@ export function InlineTaskCreator({ listId, onCancel }: InlineTaskCreatorProps) 
   };
 
   return (
-    <form onSubmit={handleSubmit} className="border-b border-border p-3 bg-muted/30">
+    <form onSubmit={handleSubmit(onSubmit)} className="border-b border-border p-3 bg-muted/30">
       <Input
-        value={title}
-        onChange={(e) => setTitle(e.target.value)}
+        {...register('title')}
         placeholder="Task title..."
-        maxLength={500}
         // eslint-disable-next-line jsx-a11y/no-autofocus -- User explicitly triggered inline form, expects immediate focus
         autoFocus
         onKeyDown={(e) => {
           if (e.key === 'Escape') onCancel();
         }}
         onBlur={() => {
-          if (!title.trim()) onCancel();
+          if (!title?.trim()) onCancel();
         }}
       />
+      {errors.title && <p className="text-xs text-destructive mt-1">{errors.title.message}</p>}
       <div className="text-xs text-muted-foreground mt-1">Press Enter to create, Esc to cancel</div>
     </form>
   );
