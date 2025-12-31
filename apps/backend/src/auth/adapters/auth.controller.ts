@@ -53,7 +53,7 @@ export class AuthController {
       response.cookie('jwt', token, {
         httpOnly: true,
         secure: isProduction,
-        sameSite: 'lax',
+        sameSite: 'strict',
         maxAge: expiration.toMilliseconds(),
       });
 

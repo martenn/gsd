@@ -15,7 +15,7 @@ export class SignOut {
     response.clearCookie('jwt', {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
+      sameSite: 'strict',
     });
 
     this.logger.log(`User signed out successfully: ${userId}`);
