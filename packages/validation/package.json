@@ -11,6 +11,7 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
+    "isomorphic-dompurify": "^2.35.0",
     "zod": "^3.22.0"
   },
   "devDependencies": {

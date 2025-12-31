@@ -1,17 +1,10 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
+import { updateTaskSchema, type UpdateTaskData, sanitizeText } from '@gsd/validation';
 import type { TaskDto } from '@gsd/types';
 import { Input } from '../ui/input';
 import { Textarea } from '../ui/textarea';
 import { Button } from '../ui/button';
-
-const taskEditSchema = z.object({
-  title: z.string().min(1, 'Title is required').max(500, 'Title too long'),
-  description: z.string().max(5000, 'Description too long').optional(),
-});
-
-type TaskEditFormData = z.infer<typeof taskEditSchema>;
 
 interface TaskEditFormProps {
   task: TaskDto;
@@ -24,19 +17,19 @@ export function TaskEditForm({ task, onSave, onCancel }: TaskEditFormProps) {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
-  } = useForm<TaskEditFormData>({
-    resolver: zodResolver(taskEditSchema),
+  } = useForm<UpdateTaskData>({
+    resolver: zodResolver(updateTaskSchema),
     defaultValues: {
       title: task.title,
       description: task.description || '',
     },
   });
 
-  const onSubmit = async (data: TaskEditFormData) => {
+  const onSubmit = async (data: UpdateTaskData) => {
     try {
       await onSave({
-        title: data.title.trim(),
-        description: data.description?.trim() || undefined,
+        title: sanitizeText(data.title),
+        description: data.description ? sanitizeText(data.description) : undefined,
       });
     } catch (error) {
       console.error('Failed to update task:', error);
