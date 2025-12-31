@@ -5,6 +5,27 @@ const API_URL = import.meta.env.PUBLIC_API_URL || 'http://localhost:3000';
 const PROTECTED_ROUTES = ['/app'];
 const PUBLIC_ROUTES = ['/', '/auth', '/privacy', '/terms', '/logout'];
 
+function addSecurityHeaders(response: Response): void {
+  response.headers.set(
+    'Content-Security-Policy',
+    "default-src 'self'; " +
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval'; " +
+      "style-src 'self' 'unsafe-inline'; " +
+      "img-src 'self' data: https:; " +
+      "font-src 'self'; " +
+      "connect-src 'self' " +
+      (API_URL || 'http://localhost:3000') +
+      '; ' +
+      "frame-ancestors 'none'; " +
+      "base-uri 'self'; " +
+      "form-action 'self'",
+  );
+  response.headers.set('X-Frame-Options', 'DENY');
+  response.headers.set('X-Content-Type-Options', 'nosniff');
+  response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
+  response.headers.set('Permissions-Policy', 'geolocation=(), microphone=(), camera=()');
+}
+
 export const onRequest = defineMiddleware(async (context, next) => {
   const { pathname } = context.url;
 
@@ -14,7 +35,9 @@ export const onRequest = defineMiddleware(async (context, next) => {
   );
 
   if (!isProtectedRoute || isPublicRoute) {
-    return next();
+    const response = await next();
+    addSecurityHeaders(response);
+    return response;
   }
 
   try {
@@ -31,7 +54,9 @@ export const onRequest = defineMiddleware(async (context, next) => {
       return context.redirect('/', 302);
     }
 
-    return next();
+    const response = await next();
+    addSecurityHeaders(response);
+    return response;
   } catch (error) {
     console.error('Auth middleware error:', error);
     return context.redirect('/', 302);

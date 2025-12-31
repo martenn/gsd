@@ -37,7 +37,7 @@ describe('SignOut', () => {
       expect(mockResponse.clearCookie).toHaveBeenCalledWith('jwt', {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
+        sameSite: 'strict',
       });
 
       expect(logger.log).toHaveBeenCalledWith(`Signing out user: ${userId}`);
@@ -57,7 +57,7 @@ describe('SignOut', () => {
       expect(mockResponse.clearCookie).toHaveBeenCalledWith('jwt', {
         httpOnly: true,
         secure: true,
-        sameSite: 'lax',
+        sameSite: 'strict',
       });
 
       process.env.NODE_ENV = originalEnv;
@@ -76,7 +76,7 @@ describe('SignOut', () => {
       expect(mockResponse.clearCookie).toHaveBeenCalledWith('jwt', {
         httpOnly: true,
         secure: false,
-        sameSite: 'lax',
+        sameSite: 'strict',
       });
 
       process.env.NODE_ENV = originalEnv;
