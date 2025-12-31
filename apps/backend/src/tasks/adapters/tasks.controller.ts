@@ -18,6 +18,7 @@ import {
   MoveTaskResponseDto,
   CompleteTaskResponseDto,
   ReorderTaskResponseDto,
+  BulkAddTasksResponseDto,
 } from '@gsd/types';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../../auth/decorators/current-user.decorator';
@@ -29,11 +30,13 @@ import { DeleteTask } from '../use-cases/delete-task';
 import { MoveTask } from '../use-cases/move-task';
 import { CompleteTask } from '../use-cases/complete-task';
 import { ReorderTask } from '../use-cases/reorder-task';
+import { BulkAddTasks } from '../use-cases/bulk-add-tasks';
 import { CreateTaskDto } from '../dto/create-task.dto';
 import { UpdateTaskDto } from '../dto/update-task.dto';
 import { GetTasksQueryDto } from '../dto/get-tasks-query.dto';
 import { MoveTaskDto } from '../dto/move-task.dto';
 import { ReorderTaskDto } from '../dto/reorder-task.dto';
+import { BulkAddTasksDto } from '../dto/bulk-add-tasks.dto';
 
 @Controller('v1/tasks')
 @UseGuards(JwtAuthGuard)
@@ -46,6 +49,7 @@ export class TasksController {
     private readonly moveTaskUseCase: MoveTask,
     private readonly completeTaskUseCase: CompleteTask,
     private readonly reorderTaskUseCase: ReorderTask,
+    private readonly bulkAddTasksUseCase: BulkAddTasks,
   ) {}
 
   @Get()
@@ -109,5 +113,14 @@ export class TasksController {
   ): Promise<ReorderTaskResponseDto> {
     const task = await this.reorderTaskUseCase.execute(user.id, taskId, dto);
     return { task };
+  }
+
+  @Post('bulk-add')
+  @HttpCode(HttpStatus.CREATED)
+  async bulkAddTasks(
+    @CurrentUser() user: JwtUser,
+    @Body() dto: BulkAddTasksDto,
+  ): Promise<BulkAddTasksResponseDto> {
+    return this.bulkAddTasksUseCase.execute(user.id, dto);
   }
 }

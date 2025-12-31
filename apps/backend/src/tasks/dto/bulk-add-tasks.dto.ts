@@ -1,18 +1,18 @@
 import {
-  IsArray,
   IsString,
   IsUUID,
   IsOptional,
+  IsArray,
+  ValidateNested,
+  ArrayMaxSize,
+  ArrayMinSize,
   MinLength,
   MaxLength,
-  ArrayMinSize,
-  ArrayMaxSize,
-  ValidateNested,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { BulkAddTasksRequest } from '@gsd/types';
 
-class BulkTaskInput {
+class TaskItemDto {
   @IsString()
   @MinLength(1, { message: 'Task title cannot be empty' })
   @MaxLength(500, { message: 'Task title must not exceed 500 characters' })
@@ -26,11 +26,11 @@ class BulkTaskInput {
 
 export class BulkAddTasksDto implements BulkAddTasksRequest {
   @IsArray()
-  @ArrayMinSize(1, { message: 'At least one task must be provided' })
-  @ArrayMaxSize(10, { message: 'Maximum 10 tasks allowed per bulk add request' })
+  @ArrayMinSize(1, { message: 'At least one task is required' })
+  @ArrayMaxSize(10, { message: 'Maximum 10 tasks allowed per bulk add' })
   @ValidateNested({ each: true })
-  @Type(() => BulkTaskInput)
-  tasks: BulkTaskInput[];
+  @Type(() => TaskItemDto)
+  tasks: TaskItemDto[];
 
   @IsUUID('4', { message: 'Invalid list ID format' })
   @IsOptional()
