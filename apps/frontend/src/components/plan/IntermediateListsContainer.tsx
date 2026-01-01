@@ -19,8 +19,8 @@ export function IntermediateListsContainer({
 }: IntermediateListsContainerProps) {
   return (
     <section className="flex-1 overflow-x-auto overflow-y-hidden">
-      <div className="sticky top-0 bg-background pb-2 z-10 flex items-center justify-between">
-        <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+      <div className="sticky top-0 bg-background pb-2 z-10">
+        <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">
           Lists
         </h2>
         <CreateListButton type="intermediate" />

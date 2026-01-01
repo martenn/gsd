@@ -1,15 +1,15 @@
 # GSD Project Tracker
 
-**Last Updated:** 2025-12-31 (Security Hardening Complete!)
+**Last Updated:** 2026-01-01 (UX Improvements - Task Complete Button & Layout Fix)
 **Current Sprint:** Mobile Responsiveness & Final Polish
 
 ## 📊 MVP Progress Overview
 
 ```
-Overall MVP Completion: ████████████████░ 81% (101/125 features)
+Overall MVP Completion: ████████████████░ 82% (103/125 features)
 
 Backend:  ████████████████████ 100% (30/30 features) ✅ COMPLETE!
-Frontend: ██████████████░░░░░░ 73% (53/73 features)
+Frontend: ███████████████░░░░░ 75% (55/73 features)
 Infra:    ██████████████████░░ 94% (16/17 features)
 ```
 
@@ -296,7 +296,7 @@ Infra:    ██████████████████░░ 94% (16/1
 ## 🎨 Phase 7: Frontend (MVP UI)
 
 **Goal:** Responsive web UI for plan/work modes
-**Progress:** ██████████████░░░░░░ 73% (53/73)
+**Progress:** ███████████████░░░░░ 75% (55/73)
 
 ### 7.0 Static Pages & Infrastructure (Astro) ✅ COMPLETE
 
@@ -339,12 +339,12 @@ Infra:    ██████████████████░░ 94% (16/1
 
 #### Layout Components
 
-| Status | Feature                    | Est. | Notes                                | PRD Ref | Owner |
-| ------ | -------------------------- | ---- | ------------------------------------ | ------- | ----- |
-| ✅     | PlanModeLayout             | -    | Two-column layout (backlogs + lists) | 3.3     | ✅    |
-| ✅     | BoardLayout component      | -    | Backlog column + horizontal scroll   | 3.3     | ✅    |
-| ✅     | BacklogColumn component    | -    | Fixed-width left column (280px)      | 3.1     | ✅    |
-| ✅     | IntermediateListsContainer | -    | Horizontal scrollable area           | 3.3     | ✅    |
+| Status | Feature                    | Est. | Notes                                     | PRD Ref | Owner |
+| ------ | -------------------------- | ---- | ----------------------------------------- | ------- | ----- |
+| ✅     | PlanModeLayout             | -    | Two-column layout (backlogs + lists)      | 3.3     | ✅    |
+| ✅     | BoardLayout component      | -    | Backlog column + horizontal scroll        | 3.3     | ✅    |
+| ✅     | BacklogColumn component    | -    | Fixed-width left column (280px)           | 3.1     | ✅    |
+| ✅     | IntermediateListsContainer | -    | Horizontal scrollable area, stacked header| 3.3     | ✅    |
 
 #### List Components
 
@@ -367,6 +367,7 @@ Infra:    ██████████████████░░ 94% (16/1
 | ✅     | TaskEditForm component       | -    | Inline form with react-hook-form + zod | 3.2     | ✅    |
 | ✅     | TaskColorIndicator component | -    | 4px left border with origin color      | 3.1     | ✅    |
 | ✅     | TaskActionsMenu component    | -    | Edit, move, complete, delete           | 3.2     | ✅    |
+| ✅     | TaskCompleteButton component | -    | CheckCircle icon with tooltip (UX)     | 3.2     | ✅    |
 | ✅     | InlineTaskCreator component  | -    | Inline form with auto-focus            | 3.2     | ✅    |
 
 #### Keyboard Navigation
@@ -768,6 +769,37 @@ Infra:    ██████████████████░░ 94% (16/1
 ---
 
 ## 📈 Change Log
+
+### 2026-01-01 (UX Improvements - Task Complete Button & Layout Fix)
+
+- 🎨 **Plan Mode UX Improvements** - Enhanced task interaction and layout consistency
+  - ✅ **Task Complete Button Added**
+    - Added CheckCircle icon button to TaskRow component
+    - Appears on hover alongside TaskActionsMenu
+    - Includes tooltip: "Mark as complete"
+    - Direct access to complete action without dropdown menu
+    - Improves task completion workflow per PRD 3.2
+  - ✅ **List Button Layout Fix**
+    - Fixed IntermediateListsContainer header layout
+    - Changed from horizontal (flex justify-between) to vertical stacking
+    - Now matches BacklogColumn layout consistency
+    - "LISTS" header and CreateListButton now properly stacked
+  - ✅ **shadcn/ui Tooltip Component**
+    - Installed @radix-ui/react-tooltip via shadcn CLI
+    - Added Tooltip, TooltipProvider, TooltipContent, TooltipTrigger components
+    - Used for TaskCompleteButton hover hint
+- 📊 **Progress Update:**
+  - Overall MVP: 81% → **82%** (101/125 → 103/125 features)
+  - Frontend: 73% → **75%** (53/73 → 55/73 features)
+  - **Phase 7.3 (Plan Mode Components): Added TaskCompleteButton, updated IntermediateListsContainer**
+- ✅ **Validation Complete:**
+  - Linting: PASSED (auto-fixed with prettier)
+  - TypeScript: PASSED (no compilation errors)
+  - Code quality confirmed
+- 🎯 **What's Next:**
+  - UX polish items complete
+  - Recommended: Mobile responsiveness (PRD requirement)
+  - Or: Keyboard help overlay and navigation
 
 ### 2025-12-31 (Security Hardening Complete!)
 
