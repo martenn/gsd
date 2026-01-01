@@ -35,9 +35,15 @@ export class GetTasks {
             offset,
             includeCompleted,
           })
-        : [];
+        : await this.tasksRepository.findManyByUser(userId, {
+            limit,
+            offset,
+            includeCompleted,
+          });
 
-      const total = listId ? await this.tasksRepository.countByList(userId, listId) : 0;
+      const total = listId
+        ? await this.tasksRepository.countByList(userId, listId)
+        : await this.tasksRepository.countByUser(userId);
 
       this.logger.log(`Found ${tasks.length} tasks (total: ${total}) for user ${userId}`);
 

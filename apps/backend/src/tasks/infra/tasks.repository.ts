@@ -68,6 +68,22 @@ export class TasksRepository {
     });
   }
 
+  async findManyByUser(userId: string, options?: FindManyByListOptions): Promise<Task[]> {
+    const { limit = 1000, offset = 0, includeCompleted = false } = options || {};
+
+    return this.prisma.task.findMany({
+      where: {
+        userId,
+        completedAt: includeCompleted ? undefined : null,
+      },
+      orderBy: {
+        orderIndex: 'desc',
+      },
+      take: limit,
+      skip: offset,
+    });
+  }
+
   async update(userId: string, taskId: string, data: UpdateTaskData): Promise<Task> {
     return this.prisma.task.update({
       where: {
@@ -95,6 +111,15 @@ export class TasksRepository {
       where: {
         userId,
         listId,
+        completedAt: null,
+      },
+    });
+  }
+
+  async countByUser(userId: string): Promise<number> {
+    return this.prisma.task.count({
+      where: {
+        userId,
         completedAt: null,
       },
     });

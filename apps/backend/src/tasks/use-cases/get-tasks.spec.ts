@@ -20,6 +20,8 @@ describe('GetTasks', () => {
     tasksRepository = {
       findManyByList: jest.fn(),
       countByList: jest.fn(),
+      findManyByUser: jest.fn(),
+      countByUser: jest.fn(),
     } as any;
 
     listsRepository = {
@@ -174,23 +176,31 @@ describe('GetTasks', () => {
       });
     });
 
-    it('should return empty array when no listId provided', async () => {
+    it('should return all user tasks when no listId provided', async () => {
       const query: GetTasksQueryDto = {};
 
-      taskMapper.toDtos.mockResolvedValue([]);
+      tasksRepository.findManyByUser.mockResolvedValue(mockTasks);
+      tasksRepository.countByUser.mockResolvedValue(2);
+      taskMapper.toDtos.mockResolvedValue(mockTaskDtos);
 
       const result = await getTasks.execute(userId, query);
 
       expect(result).toEqual({
-        tasks: [],
-        total: 0,
+        tasks: mockTaskDtos,
+        total: 2,
         limit: 100,
         offset: 0,
       });
 
-      expect(taskMapper.toDtos).toHaveBeenCalledWith([]);
+      expect(taskMapper.toDtos).toHaveBeenCalledWith(mockTasks);
       expect(listsRepository.findById).not.toHaveBeenCalled();
       expect(tasksRepository.findManyByList).not.toHaveBeenCalled();
+      expect(tasksRepository.findManyByUser).toHaveBeenCalledWith(userId, {
+        limit: 100,
+        offset: 0,
+        includeCompleted: false,
+      });
+      expect(tasksRepository.countByUser).toHaveBeenCalledWith(userId);
     });
 
     it('should throw NotFoundException when list does not exist', async () => {

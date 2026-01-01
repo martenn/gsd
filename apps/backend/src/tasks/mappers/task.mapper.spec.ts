@@ -83,7 +83,7 @@ describe('TaskMapper', () => {
         createdAt: mockTask.createdAt,
         completedAt: null,
       });
-      expect(listsRepository.findById).toHaveBeenCalledWith('user-1', 'backlog-1');
+      expect(listsRepository.findById).toHaveBeenCalledWith('backlog-1', 'user-1');
     });
 
     it('should use default color when origin backlog has no color', async () => {
