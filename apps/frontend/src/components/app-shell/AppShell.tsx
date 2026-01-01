@@ -23,16 +23,12 @@ export function AppShell({ children }: AppShellProps) {
     }
   }, [isLoading, isAuthenticated, user]);
 
-  if (isLoading) {
+  if (isLoading || !user) {
     return (
       <div className="h-screen flex items-center justify-center">
         <LoadingSpinner variant="spinner" />
       </div>
     );
-  }
-
-  if (!user) {
-    return null;
   }
 
   const getCurrentMode = (): Mode => {

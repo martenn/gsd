@@ -74,7 +74,7 @@ export function CreateListButton({ type }: CreateListButtonProps) {
   }
 
   return (
-    <Button variant="outline" size="sm" className="w-full" onClick={() => setIsCreating(true)}>
+    <Button variant="outline" size="sm" onClick={() => setIsCreating(true)}>
       <Plus className="w-4 h-4 mr-2" />
       New {type === 'backlog' ? 'Backlog' : 'List'}
     </Button>

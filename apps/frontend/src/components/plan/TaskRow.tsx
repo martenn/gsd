@@ -1,8 +1,11 @@
 import { useState } from 'react';
 import type { TaskDto, ListDto } from '@gsd/types';
+import { CheckCircle } from 'lucide-react';
 import { TaskActionsMenu } from './TaskActionsMenu';
 import { TaskEditForm } from './TaskEditForm';
-import { useUpdateTask } from '../../hooks/useTasks';
+import { Button } from '../ui/button';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../ui/tooltip';
+import { useUpdateTask, useCompleteTask } from '../../hooks/useTasks';
 
 interface TaskRowProps {
   task: TaskDto;
@@ -12,6 +15,7 @@ interface TaskRowProps {
 export function TaskRow({ task, lists }: TaskRowProps) {
   const [isEditing, setIsEditing] = useState(false);
   const updateTaskMutation = useUpdateTask();
+  const completeTaskMutation = useCompleteTask();
 
   const handleSave = async (data: { title: string; description?: string }) => {
     try {
@@ -28,6 +32,14 @@ export function TaskRow({ task, lists }: TaskRowProps) {
 
   const handleEdit = () => {
     setIsEditing(true);
+  };
+
+  const handleComplete = async () => {
+    try {
+      await completeTaskMutation.mutateAsync(task.id);
+    } catch (error) {
+      console.error('Failed to complete task:', error);
+    }
   };
 
   if (isEditing) {
@@ -52,7 +64,19 @@ export function TaskRow({ task, lists }: TaskRowProps) {
           )}
         </div>
 
-        <div className="ml-2 opacity-0 group-hover:opacity-100 transition-opacity">
+        <div className="ml-2 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button variant="ghost" size="sm" className="h-6 w-6 p-0" onClick={handleComplete}>
+                  <CheckCircle className="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Mark as complete</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
           <TaskActionsMenu task={task} lists={lists} onEdit={handleEdit} />
         </div>
       </div>
