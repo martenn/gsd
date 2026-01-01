@@ -1,0 +1,99 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:16-alpine
+    container_name: gsd-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: gsd
+      POSTGRES_USER: gsd_user
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./backups:/backups
+    networks:
+      - gsd-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U gsd_user -d gsd"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Backend (NestJS API)
+  backend:
+    build:
+      context: ./apps/backend
+      dockerfile: Dockerfile
+      target: production
+    container_name: gsd-backend
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      DATABASE_URL: postgresql://gsd_user:${DB_PASSWORD}@postgres:5432/gsd
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-7d}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
+      GOOGLE_CALLBACK_URL: ${APP_URL}/api/auth/google/callback
+      FRONTEND_URL: ${APP_URL}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - gsd-network
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:3000/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Frontend (Astro + Nginx)
+  frontend:
+    build:
+      context: ./apps/frontend
+      dockerfile: Dockerfile
+    container_name: gsd-frontend
+    restart: unless-stopped
+    environment:
+      PUBLIC_API_URL: ${APP_URL}/api
+    networks:
+      - gsd-network
+
+  # Nginx Reverse Proxy (Routes to Frontend/Backend)
+  nginx-proxy:
+    image: nginx:alpine
+    container_name: gsd-nginx-proxy
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+      - "[::]:8080:80"  # IPv6 support
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+    depends_on:
+      - backend
+      - frontend
+    networks:
+      - gsd-network
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:80/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+networks:
+  gsd-network:
+    driver: bridge
+    enable_ipv6: true
+    ipam:
+      config:
+        - subnet: 172.25.0.0/16
+        - subnet: fd00::/80
+
+volumes:
+  postgres_data:
+    driver: local

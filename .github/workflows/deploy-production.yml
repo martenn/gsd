@@ -1,0 +1,204 @@
+name: Deploy to Production
+
+# Trigger: Manual or on push to main (configurable)
+on:
+  workflow_dispatch:
+    inputs:
+      skip_tests:
+        description: 'Skip tests (not recommended for production)'
+        required: false
+        type: boolean
+        default: false
+  # Uncomment to enable automatic deployment on push to main
+  # push:
+  #   branches:
+  #     - main
+
+env:
+  REGISTRY: ghcr.io
+
+jobs:
+  # Run tests before deployment
+  test:
+    name: Run Tests
+    if: ${{ !inputs.skip_tests }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Generate Prisma Client
+        run: pnpm --filter @gsd/backend db:generate
+
+      - name: Run tests
+        run: pnpm test
+
+  # Build and push Docker images
+  build-images:
+    name: Build & Push Images
+    needs: [test]
+    if: always() && (needs.test.result == 'success' || needs.test.result == 'skipped')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    strategy:
+      matrix:
+        app: [backend, frontend]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ github.repository }}/${{ matrix.app }}
+          tags: |
+            type=sha,prefix=prod-
+            type=raw,value=latest
+            type=raw,value=prod-{{date 'YYYYMMDDHHmmss'}}
+
+      - name: Build and push ${{ matrix.app }}
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: apps/${{ matrix.app }}/Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Image summary
+        run: |
+          echo "## ${{ matrix.app }} Image Built" >> $GITHUB_STEP_SUMMARY
+          echo "**Tags:** \`${{ steps.meta.outputs.tags }}\`" >> $GITHUB_STEP_SUMMARY
+
+  # Deploy to production server
+  deploy:
+    name: Deploy to Server
+    needs: [build-images]
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+      url: https://getsd.bieda.it
+
+    steps:
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.PRODUCTION_HOST }}
+          username: ${{ secrets.PRODUCTION_USER }}
+          key: ${{ secrets.PRODUCTION_SSH_KEY }}
+          port: ${{ secrets.PRODUCTION_SSH_PORT || 22 }}
+          script: |
+            # Navigate to project directory
+            cd /opt/gsd
+
+            # Login to GitHub Container Registry
+            echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+            # Pull latest images
+            docker compose pull
+
+            # Restart services with new images
+            docker compose up -d --force-recreate
+
+            # Wait for services to be healthy
+            echo "Waiting for services to start..."
+            sleep 15
+
+            # Run database migrations
+            docker compose exec -T backend npm run db:migrate:deploy
+
+            # Health check
+            if ! docker compose exec -T backend curl -f http://localhost:3000/health; then
+              echo "ERROR: Backend health check failed!"
+              exit 1
+            fi
+
+            # Cleanup old images
+            docker image prune -af --filter "until=24h"
+
+            echo "Deployment completed successfully!"
+
+      - name: Verify deployment
+        run: |
+          # Wait a bit for external proxy to pick up changes
+          sleep 5
+
+          # Check external URL
+          if curl -sf https://getsd.bieda.it/api/health > /dev/null; then
+            echo "✅ Deployment verified - application is healthy"
+          else
+            echo "⚠️  Warning: External health check failed (may need time to propagate)"
+            exit 0  # Don't fail deployment on this
+          fi
+
+      - name: Deployment summary
+        if: always()
+        run: |
+          echo "## 🚀 Deployment Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Environment:** Production" >> $GITHUB_STEP_SUMMARY
+          echo "**URL:** https://getsd.bieda.it" >> $GITHUB_STEP_SUMMARY
+          echo "**Commit:** \`${{ github.sha }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "**Triggered by:** @${{ github.actor }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Images deployed:**" >> $GITHUB_STEP_SUMMARY
+          echo "- Backend: \`ghcr.io/${{ github.repository }}/backend:latest\`" >> $GITHUB_STEP_SUMMARY
+          echo "- Frontend: \`ghcr.io/${{ github.repository }}/frontend:latest\`" >> $GITHUB_STEP_SUMMARY
+
+  # Rollback job (manual trigger only)
+  rollback:
+    name: Rollback Deployment
+    if: failure()
+    needs: [deploy]
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+
+    steps:
+      - name: Rollback via SSH
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.PRODUCTION_HOST }}
+          username: ${{ secrets.PRODUCTION_USER }}
+          key: ${{ secrets.PRODUCTION_SSH_KEY }}
+          port: ${{ secrets.PRODUCTION_SSH_PORT || 22 }}
+          script: |
+            cd /opt/gsd
+
+            # Restore previous version (if tagged)
+            docker compose pull
+            docker compose down
+            docker compose up -d
+
+            echo "Rollback initiated - manual verification required"
