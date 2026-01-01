@@ -255,6 +255,7 @@ services:
   # ... existing services
 
   watchtower:
+    # cSpell:ignore containrrr
     image: containrrr/watchtower
     container_name: gsd-watchtower
     volumes:
