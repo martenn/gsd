@@ -1,13 +1,10 @@
 ---
 import '../../styles/global.css';
 
-// Get query parameters
-const url = new URL(Astro.request.url);
-const success = url.searchParams.get('success') === 'true';
-const error = url.searchParams.get('error');
-
-// Determine where to redirect
-const redirectUrl = success ? '/app/plan' : '/';
+// Prevent caching of this page
+Astro.response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+Astro.response.headers.set('Pragma', 'no-cache');
+Astro.response.headers.set('Expires', '0');
 ---
 
 <!doctype html>
@@ -16,30 +13,67 @@ const redirectUrl = success ? '/app/plan' : '/';
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width" />
     <title>Authenticating - GSD</title>
-    <meta http-equiv="refresh" content={`0;url=${redirectUrl}`} />
   </head>
   <body class="min-h-screen flex items-center justify-center">
     <div class="text-center">
-      {
-        success ? (
-          <div>
-            <h1 class="text-2xl font-bold mb-4">Authentication successful!</h1>
-            <p class="text-muted-foreground mb-4">Redirecting to your dashboard...</p>
-          </div>
-        ) : (
-          <div>
-            <h1 class="text-2xl font-bold mb-4">Authentication failed</h1>
-            <p class="text-muted-foreground mb-4">
-              {error || 'Something went wrong. Please try again.'}
-            </p>
-            <p class="text-muted-foreground">Redirecting to home page...</p>
-          </div>
-        )
-      }
+      <div id="auth-status">
+        <!-- Content will be set by JavaScript to avoid flash -->
+        <div>
+          <h1 class="text-2xl font-bold mb-4">Processing...</h1>
+          <p class="text-muted-foreground mb-4">Please wait...</p>
+        </div>
+      </div>
       <div class="mt-4">
         <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-foreground">
         </div>
       </div>
     </div>
+
+    <script is:inline>
+      // Read URL params client-side to avoid any SSR/caching issues
+      const urlParams = new URLSearchParams(window.location.search);
+      const success = urlParams.get('success') === 'true';
+      const error = urlParams.get('error');
+      const code = urlParams.get('code');
+
+      // Update the content based on the actual URL params
+      const statusDiv = document.getElementById('auth-status');
+
+      if (success) {
+        statusDiv.innerHTML = `
+          <div>
+            <h1 class="text-2xl font-bold mb-4">Authentication successful!</h1>
+            <p class="text-muted-foreground mb-4">Redirecting to your dashboard...</p>
+          </div>
+        `;
+        // Redirect to dashboard
+        setTimeout(() => {
+          window.location.href = '/app/plan';
+        }, 500);
+      } else if (code) {
+        // If we have a code but no success param, we're still processing
+        statusDiv.innerHTML = `
+          <div>
+            <h1 class="text-2xl font-bold mb-4">Processing authentication...</h1>
+            <p class="text-muted-foreground mb-4">Please wait while we complete your sign-in.</p>
+          </div>
+        `;
+      } else {
+        // Authentication failed
+        statusDiv.innerHTML = `
+          <div>
+            <h1 class="text-2xl font-bold mb-4">Authentication failed</h1>
+            <p class="text-muted-foreground mb-4">
+              ${error || 'Something went wrong. Please try again.'}
+            </p>
+            <p class="text-muted-foreground">Redirecting to home page...</p>
+          </div>
+        `;
+        // Redirect to home
+        setTimeout(() => {
+          window.location.href = '/';
+        }, 2000);
+      }
+    </script>
   </body>
 </html>
