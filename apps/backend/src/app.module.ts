@@ -1,8 +1,6 @@
 import { Module } from '@nestjs/common';
 import { APP_INTERCEPTOR, APP_GUARD } from '@nestjs/core';
 import { ThrottlerModule } from '@nestjs/throttler';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
 import { PrismaModule } from './database/prisma.module';
 import { AuthModule } from './auth/auth.module';
 import { ListsModule } from './lists/lists.module';
@@ -34,9 +32,8 @@ import { CustomThrottlerGuard } from './common/guards/custom-throttler.guard';
     HealthModule,
     MetricsModule,
   ],
-  controllers: [AppController],
+  controllers: [],
   providers: [
-    AppService,
     {
       provide: APP_GUARD,
       useClass: CustomThrottlerGuard,
