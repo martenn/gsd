@@ -19,6 +19,7 @@ COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY apps/backend ./apps/backend
 COPY packages ./packages
 RUN pnpm install --frozen-lockfile --filter @gsd/backend...
+RUN cd apps/backend && pnpm prisma generate
 RUN pnpm --filter @gsd/backend build
 
 # Stage 4: Production
@@ -27,18 +28,20 @@ RUN corepack enable && corepack prepare pnpm@9.15.0 --activate
 
 WORKDIR /app
 
-# Copy production dependencies
-COPY --from=dependencies /app/node_modules ./node_modules
-COPY --from=dependencies /app/apps/backend/node_modules ./apps/backend/node_modules
-COPY --from=dependencies /app/packages ./packages
+# Copy workspace files
+COPY --from=build /app/package.json /app/pnpm-lock.yaml /app/pnpm-workspace.yaml ./
 
-# Copy built application
+# Copy node_modules from build stage (includes generated Prisma client)
+COPY --from=build /app/node_modules ./node_modules
+
+# Copy packages
+COPY --from=build /app/packages ./packages
+
+# Copy backend application
 COPY --from=build /app/apps/backend/dist ./apps/backend/dist
-COPY --from=build /app/apps/backend/package.json ./apps/backend/
-
-# Copy Prisma schema and generate client
-COPY apps/backend/prisma ./apps/backend/prisma
-RUN cd apps/backend && pnpm prisma generate
+COPY --from=build /app/apps/backend/package.json ./apps/backend/package.json
+COPY --from=build /app/apps/backend/prisma ./apps/backend/prisma
+COPY --from=build /app/apps/backend/node_modules ./apps/backend/node_modules
 
 # Security: Use non-root user
 USER node
