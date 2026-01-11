@@ -6,11 +6,17 @@ RUN corepack enable && corepack prepare pnpm@9.15.0 --activate
 
 WORKDIR /app
 
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml tsconfig.base.json ./
 COPY apps/frontend ./apps/frontend
 COPY packages ./packages
 
-RUN pnpm install --frozen-lockfile --filter @gsd/frontend...
+# Install all dependencies (needed for building workspace packages)
+RUN pnpm install --frozen-lockfile
+
+# Build workspace packages first (required for frontend compilation)
+RUN pnpm --filter "./packages/*" build
+
+# Build frontend
 RUN pnpm --filter @gsd/frontend build
 
 # Stage 2: Production (Nginx)
