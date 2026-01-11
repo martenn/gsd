@@ -7,13 +7,49 @@
 
 ---
 
+## 📦 Preparing Deployment Package
+
+If you're deploying manually without git access on the server, use the packaging script:
+
+```bash
+# On your development machine
+pnpm package:deployment
+
+# This creates: dist/gsd-deployment-YYYYMMDD-HHMMSS.zip
+# Upload this file to your server and extract it
+```
+
+The package includes:
+- `docker-compose.yml` - Container orchestration
+- `.env.example` - Environment template
+- `nginx/` - Reverse proxy configuration
+- `scripts/` - Deployment and maintenance scripts
+- `DEPLOYMENT.md` - This guide
+- Documentation files
+
+**Note:** Docker images are pulled from GitHub Container Registry (GHCR). The package does NOT include application source code.
+
+---
+
 ## 📋 Quick Start
 
 For experienced users:
 
+**Option A: Using Git (Recommended)**
 ```bash
 # On your server
 git clone <repository-url> /opt/gsd
+cd /opt/gsd
+./scripts/setup-env.sh
+docker compose up -d
+./scripts/health-check.sh
+```
+
+**Option B: Using Deployment Package**
+```bash
+# On your server (after uploading the zip file)
+unzip gsd-deployment-YYYYMMDD-HHMMSS.zip
+sudo mv gsd-deployment-YYYYMMDD-HHMMSS /opt/gsd
 cd /opt/gsd
 ./scripts/setup-env.sh
 docker compose up -d
@@ -122,17 +158,28 @@ sudo ufw status verbose
 
 ### Step 4: Deploy Application
 
+**Option A: Using Git**
 ```bash
 # Create deployment directory
 sudo mkdir -p /opt/gsd
 sudo chown $USER:$USER /opt/gsd
 
-# Clone repository (or copy files via scp)
+# Clone repository
 git clone <your-repository-url> /opt/gsd
 cd /opt/gsd
+```
 
-# Or copy files manually:
-# scp -r ./gsd/* user@server:/opt/gsd/
+**Option B: Using Deployment Package**
+```bash
+# Create deployment directory
+sudo mkdir -p /opt/gsd
+
+# Upload and extract package
+# (Upload gsd-deployment-YYYYMMDD-HHMMSS.zip to server first)
+unzip gsd-deployment-YYYYMMDD-HHMMSS.zip
+sudo mv gsd-deployment-YYYYMMDD-HHMMSS/* /opt/gsd/
+sudo chown -R $USER:$USER /opt/gsd
+cd /opt/gsd
 ```
 
 ### Step 5: Configure Environment

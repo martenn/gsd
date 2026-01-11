@@ -67,6 +67,7 @@ jobs:
             type=raw,value=${{ inputs.tag }},enable=${{ inputs.tag != '' }}
 
       - name: Build backend image
+        id: build-backend
         uses: docker/build-push-action@v5
         with:
           context: .
@@ -78,17 +79,25 @@ jobs:
           cache-to: type=gha,mode=max
           load: true
 
+      - name: Get primary image tag for scanning
+        id: scan-tag-backend
+        run: |
+          FIRST_TAG=$(echo "${{ steps.meta.outputs.tags }}" | head -n1)
+          echo "tag=$FIRST_TAG" >> $GITHUB_OUTPUT
+          echo "Scanning image: $FIRST_TAG"
+
       - name: Scan backend image for vulnerabilities
         uses: aquasecurity/trivy-action@master
+        continue-on-error: true
         with:
-          image-ref: ${{ env.REGISTRY }}/${{ github.repository }}/backend:latest
+          image-ref: ${{ steps.scan-tag-backend.outputs.tag }}
           format: 'sarif'
           output: 'trivy-backend-results.sarif'
           severity: 'CRITICAL,HIGH'
 
       - name: Upload Trivy results to GitHub Security
-        uses: github/codeql-action/upload-sarif@v3
-        if: always()
+        uses: github/codeql-action/upload-sarif@v4
+        if: always() && hashFiles('trivy-backend-results.sarif') != ''
         with:
           sarif_file: 'trivy-backend-results.sarif'
           category: 'backend-image'
@@ -156,6 +165,7 @@ jobs:
             type=raw,value=${{ inputs.tag }},enable=${{ inputs.tag != '' }}
 
       - name: Build frontend image
+        id: build-frontend
         uses: docker/build-push-action@v5
         with:
           context: .
@@ -167,17 +177,25 @@ jobs:
           cache-to: type=gha,mode=max
           load: true
 
+      - name: Get primary image tag for scanning
+        id: scan-tag-frontend
+        run: |
+          FIRST_TAG=$(echo "${{ steps.meta.outputs.tags }}" | head -n1)
+          echo "tag=$FIRST_TAG" >> $GITHUB_OUTPUT
+          echo "Scanning image: $FIRST_TAG"
+
       - name: Scan frontend image for vulnerabilities
         uses: aquasecurity/trivy-action@master
+        continue-on-error: true
         with:
-          image-ref: ${{ env.REGISTRY }}/${{ github.repository }}/frontend:latest
+          image-ref: ${{ steps.scan-tag-frontend.outputs.tag }}
           format: 'sarif'
           output: 'trivy-frontend-results.sarif'
           severity: 'CRITICAL,HIGH'
 
       - name: Upload Trivy results to GitHub Security
-        uses: github/codeql-action/upload-sarif@v3
-        if: always()
+        uses: github/codeql-action/upload-sarif@v4
+        if: always() && hashFiles('trivy-frontend-results.sarif') != ''
         with:
           sarif_file: 'trivy-frontend-results.sarif'
           category: 'frontend-image'

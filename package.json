@@ -26,6 +26,7 @@
     "validate": "./scripts/validate.sh",
     "validate:backend": "./scripts/validate.sh backend",
     "validate:frontend": "./scripts/validate.sh frontend",
+    "package:deployment": "./scripts/package-deployment.sh",
     "clean": "pnpm --recursive exec rm -rf dist node_modules"
   },
   "devDependencies": {
