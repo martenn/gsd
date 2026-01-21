@@ -1,7 +1,7 @@
 # GSD Project Tracker
 
-**Last Updated:** 2026-01-01 (UX Improvements - Task Complete Button & Layout Fix)
-**Current Sprint:** Mobile Responsiveness & Final Polish
+**Last Updated:** 2026-01-21 (Sprint Reprioritization - Technical Debt & Deployment)
+**Current Sprint:** Technical Debt Resolution & Deployment Preparation
 
 ## 📊 MVP Progress Overview
 
@@ -13,32 +13,53 @@ Frontend: ███████████████░░░░░ 75% (55/7
 Infra:    ██████████████████░░ 94% (16/17 features)
 ```
 
-**Target MVP Completion:** TBD
-**Current Blockers:** None - Security hardening complete!
+**Target MVP Completion:** Pending deployment preparation
+**Current Focus:** Resolving technical debt before production deployment
 
 ---
 
 ## 🎯 Current Sprint Goals
 
-### Sprint: Frontend UI Components
+### Sprint: Technical Debt & Deployment Preparation
 
-**Status:** 🟢 Core Features Complete, Polish & Mobile Next
-**Duration:** TBD (Weeks 1-8)
-**Goal:** Complete MVP-required features (mobile, dump mode, polish)
+**Status:** 🟡 Addressing Known Issues & Deployment Prep
+**Duration:** Current Sprint
+**Goal:** Fix critical technical debt and prepare for production deployment
 
-**Deliverables:**
+**Priorities:**
+
+1. **🔴 PRIORITY 1: Fix Known Issues**
+   - [ ] Origin backlog color tracking (CRITICAL - Data integrity issue)
+   - [ ] PrismaClient shared singleton (connection pool optimization)
+   - [ ] Cookie/JWT expiration sync (security consistency)
+   - [ ] Code duplication - TaskMapper extraction (DRY compliance)
+   - [ ] Validation gap - ReorderTaskDto improvement
+   - [ ] Missing E2E tests (auth flow, complete, reorder endpoints)
+
+2. **🔵 PRIORITY 2: Deployment Preparation** (Owner responsibility)
+   - [ ] Environment configuration (.env files, secrets management)
+   - [ ] Database migration strategy for production
+   - [ ] SSL/TLS certificates setup
+   - [ ] Monitoring & logging infrastructure
+   - [ ] Backup strategy
+   - [ ] Domain & hosting setup
+
+**Previous Sprint Deliverables (Complete):**
 
 - [x] API Client & All Hooks ✅
 - [x] TanStack Query Integration ✅
-- [x] Done Archive View ✅ (Week 1 Complete)
-- [x] Work Mode View ✅ (Week 2 Complete)
-- [x] Plan Mode CRUD UI ✅ (Week 3 Complete)
-- [x] Plan Mode List Management UI ✅ (Week 4 Complete - Rename, delete, toggle backlog)
-- [x] Plan Mode Task Management UI ✅ (Week 4 Complete - Edit, move operations)
-- [x] Dump Mode ✅ (Week 5 Complete - Cmd+Shift+D shortcut, bulk-add endpoint)
-- [ ] Mobile Responsiveness (Week 5) 🎯 NEXT - PRD Required!
-- [ ] Keyboard Help Overlay (Week 6)
-- [ ] Plan Mode Keyboard Navigation (Final) - Power User Feature
+- [x] Done Archive View ✅
+- [x] Work Mode View ✅
+- [x] Plan Mode CRUD UI ✅
+- [x] Plan Mode List Management UI ✅
+- [x] Plan Mode Task Management UI ✅
+- [x] Dump Mode ✅
+
+**Post-Deployment Features (Backlog):**
+
+- [ ] Mobile Responsiveness
+- [ ] Keyboard Help Overlay
+- [ ] Plan Mode Keyboard Navigation (Power User Feature)
 
 ---
 
