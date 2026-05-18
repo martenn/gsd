@@ -60,6 +60,8 @@ docker compose up -d
 
 ## 🎯 Prerequisites
 
+> **Host-specific notes:** If deploying to the chosen Mikrus VPS (`artur131.mikrus.xyz`), read [.ai/mikrus-deployment-notes.md](.ai/mikrus-deployment-notes.md) first — LXC kernel restrictions require non-trivial `docker-compose.yml` changes (host networking, unprivileged nginx image, explicit IPv6 listen, Cloudflare SSL mode = Full).
+
 ### Server Requirements
 
 - **OS:** Ubuntu 22.04 LTS or Debian 12

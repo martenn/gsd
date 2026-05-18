@@ -1,7 +1,9 @@
 # GSD Project Tracker
 
-**Last Updated:** 2026-01-21 (Sprint Reprioritization - Technical Debt & Deployment)
+**Last Updated:** 2026-05-18 (Phase 8 — mikrus deployment notes captured from sibling project deploy; new task: host networking compose refactor)
 **Current Sprint:** Technical Debt Resolution & Deployment Preparation
+
+**2026-05-04 verification:** Fresh `pnpm install` + `prisma generate` → backend typecheck clean, frontend typecheck clean, backend build clean, frontend build clean, 232/232 backend tests pass, lint 0 errors (150 warnings in tests). No code drift from CLAUDE.md standards.
 
 ## 📊 MVP Progress Overview
 
@@ -505,21 +507,24 @@ Infra:    ██████████████████░░ 94% (16/1
 ## 🚀 Phase 8: Deployment & Production
 
 **Goal:** Production-ready deployment
-**Progress:** ░░░░░░░░░░░░░░░░░░░░ 0% (0/8)
+**Target host:** `artur131.mikrus.xyz` (Mikrus VPS, LXC) — see [.ai/mikrus-deployment-notes.md](./mikrus-deployment-notes.md)
+**Progress:** ░░░░░░░░░░░░░░░░░░░░ 0% (0/9)
 
-| Status | Feature                   | Est. | Notes                          | Owner |
-| ------ | ------------------------- | ---- | ------------------------------ | ----- |
-| ⚪     | Environment configuration | 1d   | .env files, secrets management | -     |
-| ⚪     | Database migrations       | 0.5d | Production migration strategy  | -     |
-| ⚪     | Docker production build   | 1d   | Optimized images               | -     |
-| ⚪     | CI/CD deployment          | 2d   | Auto-deploy on merge to main   | -     |
-| ⚪     | SSL/TLS certificates      | 0.5d | Let's Encrypt or similar       | -     |
-| ⚪     | Monitoring & logging      | 1d   | Error tracking, metrics        | -     |
-| ⚪     | Backup strategy           | 1d   | Database backups               | -     |
-| ⚪     | Domain & hosting          | 0.5d | DNS, hosting setup             | -     |
+| Status | Feature                            | Est. | Notes                                                                                          | Owner |
+| ------ | ---------------------------------- | ---- | ---------------------------------------------------------------------------------------------- | ----- |
+| ⚪     | Environment configuration          | 1d   | .env files, secrets management                                                                 | -     |
+| ⚪     | Database migrations                | 0.5d | Production migration strategy                                                                  | -     |
+| ⚪     | Docker production build            | 1d   | Optimized images                                                                               | -     |
+| ⚪     | **Host networking compose refactor** | 1-2d | **Mikrus LXC blocks docker bridge — `network_mode: host`, swap to `nginx-unprivileged`, add IPv6 listen, dedupe host ports.** See mikrus-deployment-notes.md gotchas #1–#4 | -     |
+| ⚪     | CI/CD deployment                   | 2d   | Auto-deploy on merge to main                                                                   | -     |
+| ⚪     | SSL/TLS certificates               | 0.5d | Cloudflare in front + mikrus shared cert — set CF SSL mode to **Full** (not Full strict). See mikrus-deployment-notes.md gotcha #5 | -     |
+| ⚪     | Monitoring & logging               | 1d   | Error tracking, metrics                                                                        | -     |
+| ⚪     | Backup strategy                    | 1d   | Database backups                                                                               | -     |
+| ⚪     | Domain & hosting                   | 0.5d | DNS for `getsd.bieda.it` (CF) → `artur131.mikrus.xyz` → host port `8080`. Pesel sibling uses 8081 | -     |
 
 **Phase Blockers:** MVP features completion
 **Next Up:** Environment configuration
+**Pre-Deploy Reading:** [.ai/mikrus-deployment-notes.md](./mikrus-deployment-notes.md) — captures non-obvious LXC/mikrus gotchas discovered while deploying the pesel-birth-date sibling project to the same host. Reading time: ~5 min. Skipping it will cost a half-day of debugging.
 
 ---
 
