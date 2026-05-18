@@ -517,10 +517,10 @@ Infra:    ██████████████████░░ 94% (16/1
 | ⚪     | Docker production build            | 1d   | Optimized images                                                                               | -     |
 | ⚪     | **Host networking compose refactor** | 1-2d | **Mikrus LXC blocks docker bridge — `network_mode: host`, swap to `nginx-unprivileged`, add IPv6 listen, dedupe host ports.** See mikrus-deployment-notes.md gotchas #1–#4 | -     |
 | ⚪     | CI/CD deployment                   | 2d   | Auto-deploy on merge to main                                                                   | -     |
-| ⚪     | SSL/TLS certificates               | 0.5d | Cloudflare in front + mikrus shared cert — set CF SSL mode to **Full** (not Full strict). See mikrus-deployment-notes.md gotcha #5 | -     |
+| ⚪     | Domain & TLS (mikrus-managed)      | 0.25d | Mikrus admin panel terminates TLS and attaches `getsd.bieda.it` → local port 8080. App sees plain HTTP + `X-Forwarded-Proto: https`. No Cloudflare. | -     |
 | ⚪     | Monitoring & logging               | 1d   | Error tracking, metrics                                                                        | -     |
 | ⚪     | Backup strategy                    | 1d   | Database backups                                                                               | -     |
-| ⚪     | Domain & hosting                   | 0.5d | DNS for `getsd.bieda.it` (CF) → `artur131.mikrus.xyz` → host port `8080`. Pesel sibling uses 8081 | -     |
+| ⚪     | Server bootstrap & first deploy    | 0.5d | Docker install, UFW (22+8080), `git clone /opt/gsd`, `setup-env.sh`, `compose pull && up -d`, migrate. Pesel sibling uses 8081 on same host. | -     |
 
 **Phase Blockers:** MVP features completion
 **Next Up:** Environment configuration

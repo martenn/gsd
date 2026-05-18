@@ -1,11 +1,11 @@
 # Mikrus Deployment Notes
 
-**Version:** 1.0
-**Last Updated:** 2026-05-14
+**Version:** 1.1
+**Last Updated:** 2026-05-18
 **Status:** Captured from pesel-birth-date deployment to `artur131.mikrus.xyz`
 **Applies to:** GSD deployment to the same host
 
-This document captures server-specific quirks discovered while deploying a sibling project to the target Mikrus VPS. The lessons transfer to GSD because the *exposure* model (Cloudflare → mikrus panel subdomain → local port) is identical, even though GSD's image distribution differs (GHCR pull vs local build).
+This document captures server-specific quirks discovered while deploying a sibling project to the target Mikrus VPS. The lessons transfer to GSD because the *exposure* model (mikrus panel subdomain → local port, with mikrus terminating TLS) is identical, even though GSD's image distribution differs (GHCR pull vs local build).
 
 ---
 
@@ -78,13 +78,13 @@ server {
 
 Verify on the host: `ss -tlnp | grep <port>` should show both `0.0.0.0:<port>` and `[::]:<port>`.
 
-### 5. Cloudflare → mikrus SSL mode
+### 5. TLS termination & domain attachment
 
-**Flow:** `<subdomain>.bieda.it` (Cloudflare-proxied) → `artur131.mikrus.xyz:443` (mikrus shared TLS) → local port.
+**Flow:** `getsd.bieda.it` → mikrus edge (handles DNS, TLS termination, virtual host) → local host port.
 
-- Mikrus terminates HTTPS with its own shared certificate
-- Cloudflare SSL mode must be **Full** (origin presents a valid cert, but CF doesn't validate the hostname match) — *not* **Full (strict)** (would fail because the cert is `*.mikrus.xyz`, not the user's domain)
-- **Flexible** also works if HTTP-only origin is acceptable, but loses end-to-end encryption
+- Mikrus admin panel attaches the domain and provisions the certificate. **No Cloudflare in the path** for this project.
+- Application sees plain HTTP from the mikrus edge proxy with `X-Forwarded-Proto: https` headers.
+- nginx `set_real_ip_from 0.0.0.0/0` accepts those headers because the mikrus edge is the only host reaching local port 8080 (UFW enforces this).
 
 ### 6. Port allocation across projects on this host
 
@@ -95,7 +95,7 @@ Verify on the host: `ss -tlnp | grep <port>` should show both `0.0.0.0:<port>` a
 
 If GSD adopts host networking, **every** service's port must be unique on the host. Pick now:
 - `nginx-proxy`: 8080
-- `postgres`: 5432 (only bind to 127.0.0.1, do not expose to Cloudflare)
+- `postgres`: 5432 (only bind to 127.0.0.1, do not expose to the public)
 - `backend`: internal port (3000) — only reached by `localhost:3000` from nginx, do not expose
 - `frontend`: internal port — same constraint
 
