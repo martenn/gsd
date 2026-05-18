@@ -59,6 +59,7 @@ chmod +x "$TEMP_DIR/scripts"/*.sh
 # Deployment documentation
 mkdir -p "$TEMP_DIR/.ai"
 cp "$PROJECT_ROOT/.ai/deployment-strategies.md" "$TEMP_DIR/.ai/" 2>/dev/null || true
+cp "$PROJECT_ROOT/.ai/mikrus-deployment-notes.md" "$TEMP_DIR/.ai/" 2>/dev/null || true
 
 # Create package info file
 cat > "$TEMP_DIR/PACKAGE-INFO.txt" << EOF
