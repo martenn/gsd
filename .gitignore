@@ -140,3 +140,5 @@ vite.config.ts.timestamp-*
 
 # .pnpm
 .pnpm-store/
+# Claude Code worktrees (background-agent isolation)
+.claude/worktrees/
