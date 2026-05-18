@@ -16,6 +16,11 @@ RUN pnpm install --frozen-lockfile
 # Build workspace packages first (required for frontend compilation)
 RUN pnpm --filter "./packages/*" build
 
+# PUBLIC_API_URL is inlined by Astro/Vite at build time and cannot be changed
+# at runtime. Must be supplied as a build-arg in CI / docker-compose.
+ARG PUBLIC_API_URL=http://localhost:3000
+ENV PUBLIC_API_URL=${PUBLIC_API_URL}
+
 # Build frontend
 RUN pnpm --filter @gsd/frontend build
 

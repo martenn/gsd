@@ -95,6 +95,8 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+          build-args: |
+            PUBLIC_API_URL=${{ vars.APP_URL }}/api
 
       - name: Image summary
         run: |

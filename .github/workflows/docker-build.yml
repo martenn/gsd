@@ -176,6 +176,8 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
           load: true
+          build-args: |
+            PUBLIC_API_URL=${{ vars.APP_URL }}/api
 
       - name: Get primary image tag for scanning
         id: scan-tag-frontend
@@ -210,6 +212,8 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
+          build-args: |
+            PUBLIC_API_URL=${{ vars.APP_URL }}/api
 
       - name: Image build summary
         run: |

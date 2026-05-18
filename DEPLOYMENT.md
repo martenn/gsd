@@ -244,6 +244,26 @@ docker compose logs -f
 
 ### Step 7: Run Database Migrations
 
+> **First deploy (empty database) — read this first.**
+> The backend container crashloops on a fresh schema (Prisma can't find the
+> expected tables on boot), so `docker compose exec backend ...` will never
+> find a running container. Use a one-off migration container instead, with
+> the backend stopped to avoid a race on the schema:
+>
+> ```bash
+> docker compose up -d postgres                 # ensure DB is healthy
+> docker compose stop backend                   # stop the crashlooper
+>
+> docker compose run --rm --no-deps backend \
+>   npx prisma migrate deploy --schema apps/backend/prisma/schema.prisma
+>
+> docker compose exec postgres psql -U gsd_user -d gsd -c "\dt"
+> docker compose start backend                  # boots clean now
+> ```
+>
+> Once the schema exists, subsequent migrations (after image upgrades) can use
+> the simpler in-place flow below.
+
 ```bash
 # Wait for backend to be healthy (about 30 seconds)
 sleep 30
@@ -580,6 +600,29 @@ docker compose restart postgres
 3. **Check external proxy:**
    - Ensure X-Forwarded-Proto header is set to "https"
    - Backend needs to know it's behind HTTPS proxy
+
+### Backend Crashloops Before First Migration
+
+**Symptom:** `docker compose ps` shows `backend` cycling between `starting` and
+`exited`; logs show Prisma errors about missing tables (`relation "users" does
+not exist`, etc.). `docker compose exec backend ...` reports the container is
+restarting.
+
+**Cause:** On a brand-new database, the backend boots, queries the schema, and
+crashes — Docker restarts it, and the loop repeats. There is never a healthy
+backend container to `exec` migrations into.
+
+**Fix:** Run migrations in a throwaway container with the backend stopped:
+
+```bash
+docker compose stop backend
+docker compose run --rm --no-deps backend \
+  npx prisma migrate deploy --schema apps/backend/prisma/schema.prisma
+docker compose start backend
+```
+
+This applies in any environment with an empty Postgres volume — fresh deploy,
+restored backup with a newer image, local volume reset.
 
 ### Port 8080 Already in Use
 

@@ -72,11 +72,12 @@ services:
     build:
       context: .
       dockerfile: apps/frontend/Dockerfile
+      args:
+        # Baked into the Astro static bundle at build time.
+        PUBLIC_API_URL: ${APP_URL}/api
     container_name: gsd-frontend
     restart: unless-stopped
     network_mode: host
-    environment:
-      PUBLIC_API_URL: ${APP_URL}/api
 
   nginx-proxy:
     # Unprivileged image: runs as UID 101, listens on unprivileged ports.
