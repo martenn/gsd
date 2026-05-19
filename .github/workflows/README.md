@@ -166,7 +166,7 @@ docker build -t gsd-frontend:test -f apps/frontend/Dockerfile .
 docker images | grep gsd
 ```
 
-See `DOCKER-BUILD-GUIDE.md` for detailed testing instructions.
+See `docs/docker.md` for detailed testing instructions.
 
 ### Best Practices
 

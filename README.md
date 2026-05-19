@@ -24,13 +24,13 @@ Target platform: responsive web (desktop and mobile web). Online‑only for MVP.
 
 - **Monorepo**: pnpm workspaces (`apps/`, `packages/`, `tools/`)
 - **Frontend**: Astro (islands) + React 19, Tailwind CSS, shadcn/ui, lucide-react, TanStack Query, react-hook-form + zod
-- **Backend**: NestJS 11 (REST), Prisma (PostgreSQL), class-validator/transformer, Swagger, scheduling, CORS/helmet/rate limiting, JWT via HttpOnly cookie, Google OAuth (planned)
+- **Backend**: NestJS 11 (REST), Prisma (PostgreSQL), class-validator/transformer, Swagger, scheduling, CORS/helmet/rate limiting, JWT via HttpOnly cookie, Google OAuth
 - **Database**: PostgreSQL 16; Prisma migrate; indexes on `user_id`, `list_id`, `completed_at`, `order_index`; transactions via `$transaction`
 - **Packages**: `@gsd/types` (shared TS types), `@gsd/validation` (Zod schemas)
 - **Tooling**: TypeScript strict, ESLint, Prettier, Jest, supertest
 - **Dev infra**: Docker Compose (Postgres + optional pgAdmin)
 
-Refer to the detailed docs: [Product Requirements](./.ai/prd.md) and [Tech Stack Summary](./.ai/tech-stack.md). Additional notes in `additional-docs/`.
+Refer to the detailed docs: [Product Requirements](./.ai/prd.md), [Tech Stack Summary](./.ai/tech-stack.md), [Local development](./docs/local-development.md), [Deployment](./docs/deployment.md), [Docker](./docs/docker.md). Database schema and migration guide live next to the code in `apps/backend/prisma/`.
 
 ## Getting started locally
 
@@ -133,7 +133,7 @@ Optional tools:
 - Plan mode (full control) and Work mode (focused complete-only action with forecast)
 - Keyboard-first interaction (arrows; h/j/k/l); “?” help overlay
 - Dump mode for quick multi-line add (up to 10 lines) into default backlog
-- Google OAuth sign-in/out and single-user data isolation (planned)
+- Google OAuth sign-in/out and single-user data isolation
 - Done view with pagination; retention keeps last 500 completed tasks
 - Metrics based on `completed_at`; week starts Monday; local timezone presentation
 
@@ -150,14 +150,10 @@ See the full [PRD](./.ai/prd.md) for user stories and acceptance criteria.
 
 ## Project status
 
-- Status: MVP scaffolding in progress
-- Present: Monorepo structure, Astro + React starter, NestJS app shell, Prisma schema and DB docker setup, shared packages skeleton
-- Planned next: Implement auth (Google + JWT), lists/tasks modules and endpoints, UI for plan/work/done modes, metrics, retention jobs, keyboard help overlay, Swagger docs, CI
-
-Known gaps for local dev:
-
-- No `.env.example` yet; set `DATABASE_URL` as documented above
-- OAuth credentials, JWT secret, and security middleware configuration pending
+- Status: MVP feature-complete; Technical Debt & Deployment Preparation sprint
+- Backend: 100% — auth (Google OAuth + JWT), lists/tasks CRUD, Done archive, metrics, rate limiting, CSP/HSTS, error middleware, health endpoints, CI/CD pipeline, Docker production images
+- Frontend: core views shipped — App Shell, Plan Mode (lists + tasks), Work Mode, Done Archive, Dump Mode, API client + TanStack Query
+- See [.ai/project-tracker.md](./.ai/project-tracker.md) for the live breakdown.
 
 ## License
 

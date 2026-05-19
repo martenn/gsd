@@ -1,9 +1,6 @@
-# Local Development Setup Guide
+# Local Development Guide
 
-**Last Updated:** 2025-12-31
-**Target:** Development environment with Postgres in Docker
-
----
+In-depth guide for running the GSD app locally with Postgres in Docker. The root `README.md` has a short quick-start; this doc is the deep reference linked from there.
 
 ## Quick Start
 
@@ -31,6 +28,7 @@ pnpm dev
 ```
 
 Your app will be running at:
+
 - **Frontend:** http://localhost:4321
 - **Backend API:** http://localhost:3000
 - **Postgres:** localhost:5432
@@ -38,9 +36,7 @@ Your app will be running at:
 
 ---
 
-## Detailed Setup
-
-### Prerequisites
+## Prerequisites
 
 - **Node.js:** v20.19.6 (check `.nvmrc`)
 - **pnpm:** v9.x
@@ -48,6 +44,7 @@ Your app will be running at:
 - **Docker Compose:** v2.20+
 
 **Install Node.js (using nvm):**
+
 ```bash
 # Install nvm if not already installed
 curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.0/install.sh | bash
@@ -58,6 +55,7 @@ nvm use
 ```
 
 **Install pnpm:**
+
 ```bash
 npm install -g pnpm@9
 ```
@@ -83,11 +81,19 @@ docker compose logs -f postgres
 ```
 
 **What this does:**
+
 - Starts PostgreSQL 16 on port 5432
 - Database name: `gsd_dev`
 - Username: `gsd`
 - Password: `gsd_dev_password`
 - Data persisted in Docker volume: `postgres_data`
+
+Wait for PostgreSQL to be ready (about 5 seconds):
+
+```bash
+docker exec gsd-postgres pg_isready -U gsd
+# Should output: /var/run/postgresql:5432 - accepting connections
+```
 
 ### Optional: Start pgAdmin
 
@@ -101,6 +107,7 @@ docker compose --profile tools up -d
 ```
 
 **Connect to database in pgAdmin:**
+
 - Host: `postgres` (or `host.docker.internal` if not working)
 - Port: `5432`
 - Database: `gsd_dev`
@@ -128,6 +135,7 @@ code .env
 ### Required Configuration
 
 **1. Database (already configured for local Postgres):**
+
 ```bash
 DATABASE_URL="postgresql://gsd:gsd_dev_password@localhost:5432/gsd_dev?schema=public"
 ```
@@ -159,6 +167,7 @@ JWT_SECRET=generated-secret-from-above-command
 ```
 
 **4. Other settings (defaults are fine):**
+
 ```bash
 NODE_ENV=development
 PORT=3000
@@ -189,19 +198,33 @@ JWT_EXPIRES_IN=7d
 FRONTEND_URL=http://localhost:4321
 ```
 
+### Environment Variables Reference
+
+| Variable | Description | Example |
+|----------|-------------|---------|
+| `DATABASE_URL` | PostgreSQL connection string | `postgresql://gsd:gsd_dev_password@localhost:5432/gsd_dev?schema=public` |
+| `NODE_ENV` | Environment | `development` |
+| `PORT` | Backend port | `3000` |
+| `GOOGLE_CLIENT_ID` | OAuth client ID | `123...apps.googleusercontent.com` |
+| `GOOGLE_CLIENT_SECRET` | OAuth client secret | `GOCSPX-...` |
+| `GOOGLE_CALLBACK_URL` | OAuth callback | `http://localhost:3000/auth/google/callback` |
+| `JWT_SECRET` | JWT signing secret | (32+ char random string) |
+| `JWT_EXPIRES_IN` | JWT expiration | `7d` |
+| `FRONTEND_URL` | Frontend origin | `http://localhost:4321` |
+
+**Frontend (.env - if needed):** Frontend gets environment variables from `astro.config.mjs` and uses the backend URL configured there.
+
 ---
 
 ## Step 3: Install Dependencies
 
 ```bash
 # From project root
-cd /home/pmartenka/dev/repos/10xdevs/gsd
-
-# Install all dependencies (backend, frontend, packages)
 pnpm install
 ```
 
 This installs dependencies for:
+
 - Backend (NestJS)
 - Frontend (Astro + React)
 - Shared packages (types, validation)
@@ -226,9 +249,17 @@ pnpm db:studio
 ```
 
 **What this does:**
+
 - Applies all migrations in `prisma/migrations/`
 - Creates database schema (users, lists, tasks, etc.)
 - Generates Prisma Client for type-safe queries
+
+Alternative direct invocation:
+
+```bash
+cd apps/backend
+npx prisma migrate dev --name init
+```
 
 ---
 
@@ -242,6 +273,7 @@ pnpm dev
 ```
 
 This starts:
+
 - **Backend:** http://localhost:3000 (NestJS with hot reload)
 - **Frontend:** http://localhost:4321 (Astro with hot reload)
 
@@ -255,6 +287,13 @@ pnpm dev
 # Terminal 2: Frontend
 cd apps/frontend
 pnpm dev
+```
+
+Or using workspace filters from the repo root:
+
+```bash
+pnpm --filter @gsd/backend dev
+pnpm --filter @gsd/frontend dev
 ```
 
 ---
@@ -271,13 +310,27 @@ curl http://localhost:3000/health
 # {"status":"ok","info":{"database":{"status":"up"}}}
 ```
 
-### 2. Check Frontend
+Or a simple root check:
+
+```bash
+curl http://localhost:3000
+# Should return: Hello World!
+```
+
+### 2. Check Auth Integration
+
+```bash
+curl -I http://localhost:3000/auth/google
+# Should return: 302 Found with redirect to Google OAuth
+```
+
+### 3. Check Frontend
 
 Open browser: http://localhost:4321
 
-Should see the GSD app landing page.
+Should see the GSD app landing page with a "Sign in with Google" button.
 
-### 3. Test Google OAuth Login
+### 4. Test Google OAuth Login
 
 1. Go to http://localhost:4321
 2. Click "Sign in with Google"
@@ -285,7 +338,7 @@ Should see the GSD app landing page.
 4. After login, redirects back to app
 5. User should be created in database
 
-### 4. Check Database
+### 5. Check Database
 
 ```bash
 # Using Prisma Studio
@@ -304,6 +357,35 @@ SELECT * FROM "User";
 # Exit
 \q
 ```
+
+---
+
+## Available API Endpoints
+
+### Authentication
+
+- `GET /auth/google` - Initiate Google OAuth flow
+- `GET /auth/google/callback` - OAuth callback
+- `GET /auth/me` - Get current user
+- `POST /auth/signout` - Sign out
+
+### Lists (v1 API)
+
+- `GET /v1/lists` - Get all lists
+- `POST /v1/lists` - Create list
+- `DELETE /v1/lists/:id` - Delete list
+
+### Tasks (v1 API)
+
+- `GET /v1/tasks` - Get all tasks
+- `POST /v1/tasks` - Create task
+- `PATCH /v1/tasks/:id` - Update task
+- `DELETE /v1/tasks/:id` - Delete task
+- `POST /v1/tasks/:id/move` - Move task to different list
+- `POST /v1/tasks/:id/complete` - Complete task
+- `POST /v1/tasks/:id/reorder` - Reorder task
+
+Interactive Swagger docs: http://localhost:3000/api
 
 ---
 
@@ -396,6 +478,67 @@ docker compose logs -f postgres
 # Frontend logs (in terminal where pnpm dev is running)
 ```
 
+### Stopping Services
+
+Stop dev servers with `Ctrl+C` in each terminal. Stop Postgres:
+
+```bash
+cd tools/docker
+docker compose down
+
+# To also remove database volumes:
+docker compose down -v
+```
+
+---
+
+## Useful Commands
+
+### Root / Development
+
+```bash
+pnpm dev                    # Start all dev servers
+pnpm build                  # Build all packages
+pnpm test                   # Run all tests
+pnpm lint                   # Lint all code
+pnpm typecheck              # Type check all code
+```
+
+### Backend-Specific
+
+```bash
+cd apps/backend
+pnpm dev                    # Start backend dev server
+pnpm build                  # Build backend
+pnpm test                   # Run backend tests
+pnpm test:e2e               # Run e2e tests
+pnpm lint                   # Lint backend
+pnpm db:studio              # Open Prisma Studio
+pnpm db:migrate:dev         # Run migrations
+pnpm db:generate            # Generate Prisma Client
+```
+
+### Frontend-Specific
+
+```bash
+cd apps/frontend
+pnpm dev                    # Start frontend dev server
+pnpm build                  # Build frontend
+pnpm preview                # Preview production build
+pnpm lint                   # Lint frontend
+```
+
+### Database
+
+```bash
+cd tools/docker
+docker compose up -d                                    # Start Postgres
+docker compose down                                     # Stop Postgres
+docker compose down -v                                  # Stop and remove data
+docker compose logs -f postgres                         # View logs
+docker compose exec postgres psql -U gsd -d gsd_dev    # Access psql
+```
+
 ---
 
 ## Troubleshooting
@@ -469,6 +612,12 @@ grep GOOGLE .env
 # Verify they match Google Cloud Console
 ```
 
+### Database Connection Issues
+
+- Verify Docker container is running: `docker ps | grep gsd-postgres`
+- Check `.env` `DATABASE_URL` matches `docker-compose.yml` credentials
+- Restart container: `docker compose restart postgres`
+
 ### Database Migrations Fail
 
 **Error: "Migration failed"**
@@ -483,6 +632,11 @@ pnpm db:migrate:reset
 # 2. Rerun all migrations
 # 3. Regenerate Prisma Client
 ```
+
+Other migration commands:
+
+- Reset database: `npx prisma migrate reset` (WARNING: destroys all data)
+- Regenerate Prisma Client: `npx prisma generate`
 
 ### Port Already in Use
 
@@ -517,6 +671,8 @@ sudo systemctl stop postgresql
 # DATABASE_URL="postgresql://gsd:gsd_dev_password@localhost:5433/gsd_dev?schema=public"
 ```
 
+**Frontend port (4321):** Check with `lsof -ti:4321` and kill with `kill -9 <PID>`.
+
 ### Clean Slate (Nuclear Option)
 
 ```bash
@@ -538,77 +694,6 @@ cd ../../apps/backend
 pnpm db:migrate:dev
 cd ../..
 pnpm dev
-```
-
----
-
-## Environment Variables Reference
-
-### Backend (.env)
-
-| Variable | Description | Example |
-|----------|-------------|---------|
-| `DATABASE_URL` | PostgreSQL connection string | `postgresql://gsd:gsd_dev_password@localhost:5432/gsd_dev?schema=public` |
-| `NODE_ENV` | Environment | `development` |
-| `PORT` | Backend port | `3000` |
-| `GOOGLE_CLIENT_ID` | OAuth client ID | `123...apps.googleusercontent.com` |
-| `GOOGLE_CLIENT_SECRET` | OAuth client secret | `GOCSPX-...` |
-| `GOOGLE_CALLBACK_URL` | OAuth callback | `http://localhost:3000/auth/google/callback` |
-| `JWT_SECRET` | JWT signing secret | (32+ char random string) |
-| `JWT_EXPIRES_IN` | JWT expiration | `7d` |
-| `FRONTEND_URL` | Frontend origin | `http://localhost:4321` |
-
-### Frontend (.env - if needed)
-
-Frontend gets environment variables from `astro.config.mjs` and uses the backend URL configured there.
-
----
-
-## Useful Commands
-
-### Development
-
-```bash
-pnpm dev                    # Start all dev servers
-pnpm build                  # Build all packages
-pnpm test                   # Run all tests
-pnpm lint                   # Lint all code
-pnpm typecheck              # Type check all code
-```
-
-### Backend-Specific
-
-```bash
-cd apps/backend
-pnpm dev                    # Start backend dev server
-pnpm build                  # Build backend
-pnpm test                   # Run backend tests
-pnpm test:e2e               # Run e2e tests
-pnpm lint                   # Lint backend
-pnpm db:studio              # Open Prisma Studio
-pnpm db:migrate:dev         # Run migrations
-pnpm db:generate            # Generate Prisma Client
-```
-
-### Frontend-Specific
-
-```bash
-cd apps/frontend
-pnpm dev                    # Start frontend dev server
-pnpm build                  # Build frontend
-pnpm preview                # Preview production build
-pnpm lint                   # Lint frontend
-```
-
-### Database
-
-```bash
-cd tools/docker
-docker compose up -d                                    # Start Postgres
-docker compose down                                     # Stop Postgres
-docker compose down -v                                  # Stop and remove data
-docker compose logs -f postgres                         # View logs
-docker compose exec postgres psql -U gsd -d gsd_dev    # Access psql
 ```
 
 ---
@@ -638,6 +723,7 @@ Visit: http://localhost:3000/api
 ### 3. Hot Reload
 
 Both backend and frontend have hot reload:
+
 - Save file → Browser/server auto-updates
 - No manual restarts needed
 
@@ -658,6 +744,7 @@ pnpm db:seed
 ### 5. Multiple Google OAuth Clients
 
 For different environments, create separate OAuth clients:
+
 - Development: `http://localhost:3000/auth/google/callback`
 - Production: `https://getsd.bieda.it/api/auth/google/callback`
 
@@ -701,9 +788,6 @@ After setup is complete:
 
 4. **Read architecture docs:**
    - `CLAUDE.md` - Project guidelines
-   - `.ai/plans/` - Implementation plans
-   - `DEPLOYMENT.md` - Production deployment
-
----
-
-**Happy coding! 🚀**
+   - `.ai/prd.md` - Product Requirements
+   - `docs/deployment.md` - Production deployment
+   - `docs/docker.md` - Docker workflows
