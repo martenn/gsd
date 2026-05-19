@@ -4,22 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Meta-Rules for Claude Code
 
-**IMPORTANT:** When architectural patterns, coding standards, or rules are established or changed during a conversation:
-
-1. Always update CLAUDE.md with the new rule/pattern (this file)
-2. Always update the corresponding `.cursor/rules/*.mdc` file(s)
-3. Both files must stay in sync
-4. Changes should be made in the same response/action
-
-**Custom Commands Sync:**
-
-- `.claude/commands/` - Used by Claude Code (this IDE)
-- `.cursor/commands/` - Used by Cursor IDE
-- Both directories must stay in sync
-- Run `./.maintain-command-sync.sh` to sync both directories
-- Update both locations when adding/modifying commands
-
-This ensures consistency across all development tools and documentation.
+**IMPORTANT:** When architectural patterns, coding standards, or rules are established or changed during a conversation, update CLAUDE.md in the same response.
 
 ## Project Overview
 
@@ -283,11 +268,11 @@ export class CreateListDto implements CreateListRequest {
 
 ### Documentation Organization
 
-- **View Implementation Plans**: Store in `.ai/plans/` directory
-  - File naming: `{view-name}-view-implementation-plan.md`
-  - Example: `.ai/plans/app-shell-view-implementation-plan.md`
-- **Project Documentation**: Store in `.ai/` root for project-wide docs
-- **Coding Standards**: Store in `.ai/standards/` directory (see Coding Standards section below)
+- **Project Documentation**: `.ai/` for product/planning docs (PRD, tracker, tech stack, validation rules)
+- **Coding Standards**: `.ai/standards/` (see Coding Standards section below)
+- **Operational Guides**: `docs/` (local-development, deployment, docker)
+- **Database**: `apps/backend/prisma/` (schema, migrations guide)
+- **Historical/archived material**: `.ai/_archive/`
 
 ## Open Implementation Questions
 

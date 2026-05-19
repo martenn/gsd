@@ -1,6 +1,6 @@
 # GSD Project Tracker
 
-**Last Updated:** 2026-05-18 (Phase 8 — mikrus deployment notes captured from sibling project deploy; new task: host networking compose refactor)
+**Last Updated:** 2026-05-19 (Phase 8 — mikrus deployment notes captured from sibling project deploy; new task: host networking compose refactor)
 **Current Sprint:** Technical Debt Resolution & Deployment Preparation
 
 **2026-05-04 verification:** Fresh `pnpm install` + `prisma generate` → backend typecheck clean, frontend typecheck clean, backend build clean, frontend build clean, 232/232 backend tests pass, lint 0 errors (150 warnings in tests). No code drift from CLAUDE.md standards.
@@ -114,7 +114,7 @@ Infra:    ██████████████████░░ 94% (16/1
 
 **Docker Production Images - Next Steps:**
 
-1. Set up Docker Hub account (if using docker.io registry) - See DOCKER-HUB-SETUP.md
+1. Set up Docker Hub account (if using docker.io registry) - See `docs/docker.md`
 2. Add `DOCKERHUB_USERNAME` and `DOCKERHUB_TOKEN` secrets to GitHub repository
 3. Run workflow manually to test builds (Actions → "Build Docker Images")
 4. Verify image builds succeed and security scans pass
@@ -507,7 +507,7 @@ Infra:    ██████████████████░░ 94% (16/1
 ## 🚀 Phase 8: Deployment & Production
 
 **Goal:** Production-ready deployment
-**Target host:** `artur131.mikrus.xyz` (Mikrus VPS, LXC) — see [.ai/mikrus-deployment-notes.md](./mikrus-deployment-notes.md)
+**Target host:** `artur131.mikrus.xyz` (Mikrus VPS, LXC) — see [Mikrus Notes section](../docs/deployment.md#mikrus-notes) in deployment guide
 **Progress:** ░░░░░░░░░░░░░░░░░░░░ 0% (0/9)
 
 | Status | Feature                            | Est. | Notes                                                                                          | Owner |
@@ -515,7 +515,7 @@ Infra:    ██████████████████░░ 94% (16/1
 | ⚪     | Environment configuration          | 1d   | .env files, secrets management                                                                 | -     |
 | ⚪     | Database migrations                | 0.5d | Production migration strategy                                                                  | -     |
 | ⚪     | Docker production build            | 1d   | Optimized images                                                                               | -     |
-| ⚪     | **Host networking compose refactor** | 1-2d | **Mikrus LXC blocks docker bridge — `network_mode: host`, swap to `nginx-unprivileged`, add IPv6 listen, dedupe host ports.** See mikrus-deployment-notes.md gotchas #1–#4 | -     |
+| ⚪     | **Host networking compose refactor** | 1-2d | **Mikrus LXC blocks docker bridge — `network_mode: host`, swap to `nginx-unprivileged`, add IPv6 listen, dedupe host ports.** See Mikrus section in `docs/deployment.md` (gotchas #1–#4) | -     |
 | ⚪     | CI/CD deployment                   | 2d   | Auto-deploy on merge to main                                                                   | -     |
 | ⚪     | Domain & TLS (mikrus-managed)      | 0.25d | Mikrus admin panel terminates TLS and attaches `getsd.bieda.it` → local port 8080. App sees plain HTTP + `X-Forwarded-Proto: https`. No Cloudflare. | -     |
 | ⚪     | Monitoring & logging               | 1d   | Error tracking, metrics                                                                        | -     |
@@ -524,7 +524,7 @@ Infra:    ██████████████████░░ 94% (16/1
 
 **Phase Blockers:** MVP features completion
 **Next Up:** Environment configuration
-**Pre-Deploy Reading:** [.ai/mikrus-deployment-notes.md](./mikrus-deployment-notes.md) — captures non-obvious LXC/mikrus gotchas discovered while deploying the pesel-birth-date sibling project to the same host. Reading time: ~5 min. Skipping it will cost a half-day of debugging.
+**Pre-Deploy Reading:** [Mikrus Notes section](../docs/deployment.md#mikrus-notes) of `docs/deployment.md` — captures non-obvious LXC/mikrus gotchas discovered while deploying the pesel-birth-date sibling project to the same host. Reading time: ~5 min. Skipping it will cost a half-day of debugging.
 
 ---
 
@@ -761,10 +761,10 @@ Infra:    ██████████████████░░ 94% (16/1
 ## 🔗 Quick Links
 
 - [PRD](.ai/prd.md)
-- [Backend Gap Analysis](.ai/backend-gap-analysis.md)
-- [Task Implementation Plan](.ai/tasks-implementation-plan.md)
-- [Endpoints Plan](.ai/endpoints-plan.md)
 - [Tech Stack](.ai/tech-stack.md)
+- [Validation Rules](.ai/validation-rules.md)
+- [Local Development](docs/local-development.md)
+- [Deployment](docs/deployment.md)
 
 ---
 
@@ -1276,7 +1276,7 @@ Infra:    ██████████████████░░ 94% (16/1
     - Build caching for faster CI builds
     - Flexible tagging (branch, SHA, custom)
   - 📚 Documentation created:
-    - DOCKER-BUILD-GUIDE.md: Comprehensive local testing guide
+    - docs/docker.md: Comprehensive local testing guide (formerly DOCKER-BUILD-GUIDE.md)
     - .github/workflows/README.md: Workflow usage instructions
 
 - 📊 **Progress Update:**

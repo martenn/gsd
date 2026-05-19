@@ -1,43 +1,74 @@
-# Astro Starter Kit: Minimal
+# App Shell Implementation
 
-```sh
-pnpm create astro@latest -- --template minimal
+This document describes the app shell implementation for GSD.
+
+## Structure
+
+```
+src/
+├── components/
+│   ├── app-shell/
+│   │   ├── AppShell.tsx        # Main container
+│   │   ├── AppHeader.tsx       # Header with nav
+│   │   ├── Logo.tsx            # Simple logo
+│   │   ├── ModeButton.tsx      # Individual mode button
+│   │   ├── ModeNavigation.tsx  # Mode switcher (Plan/Work/Done)
+│   │   └── UserMenu.tsx        # User dropdown with logout
+│   ├── views/
+│   │   ├── PlanView.tsx        # Placeholder for Plan mode
+│   │   ├── WorkView.tsx        # Placeholder for Work mode
+│   │   └── DoneView.tsx        # Placeholder for Done view
+│   └── App.tsx                 # Main app component with routing
+├── hooks/
+│   └── useAuth.ts              # Authentication hook
+├── lib/
+│   └── api/
+│       ├── client.ts           # Fetch wrapper
+│       └── auth.ts             # Auth API calls
+├── providers/
+│   └── QueryProvider.tsx       # TanStack Query provider
+├── types/
+│   └── app-shell.ts            # TypeScript types
+└── pages/
+    └── app/
+        ├── index.astro         # Redirects to /app/plan
+        ├── plan.astro          # Plan mode page
+        ├── work.astro          # Work mode page
+        └── done.astro          # Done mode page
 ```
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
+## How It Works
 
-## 🚀 Project Structure
+1. **Authentication**
+   - `useAuth` hook fetches user data on mount
+   - Redirects to `/` if not authenticated
+   - Shows loading spinner while checking
 
-Inside of your Astro project, you'll see the following folders and files:
+2. **Navigation**
+   - Three modes: Plan, Work, Done
+   - Click mode buttons to navigate
+   - URL changes to `/app/{mode}`
+   - Astro pages load the React app with correct view
 
-```text
-/
-├── public/
-├── src/
-│   └── pages/
-│       └── index.astro
-└── package.json
-```
+3. **User Menu**
+   - Shows user email with avatar
+   - Click to open dropdown
+   - Logout button clears session and redirects
 
-Astro looks for `.astro` or `.md` files in the `src/pages/` directory. Each page is exposed as a route based on its file name.
+## Running the App
 
-There's nothing special about `src/components/`, but that's where we like to put any Astro/React/Vue/Svelte/Preact components.
+1. Make sure backend is running on `http://localhost:3000`
+2. Start frontend dev server:
+   ```bash
+   pnpm dev
+   ```
+3. Navigate to `/app` (will redirect to `/app/plan`)
+4. Must be logged in first (via landing page)
 
-Any static assets, like images, can be placed in the `public/` directory.
+## Next Steps
 
-## 🧞 Commands
+The placeholder views (Plan, Work, Done) need to be replaced with:
 
-All commands are run from the root of the project, from a terminal:
-
-| Command                | Action                                           |
-| :--------------------- | :----------------------------------------------- |
-| `pnpm install`         | Installs dependencies                            |
-| `pnpm dev`             | Starts local dev server at `localhost:4321`      |
-| `pnpm build`           | Build your production site to `./dist/`          |
-| `pnpm preview`         | Preview your build locally, before deploying     |
-| `pnpm astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `pnpm astro -- --help` | Get help using the Astro CLI                     |
-
-## 👀 Want to learn more?
-
-Feel free to check [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).
+- Plan Mode: Full task and list management
+- Work Mode: Focused task execution
+- Done View: Completed tasks archive
