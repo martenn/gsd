@@ -1,4 +1,14 @@
-import { MoreVertical, Check, Trash2, Edit, ArrowRight, ArrowUp, ArrowDown } from 'lucide-react';
+import {
+  MoreVertical,
+  Check,
+  Trash2,
+  Edit,
+  ArrowRight,
+  ArrowUp,
+  ArrowDown,
+  ChevronsUp,
+  ChevronsDown,
+} from 'lucide-react';
 import type { ListDto, TaskDto } from '@gsd/types';
 import { Button } from '../ui/button';
 import {
@@ -38,6 +48,16 @@ function newOrderIndexForMoveDown(siblings: TaskDto[], position: number): number
     return below.orderIndex / 2;
   }
   return (below.orderIndex + belowBelow.orderIndex) / 2;
+}
+
+const ORDER_STEP = 1000;
+
+function newOrderIndexForMoveToTop(siblings: TaskDto[]): number {
+  return siblings[0].orderIndex + ORDER_STEP;
+}
+
+function newOrderIndexForMoveToBottom(siblings: TaskDto[]): number {
+  return siblings[siblings.length - 1].orderIndex / 2;
 }
 
 export function TaskActionsMenu({ task, lists, siblings, onEdit }: TaskActionsMenuProps) {
@@ -103,6 +123,30 @@ export function TaskActionsMenu({ task, lists, siblings, onEdit }: TaskActionsMe
     }
   };
 
+  const handleMoveToTop = async () => {
+    if (!canMoveUp) return;
+    try {
+      await reorderTaskMutation.mutateAsync({
+        taskId: task.id,
+        data: { newOrderIndex: newOrderIndexForMoveToTop(siblings) },
+      });
+    } catch (error) {
+      console.error('Failed to move task to top:', error);
+    }
+  };
+
+  const handleMoveToBottom = async () => {
+    if (!canMoveDown) return;
+    try {
+      await reorderTaskMutation.mutateAsync({
+        taskId: task.id,
+        data: { newOrderIndex: newOrderIndexForMoveToBottom(siblings) },
+      });
+    } catch (error) {
+      console.error('Failed to move task to bottom:', error);
+    }
+  };
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -116,6 +160,10 @@ export function TaskActionsMenu({ task, lists, siblings, onEdit }: TaskActionsMe
           Edit
         </DropdownMenuItem>
         <DropdownMenuSeparator />
+        <DropdownMenuItem onClick={handleMoveToTop} disabled={!canMoveUp}>
+          <ChevronsUp className="mr-2 h-4 w-4" />
+          Move to top
+        </DropdownMenuItem>
         <DropdownMenuItem onClick={handleMoveUp} disabled={!canMoveUp}>
           <ArrowUp className="mr-2 h-4 w-4" />
           Move up
@@ -123,6 +171,10 @@ export function TaskActionsMenu({ task, lists, siblings, onEdit }: TaskActionsMe
         <DropdownMenuItem onClick={handleMoveDown} disabled={!canMoveDown}>
           <ArrowDown className="mr-2 h-4 w-4" />
           Move down
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={handleMoveToBottom} disabled={!canMoveDown}>
+          <ChevronsDown className="mr-2 h-4 w-4" />
+          Move to bottom
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuSub>
