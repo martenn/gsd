@@ -19,6 +19,7 @@ import {
   CompleteTaskResponseDto,
   ReorderTaskResponseDto,
   BulkAddTasksResponseDto,
+  DuplicateTaskResponseDto,
 } from '@gsd/types';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../../auth/decorators/current-user.decorator';
@@ -31,6 +32,7 @@ import { MoveTask } from '../use-cases/move-task';
 import { CompleteTask } from '../use-cases/complete-task';
 import { ReorderTask } from '../use-cases/reorder-task';
 import { BulkAddTasks } from '../use-cases/bulk-add-tasks';
+import { DuplicateTask } from '../use-cases/duplicate-task';
 import { CreateTaskDto } from '../dto/create-task.dto';
 import { UpdateTaskDto } from '../dto/update-task.dto';
 import { GetTasksQueryDto } from '../dto/get-tasks-query.dto';
@@ -50,6 +52,7 @@ export class TasksController {
     private readonly completeTaskUseCase: CompleteTask,
     private readonly reorderTaskUseCase: ReorderTask,
     private readonly bulkAddTasksUseCase: BulkAddTasks,
+    private readonly duplicateTaskUseCase: DuplicateTask,
   ) {}
 
   @Get()
@@ -112,6 +115,16 @@ export class TasksController {
     @Body() dto: ReorderTaskDto,
   ): Promise<ReorderTaskResponseDto> {
     const task = await this.reorderTaskUseCase.execute(user.id, taskId, dto);
+    return { task };
+  }
+
+  @Post(':id/duplicate')
+  @HttpCode(HttpStatus.CREATED)
+  async duplicateTask(
+    @CurrentUser() user: JwtUser,
+    @Param('id') taskId: string,
+  ): Promise<DuplicateTaskResponseDto> {
+    const task = await this.duplicateTaskUseCase.execute(user.id, taskId);
     return { task };
   }
 

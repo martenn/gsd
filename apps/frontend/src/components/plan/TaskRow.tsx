@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import type { TaskDto, ListDto } from '@gsd/types';
-import { CheckCircle } from 'lucide-react';
+import { CheckCircle, GripVertical } from 'lucide-react';
+import { useSortable } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 import { TaskActionsMenu } from './TaskActionsMenu';
 import { TaskEditForm } from './TaskEditForm';
 import { Button } from '../ui/button';
@@ -17,6 +19,10 @@ export function TaskRow({ task, lists, siblings }: TaskRowProps) {
   const [isEditing, setIsEditing] = useState(false);
   const updateTaskMutation = useUpdateTask();
   const completeTaskMutation = useCompleteTask();
+
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id: task.id,
+  });
 
   const handleSave = async (data: { title: string; description?: string }) => {
     try {
@@ -47,8 +53,19 @@ export function TaskRow({ task, lists, siblings }: TaskRowProps) {
     return <TaskEditForm task={task} onSave={handleSave} onCancel={() => setIsEditing(false)} />;
   }
 
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
+
   return (
-    <div className="group relative border-b border-border last:border-0 py-2 px-3 hover:bg-muted/50 transition-colors">
+    <div
+      ref={setNodeRef}
+      style={style}
+      {...attributes}
+      className="group relative border-b border-border last:border-0 py-2 px-3 hover:bg-muted/50 transition-colors"
+    >
       <div
         className="absolute left-0 top-0 bottom-0 w-1"
         style={{ backgroundColor: task.color }}
@@ -56,13 +73,24 @@ export function TaskRow({ task, lists, siblings }: TaskRowProps) {
       />
 
       <div className="flex items-start justify-between pl-2">
-        <div className="flex-1 min-w-0">
-          <div className="text-sm font-medium text-foreground">{task.title}</div>
-          {task.description && (
-            <div className="text-xs text-muted-foreground mt-1 line-clamp-2">
-              {task.description}
-            </div>
-          )}
+        <div className="flex-1 min-w-0 flex items-start gap-1">
+          <button
+            type="button"
+            {...listeners}
+            className="hidden lg:flex h-6 w-4 items-center justify-center text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity cursor-grab active:cursor-grabbing focus:outline-none focus-visible:opacity-100"
+            aria-label="Drag to reorder"
+            tabIndex={0}
+          >
+            <GripVertical className="h-3 w-3" />
+          </button>
+          <div className="flex-1 min-w-0">
+            <div className="text-sm font-medium text-foreground">{task.title}</div>
+            {task.description && (
+              <div className="text-xs text-muted-foreground mt-1 line-clamp-2">
+                {task.description}
+              </div>
+            )}
+          </div>
         </div>
 
         <div className="ml-2 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">

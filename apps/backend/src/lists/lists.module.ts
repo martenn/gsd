@@ -6,6 +6,7 @@ import { UpdateList } from './use-cases/update-list';
 import { ToggleBacklog } from './use-cases/toggle-backlog';
 import { ReorderList } from './use-cases/reorder-list';
 import { DeleteList } from './use-cases/delete-list';
+import { MoveAllTasks } from './use-cases/move-all-tasks';
 import { ListsRepository } from './infra/lists.repository';
 import { ColorModule } from '../colors/color.module';
 import { TasksModule } from '../tasks/tasks.module';
@@ -20,6 +21,7 @@ import { TasksModule } from '../tasks/tasks.module';
     ToggleBacklog,
     ReorderList,
     DeleteList,
+    MoveAllTasks,
     ListsRepository,
   ],
   exports: [
@@ -29,6 +31,7 @@ import { TasksModule } from '../tasks/tasks.module';
     ToggleBacklog,
     ReorderList,
     DeleteList,
+    MoveAllTasks,
     ListsRepository,
   ],
 })

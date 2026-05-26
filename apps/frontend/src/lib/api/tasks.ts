@@ -4,6 +4,7 @@ import type {
   CompleteTaskResponseDto,
   CreateTaskRequest,
   CreateTaskResponseDto,
+  DuplicateTaskResponseDto,
   GetTasksQuery,
   GetTasksResponseDto,
   MoveTaskRequest,
@@ -75,6 +76,14 @@ export async function reorderTask(
   const result = await apiClient.post<ReorderTaskResponseDto>(`/v1/tasks/${taskId}/reorder`, data);
   if (!result) {
     throw new Error('Failed to reorder task');
+  }
+  return result;
+}
+
+export async function duplicateTask(taskId: string): Promise<DuplicateTaskResponseDto> {
+  const result = await apiClient.post<DuplicateTaskResponseDto>(`/v1/tasks/${taskId}/duplicate`);
+  if (!result) {
+    throw new Error('Failed to duplicate task');
   }
   return result;
 }

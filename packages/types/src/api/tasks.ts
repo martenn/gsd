@@ -85,3 +85,7 @@ export interface BulkAddTasksResponseDto {
   failed: number;
   message?: string;
 }
+
+export interface DuplicateTaskResponseDto {
+  task: TaskDto;
+}

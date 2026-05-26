@@ -1,9 +1,15 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import type { CreateListRequest, ReorderListRequest, UpdateListRequest } from '@gsd/types';
+import type {
+  CreateListRequest,
+  MoveAllTasksRequest,
+  ReorderListRequest,
+  UpdateListRequest,
+} from '@gsd/types';
 import {
   createList,
   deleteList,
   getLists,
+  moveAllTasks,
   reorderList,
   toggleBacklog,
   updateList,
@@ -72,6 +78,18 @@ export function useReorderList() {
       reorderList(listId, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['lists'] });
+    },
+  });
+}
+
+export function useMoveAllTasks() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ sourceListId, data }: { sourceListId: string; data: MoveAllTasksRequest }) =>
+      moveAllTasks(sourceListId, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['tasks'] });
     },
   });
 }

@@ -12,6 +12,7 @@ import {
   completeTask,
   createTask,
   deleteTask,
+  duplicateTask,
   getTasks,
   moveTask,
   reorderTask,
@@ -78,6 +79,17 @@ export function useReorderTask() {
   return useMutation({
     mutationFn: ({ taskId, data }: { taskId: string; data: ReorderTaskRequest }) =>
       reorderTask(taskId, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['tasks'] });
+    },
+  });
+}
+
+export function useDuplicateTask() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (taskId: string) => duplicateTask(taskId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tasks'] });
     },
