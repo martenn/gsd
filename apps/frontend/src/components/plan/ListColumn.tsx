@@ -13,6 +13,7 @@ interface ListColumnProps {
   tasks: TaskDto[];
   totalNonDoneLists: number;
   backlogCount: number;
+  fullWidth?: boolean;
 }
 
 export function ListColumn({
@@ -21,6 +22,7 @@ export function ListColumn({
   tasks,
   totalNonDoneLists,
   backlogCount,
+  fullWidth = false,
 }: ListColumnProps) {
   const [isCreatingTask, setIsCreatingTask] = useState(false);
 
@@ -29,7 +31,7 @@ export function ListColumn({
   const maxTasks = 100;
 
   return (
-    <Card className="flex-shrink-0 w-80 flex flex-col">
+    <Card className={`${fullWidth ? 'w-full' : 'flex-shrink-0 w-80'} flex flex-col`}>
       <ListHeader
         list={list}
         lists={lists}
@@ -58,7 +60,9 @@ export function ListColumn({
         {tasks.length === 0 && !isCreatingTask ? (
           <div className="py-8 text-center text-sm text-muted-foreground">No tasks yet</div>
         ) : (
-          tasks.map((task) => <TaskRow key={task.id} task={task} lists={lists} />)
+          tasks.map((task) => (
+            <TaskRow key={task.id} task={task} lists={lists} siblings={tasks} />
+          ))
         )}
       </div>
     </Card>

@@ -1,7 +1,14 @@
 # GSD Project Tracker
 
-**Last Updated:** 2026-05-18 (Phase 8 — mikrus deployment notes captured from sibling project deploy; new task: host networking compose refactor)
+**Last Updated:** 2026-05-26 (Plan Mode task-ordering hotfixes + Work Mode active-list fix + Backlog column overflow fix)
 **Current Sprint:** Technical Debt Resolution & Deployment Preparation
+
+**2026-05-26 hotfixes (frontend):**
+
+- Added Move up / Move down menu items in `TaskActionsMenu` (uses existing `POST /v1/tasks/:id/reorder`, midpoint orderIndex from neighbors, disabled at list edges).
+- Fixed Work Mode showing empty when intermediate list had tasks. New active-list algorithm in `WorkView`: if any intermediate (non-backlog, non-done) list exists → pick the rightmost (highest `orderIndex`); otherwise (backlog-only setup) → pick the leftmost backlog (lowest `orderIndex`). Previous logic filtered only `name !== 'Done'` and picked the highest `orderIndex` overall, which broke once any backlog was created after onboarding (backlog `orderIndex` ends up > `Today`).
+- Fixed Backlog column horizontal scrollbar: inner cards were `w-80` (320px) inside a `w-80 pr-4` aside (304px content). Added `fullWidth` prop on `ListColumn` so backlog instances render `w-full`.
+- Files: `apps/frontend/src/components/plan/{TaskActionsMenu,TaskRow,ListColumn,BacklogColumn}.tsx`, `apps/frontend/src/components/views/WorkView.tsx`.
 
 **2026-05-04 verification:** Fresh `pnpm install` + `prisma generate` → backend typecheck clean, frontend typecheck clean, backend build clean, frontend build clean, 232/232 backend tests pass, lint 0 errors (150 warnings in tests). No code drift from CLAUDE.md standards.
 
@@ -62,6 +69,11 @@ Infra:    ██████████████████░░ 94% (16/1
 - [ ] Mobile Responsiveness
 - [ ] Keyboard Help Overlay
 - [ ] Plan Mode Keyboard Navigation (Power User Feature)
+- [ ] Plan Mode UX polish (see [.ai/ux-improvements-backlog.md](./ux-improvements-backlog.md))
+  - Empty backlog: show origin color even when no tasks
+  - Empty backlog: shrink card height (title is not flush-top)
+  - Backlogs collapsible to name-only header
+  - Inline task creator: stay open for multi-add (Enter = save & continue, Cmd+Enter or Esc = save & close), to be confirmed
 
 ---
 
@@ -389,7 +401,7 @@ Infra:    ██████████████████░░ 94% (16/1
 | ✅     | TaskRow component            | -    | Task card with edit mode toggle        | 3.2     | ✅    |
 | ✅     | TaskEditForm component       | -    | Inline form with react-hook-form + zod | 3.2     | ✅    |
 | ✅     | TaskColorIndicator component | -    | 4px left border with origin color      | 3.1     | ✅    |
-| ✅     | TaskActionsMenu component    | -    | Edit, move, complete, delete           | 3.2     | ✅    |
+| ✅     | TaskActionsMenu component    | -    | Edit, move up/down, move to, complete, delete | 3.2 | ✅ |
 | ✅     | TaskCompleteButton component | -    | CheckCircle icon with tooltip (UX)     | 3.2     | ✅    |
 | ✅     | InlineTaskCreator component  | -    | Inline form with auto-focus            | 3.2     | ✅    |
 

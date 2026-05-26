@@ -11,9 +11,12 @@ export function WorkView() {
   const { data: lists, isLoading: listsLoading } = useListsQuery();
   const completeTaskMutation = useCompleteTask();
 
-  const activeList = lists?.lists
-    ?.filter((list) => list.name !== 'Done')
-    .sort((a, b) => b.orderIndex - a.orderIndex)[0];
+  const nonDoneLists = lists?.lists?.filter((list) => !list.isDone) ?? [];
+  const intermediateLists = nonDoneLists.filter((list) => !list.isBacklog);
+  const activeList =
+    intermediateLists.length > 0
+      ? [...intermediateLists].sort((a, b) => b.orderIndex - a.orderIndex)[0]
+      : [...nonDoneLists].sort((a, b) => a.orderIndex - b.orderIndex)[0];
 
   const { data: tasksData, isLoading: tasksLoading } = useTasksQuery(
     activeList?.id ? { listId: activeList.id } : undefined,

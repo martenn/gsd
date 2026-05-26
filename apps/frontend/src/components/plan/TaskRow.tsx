@@ -10,9 +10,10 @@ import { useUpdateTask, useCompleteTask } from '../../hooks/useTasks';
 interface TaskRowProps {
   task: TaskDto;
   lists: ListDto[];
+  siblings: TaskDto[];
 }
 
-export function TaskRow({ task, lists }: TaskRowProps) {
+export function TaskRow({ task, lists, siblings }: TaskRowProps) {
   const [isEditing, setIsEditing] = useState(false);
   const updateTaskMutation = useUpdateTask();
   const completeTaskMutation = useCompleteTask();
@@ -77,7 +78,12 @@ export function TaskRow({ task, lists }: TaskRowProps) {
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
-          <TaskActionsMenu task={task} lists={lists} onEdit={handleEdit} />
+          <TaskActionsMenu
+            task={task}
+            lists={lists}
+            siblings={siblings}
+            onEdit={handleEdit}
+          />
         </div>
       </div>
     </div>
