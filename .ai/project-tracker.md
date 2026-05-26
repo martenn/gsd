@@ -74,6 +74,8 @@ Infra:    ██████████████████░░ 94% (16/1
   - Empty backlog: shrink card height (title is not flush-top)
   - Backlogs collapsible to name-only header
   - Inline task creator: stay open for multi-add (Enter = save & continue, Cmd+Enter or Esc = save & close), to be confirmed
+  - Task `Move to top` / `Move to bottom` actions (complement to the one-step Move up/down added 2026-05-26)
+  - Compact the per-list "New Task" trigger (icon in header / smaller button) to reclaim vertical space
 
 ---
 

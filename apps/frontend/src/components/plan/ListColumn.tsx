@@ -1,11 +1,11 @@
 import { useState } from 'react';
+import type { CSSProperties } from 'react';
 import type { ListDto, TaskDto } from '@gsd/types';
-import { Plus } from 'lucide-react';
 import { TaskRow } from './TaskRow';
 import { InlineTaskCreator } from './InlineTaskCreator';
 import { ListHeader } from './ListHeader';
 import { Card } from '../ui/card';
-import { Button } from '../ui/button';
+import { useListCollapsed } from '../../hooks/useListCollapsed';
 
 interface ListColumnProps {
   list: ListDto;
@@ -16,6 +16,8 @@ interface ListColumnProps {
   fullWidth?: boolean;
 }
 
+const MAX_TASKS = 100;
+
 export function ListColumn({
   list,
   lists,
@@ -25,44 +27,51 @@ export function ListColumn({
   fullWidth = false,
 }: ListColumnProps) {
   const [isCreatingTask, setIsCreatingTask] = useState(false);
+  const [isCollapsed, toggleCollapsed] = useListCollapsed(list.id);
 
   const canDelete = totalNonDoneLists > 1;
   const canToggleBacklog = list.isBacklog ? backlogCount > 1 : true;
-  const maxTasks = 100;
+  const canCreateTask = tasks.length < MAX_TASKS;
+  const showTaskArea = !isCollapsed && (isCreatingTask || tasks.length > 0);
+
+  const accentStyle: CSSProperties | undefined = list.color
+    ? { borderLeft: `4px solid ${list.color}` }
+    : undefined;
+
+  const handleNewTask = () => {
+    if (!canCreateTask) return;
+    if (isCollapsed) toggleCollapsed();
+    setIsCreatingTask(true);
+  };
 
   return (
-    <Card className={`${fullWidth ? 'w-full' : 'flex-shrink-0 w-80'} flex flex-col`}>
+    <Card
+      className={`${fullWidth ? 'w-full' : 'flex-shrink-0 w-80'} flex flex-col overflow-hidden`}
+      style={accentStyle}
+    >
       <ListHeader
         list={list}
         lists={lists}
         taskCount={tasks.length}
-        maxTasks={maxTasks}
+        maxTasks={MAX_TASKS}
         canDelete={canDelete}
         canToggleBacklog={canToggleBacklog}
+        onNewTask={handleNewTask}
+        canCreateTask={canCreateTask}
+        isCollapsed={isCollapsed}
+        onToggleCollapsed={toggleCollapsed}
       />
-      <div className="border-b border-border px-3 py-2 bg-background">
-        <Button
-          variant="ghost"
-          size="sm"
-          className="w-full h-7 justify-start text-xs"
-          onClick={() => setIsCreatingTask(true)}
-          disabled={tasks.length >= maxTasks}
-        >
-          <Plus className="h-3 w-3 mr-1" />
-          New Task
-        </Button>
-      </div>
 
-      <div className="flex-1 overflow-y-auto max-h-[600px]">
-        {isCreatingTask && (
-          <InlineTaskCreator listId={list.id} onCancel={() => setIsCreatingTask(false)} />
-        )}
-        {tasks.length === 0 && !isCreatingTask ? (
-          <div className="py-8 text-center text-sm text-muted-foreground">No tasks yet</div>
-        ) : (
-          tasks.map((task) => <TaskRow key={task.id} task={task} lists={lists} siblings={tasks} />)
-        )}
-      </div>
+      {showTaskArea && (
+        <div className="flex-1 overflow-y-auto max-h-[600px]">
+          {isCreatingTask && (
+            <InlineTaskCreator listId={list.id} onCancel={() => setIsCreatingTask(false)} />
+          )}
+          {tasks.map((task) => (
+            <TaskRow key={task.id} task={task} lists={lists} siblings={tasks} />
+          ))}
+        </div>
+      )}
     </Card>
   );
 }
