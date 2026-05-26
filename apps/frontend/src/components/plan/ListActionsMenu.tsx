@@ -1,4 +1,13 @@
-import { MoreVertical, Edit, Trash2, FolderInput } from 'lucide-react';
+import {
+  MoreVertical,
+  Edit,
+  Trash2,
+  FolderInput,
+  ArrowUp,
+  ArrowDown,
+  ArrowLeft,
+  ArrowRight,
+} from 'lucide-react';
 import { Button } from '../ui/button';
 import {
   DropdownMenu,
@@ -7,7 +16,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '../ui/dropdown-menu';
-import { useDeleteList, useToggleBacklog } from '../../hooks/useLists';
+import { useDeleteList, useReorderList, useToggleBacklog } from '../../hooks/useLists';
 import type { ListDto } from '@gsd/types';
 
 interface ListActionsMenuProps {
@@ -16,6 +25,25 @@ interface ListActionsMenuProps {
   canDelete: boolean;
   canToggleBacklog: boolean;
   onRename: () => void;
+}
+
+// Lists render ascending by orderIndex (left/top first). Earlier sibling = lower orderIndex.
+function newOrderIndexForMoveEarlier(siblings: ListDto[], position: number): number {
+  const earlier = siblings[position - 1];
+  const earlierEarlier = siblings[position - 2];
+  if (!earlierEarlier) {
+    return earlier.orderIndex / 2;
+  }
+  return (earlierEarlier.orderIndex + earlier.orderIndex) / 2;
+}
+
+function newOrderIndexForMoveLater(siblings: ListDto[], position: number): number {
+  const later = siblings[position + 1];
+  const laterLater = siblings[position + 2];
+  if (!laterLater) {
+    return later.orderIndex + 1;
+  }
+  return (later.orderIndex + laterLater.orderIndex) / 2;
 }
 
 export function ListActionsMenu({
@@ -27,12 +55,49 @@ export function ListActionsMenu({
 }: ListActionsMenuProps) {
   const deleteListMutation = useDeleteList();
   const toggleBacklogMutation = useToggleBacklog();
+  const reorderListMutation = useReorderList();
+
+  const siblings = lists
+    .filter((l) => !l.isDone && l.isBacklog === list.isBacklog)
+    .sort((a, b) => a.orderIndex - b.orderIndex);
+  const position = siblings.findIndex((l) => l.id === list.id);
+  const canMoveEarlier = position > 0;
+  const canMoveLater = position >= 0 && position < siblings.length - 1;
+
+  const moveEarlierLabel = list.isBacklog ? 'Move up' : 'Move left';
+  const moveLaterLabel = list.isBacklog ? 'Move down' : 'Move right';
+  const MoveEarlierIcon = list.isBacklog ? ArrowUp : ArrowLeft;
+  const MoveLaterIcon = list.isBacklog ? ArrowDown : ArrowRight;
 
   const handleToggleBacklog = async () => {
     try {
       await toggleBacklogMutation.mutateAsync(list.id);
     } catch (error) {
       console.error('Failed to toggle backlog status:', error);
+    }
+  };
+
+  const handleMoveEarlier = async () => {
+    if (!canMoveEarlier) return;
+    try {
+      await reorderListMutation.mutateAsync({
+        listId: list.id,
+        data: { newOrderIndex: newOrderIndexForMoveEarlier(siblings, position) },
+      });
+    } catch (error) {
+      console.error(`Failed to ${moveEarlierLabel.toLowerCase()}:`, error);
+    }
+  };
+
+  const handleMoveLater = async () => {
+    if (!canMoveLater) return;
+    try {
+      await reorderListMutation.mutateAsync({
+        listId: list.id,
+        data: { newOrderIndex: newOrderIndexForMoveLater(siblings, position) },
+      });
+    } catch (error) {
+      console.error(`Failed to ${moveLaterLabel.toLowerCase()}:`, error);
     }
   };
 
@@ -70,6 +135,15 @@ export function ListActionsMenu({
         <DropdownMenuItem onClick={onRename}>
           <Edit className="mr-2 h-4 w-4" />
           Rename
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem onClick={handleMoveEarlier} disabled={!canMoveEarlier}>
+          <MoveEarlierIcon className="mr-2 h-4 w-4" />
+          {moveEarlierLabel}
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={handleMoveLater} disabled={!canMoveLater}>
+          <MoveLaterIcon className="mr-2 h-4 w-4" />
+          {moveLaterLabel}
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem
