@@ -23,9 +23,9 @@ This ensures consistency across all development tools and documentation.
 
 ## Project Overview
 
-**GSD (Getting Shit Done)** is a focused personal productivity app inspired by GTD. It helps solo users plan and execute work using multiple user-managed backlogs, intermediate lists, and a focused work mode. The MVP targets responsive web (desktop and mobile), single-user accounts, with Google OAuth authentication.
+**GSD (Getting Shit Done)** is a focused personal productivity app inspired by GTD. It helps solo users plan and execute work using multiple user-managed backlogs, intermediate lists, and a focused work mode. Single-user accounts, Google OAuth, responsive web (desktop primary; mobile in progress).
 
-**Current Status**: Monorepo bootstrapped with basic infrastructure. Ready for feature implementation.
+**Current Status**: MVP shipped — backend feature-complete, Plan/Work/Done/Dump modes live, deployed on mikrus at `getsd.bieda.it`. Next phases sequenced in [.ai/post-mvp-plan.md](./.ai/post-mvp-plan.md).
 
 ## Tech Stack
 
@@ -129,7 +129,7 @@ gsd/
 - Controls disabled when limits are reached
 
 **Work Mode:**
-- Focused execution view showing top task of active work list (rightmost non-Done)
+- Focused execution view showing top task of the active work list (selection rule defined under "Lists" above)
 - Displays short forecast of next 2-3 tasks
 - Single action: mark current task complete (moves to Done, advances to next)
 
@@ -281,7 +281,7 @@ export class CreateListDto implements CreateListRequest {
 - Mark completed features with ✅ status
 - Update progress percentages for the relevant phase
 - Update the "Last Updated" timestamp
-- Keep the overall MVP progress overview in sync
+- Roadmap and sprint sequencing live in [.ai/post-mvp-plan.md](./.ai/post-mvp-plan.md); tracker remains the line-item source of truth
 
 ### Documentation Organization
 
@@ -293,23 +293,29 @@ export class CreateListDto implements CreateListRequest {
 
 ## Open Implementation Questions
 
-These need to be resolved during implementation:
+Resolved during MVP build; remaining items now sequenced in [.ai/post-mvp-plan.md](./.ai/post-mvp-plan.md):
 
-1. **Order indexing strategy**: Fractional vs stepped integers; reindexing approach
-2. **Keyboard map completeness**: Full list of shortcuts for help overlay
-3. **Backlog color palette**: System-assigned color scheme and persistence
-4. **Error handling**: Strategy beyond disabled controls (server failures, optimistic updates, retries)
-5. **Mobile gestures**: Long-press behaviors, action toolbar design
+- **Keyboard map completeness** — full shortcut list for the help overlay (Sprint 3).
+- **Mobile gestures** — long-press behaviors, swipe ownership vs. future DnD (Sprint 2).
+- **Drag & drop** — kept out of current scope; revisit after Sprints 2–3.
+
+Already resolved:
+
+- Order indexing: 1000-step increments with midpoint splits on reorder (`apps/backend/src/tasks/infra/order-index.helper.ts`).
+- Backlog color palette: `ColorPool` assigns from a fixed palette; tasks inherit from `originBacklogId`.
+- Error UX baseline: disabled controls at limits, inline errors on failures.
 
 ## Important Notes
 
-- **Keyboard-first**: No drag-and-drop in MVP; all interactions via keyboard
-- **No undo**: Tasks can be recreated if needed; keep operations simple
-- **Hard delete**: No soft deletes for MVP (lists/tasks are permanently removed)
-- **Error UX**: Disable controls at limits; show inline errors on failures; no toasts or complex flows
-- **Auth**: Google OAuth only; no other providers in MVP
-- **Collaboration**: Out of scope; single-user only
-- **Offline**: Not supported in MVP; online-only web app
+Project stance (still in force post-MVP unless explicitly revisited):
+
+- **Keyboard-first**: arrow/h-j-k-l navigation; DnD intentionally out of current scope.
+- **No undo**: Tasks can be recreated if needed; keep operations simple.
+- **Hard delete**: lists/tasks are permanently removed; no soft deletes.
+- **Error UX**: Disable controls at limits; show inline errors on failures; no toasts or complex flows.
+- **Auth**: Google OAuth only; no other providers.
+- **Collaboration**: Out of scope; single-user only.
+- **Offline**: Not supported; online-only web app.
 
 ---
 
@@ -337,7 +343,7 @@ These need to be resolved during implementation:
 - One component per file
 - Use functional components with hooks only
 - TanStack Query for server state, useState for UI state
-- Use shadcn/ui components as-is (no customization in MVP)
+- Use shadcn/ui components as-is; customize only when there's a concrete UX reason
 - Focus on functionality first, polish later
 
 **Validation (CRITICAL):**
