@@ -39,6 +39,7 @@ export function BacklogColumn({
               tasks={tasksByListId[list.id] || []}
               totalNonDoneLists={totalNonDoneLists}
               backlogCount={backlogCount}
+              fullWidth
             />
           ))
         )}

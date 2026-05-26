@@ -99,7 +99,9 @@ gsd/
 - At least one backlog must always exist
 - Done is special and hidden from the main board
 - Flow: backlogs → intermediate lists (e.g., Week, Today) → Done
-- Active work list is the rightmost non-Done list
+- Active work list selection (consumed by Work Mode):
+  - If at least one intermediate list (non-backlog, non-done) exists → rightmost intermediate (highest `orderIndex` among intermediate lists)
+  - Otherwise (backlog-only setup) → leftmost backlog (lowest `orderIndex` among backlogs)
 - Limit: 10 non-Done lists per user
 
 ### Tasks
