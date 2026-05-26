@@ -40,3 +40,11 @@ export interface ReorderListRequest {
 export interface ReorderListResponseDto {
   list: ListDto;
 }
+
+export interface MoveAllTasksRequest {
+  destinationListId: string;
+}
+
+export interface MoveAllTasksResponseDto {
+  movedCount: number;
+}

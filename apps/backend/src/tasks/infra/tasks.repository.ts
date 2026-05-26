@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaClient, Task } from '@prisma/client';
+import { PrismaClient, Task, Prisma } from '@prisma/client';
 
 export interface FindManyByListOptions {
   limit?: number;
@@ -159,6 +159,25 @@ export class TasksRepository {
     return result?.orderIndex ?? null;
   }
 
+  async findNextBelow(userId: string, listId: string, orderIndex: number): Promise<number | null> {
+    const result = await this.prisma.task.findFirst({
+      where: {
+        userId,
+        listId,
+        orderIndex: { lt: orderIndex },
+        completedAt: null,
+      },
+      orderBy: {
+        orderIndex: 'desc',
+      },
+      select: {
+        orderIndex: true,
+      },
+    });
+
+    return result?.orderIndex ?? null;
+  }
+
   async reindexListTasks(userId: string, listId: string, newIndices: number[]): Promise<void> {
     const tasks = await this.prisma.task.findMany({
       where: {
@@ -198,6 +217,53 @@ export class TasksRepository {
         listId: destinationListId,
         orderIndex: newOrderIndex,
       },
+    });
+  }
+
+  // Atomically relocate all non-completed tasks from sourceListId to destinationListId,
+  // placing them at the top of the destination while preserving their relative order.
+  async moveAllNonCompletedTasks(
+    userId: string,
+    sourceListId: string,
+    destinationListId: string,
+  ): Promise<number> {
+    return this.prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+      const sourceTasks = await tx.task.findMany({
+        where: {
+          userId,
+          listId: sourceListId,
+          completedAt: null,
+        },
+        orderBy: { orderIndex: 'asc' },
+        select: { id: true },
+      });
+
+      if (sourceTasks.length === 0) {
+        return 0;
+      }
+
+      const maxDestOrder = await tx.task.findFirst({
+        where: { userId, listId: destinationListId },
+        orderBy: { orderIndex: 'desc' },
+        select: { orderIndex: true },
+      });
+      const base = maxDestOrder?.orderIndex ?? 0;
+      const STEP = 1000;
+
+      // sourceTasks is ASC (bottom-of-source first). Assigning base + (i+1)*STEP
+      // keeps relative order: the source top ends up with the highest orderIndex,
+      // which renders at the top of the destination.
+      for (let i = 0; i < sourceTasks.length; i++) {
+        await tx.task.update({
+          where: { id: sourceTasks[i].id },
+          data: {
+            listId: destinationListId,
+            orderIndex: base + (i + 1) * STEP,
+          },
+        });
+      }
+
+      return sourceTasks.length;
     });
   }
 

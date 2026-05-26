@@ -2,6 +2,8 @@ import type {
   CreateListRequest,
   GetListsResponseDto,
   ListDto,
+  MoveAllTasksRequest,
+  MoveAllTasksResponseDto,
   ReorderListRequest,
   ReorderListResponseDto,
   ToggleBacklogResponseDto,
@@ -58,6 +60,20 @@ export async function reorderList(
   const result = await apiClient.post<ReorderListResponseDto>(`/v1/lists/${listId}/reorder`, data);
   if (!result) {
     throw new Error('Failed to reorder list');
+  }
+  return result;
+}
+
+export async function moveAllTasks(
+  sourceListId: string,
+  data: MoveAllTasksRequest,
+): Promise<MoveAllTasksResponseDto> {
+  const result = await apiClient.post<MoveAllTasksResponseDto>(
+    `/v1/lists/${sourceListId}/move-tasks`,
+    data,
+  );
+  if (!result) {
+    throw new Error('Failed to move all tasks');
   }
   return result;
 }

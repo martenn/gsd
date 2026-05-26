@@ -1,6 +1,6 @@
 # GSD Post-MVP Roadmap
 
-**Status:** MVP shipped — app live on mikrus (`getsd.bieda.it`), images built, prod running.
+**Status:** MVP shipped — app live on mikrus (`getsd.bieda.it`), images built, prod running. **Sprint 1 Post-MVP active** — usability + small features driven by owner's daily-use feedback (DnD, Duplicate task, Move all tasks).
 **Last Updated:** 2026-05-26
 **Purpose:** Sequenced plan for the remaining tracker items now that deployment is no longer the blocker. The tracker stays the source of truth for line-item status; this doc is the roadmap and rationale.
 
@@ -105,25 +105,37 @@ Phased, because each step depends on the previous.
 
 ---
 
-## Sprint 4 — Polish & opt-in features (~1 week)
+## Sprint 1 Post-MVP — Usability & small features (~1 week, active)
 
-Pick from these as time allows. None block earlier sprints.
+Owner is dogfooding the app — sprint scoped to friction noticed during real use plus the long-standing DnD ask. **Active scope:**
 
-| Item | Est. | Decision needed first |
-| ---- | ---- | --------------------- |
-| **Drag & drop** | 3–4d | See `[DnD analysis](#drag--drop-decision-not-yet-taken)` below. CLAUDE.md currently says "no DnD in MVP" — update or hold. |
-| Audit logging (auth events) | 1d | Optional per tracker; only worth doing if you want a "who logged in when" trail. |
-| Extract `TaskListContainer` / `EmptyListState` from `ListColumn` | 0.5d | Cosmetic refactor. Worth doing before DnD so the sortable wrapper has clean boundaries. |
+| # | Item | Est. | Decisions taken |
+| - | ---- | ---- | --------------- |
+| 1 | **Duplicate task** | 0.5–1d | Backend endpoint `POST /v1/tasks/:id/duplicate`. Copy keeps **exact same title**, description, and `originBacklogId`; lands directly below original (midpoint orderIndex with the next sibling). Frontend: new "Duplicate" item in `TaskActionsMenu`. |
+| 2 | **Move all tasks from list → another list** | 1–1.5d | Backend endpoint `POST /v1/lists/:id/move-tasks` with `{ destinationListId }`. One transaction (mirrors `deleteWithTaskMove`). Frontend: **"Move all to" submenu in `ListActionsMenu`** (one-click like the task `Move to` submenu — no confirm dialog). Validate `source.count + dest.count ≤ 100` server-side; surface 400 inline on failure. Source list left as-is when emptied (user can collapse it manually). |
+| 3 | **Drag & drop — iteration 1** | ~1d | `@dnd-kit/core` + `@dnd-kit/sortable`. **Desktop (lg+) only**. Scope this iteration: **tasks reorder within their own list** (most common case in dogfooding). Reuses existing `POST /v1/tasks/:id/reorder`. |
+| 3b | **Drag & drop — iteration 2 (deferred)** | 2–3d | Cross-list task drag + list reorder within group (both currently usable via menus). Pulled out to its own iteration so iteration 1 ships clean and we get feedback on the feel first. Optional backend extension: extend `MoveTask` to accept `newOrderIndex` for one-call cross-list drops. |
+
+Sequencing: items 1 and 2 first (small, independent, ship as separate PRs); DnD last (big, its own PR). Items 1 + 2 share `TaskActionsMenu.tsx` / `ListActionsMenu.tsx` patterns already in place. DnD is additive — won't conflict.
+
+### Deferred from earlier Sprint 4 (not in current scope)
+
+Move back into focus once Sprint 1 Post-MVP wraps. These are still on the books but not active.
+
+| Item | Est. | Notes |
+| ---- | ---- | ----- |
+| Audit logging (auth events) | 1d | Optional; "who logged in when" trail. |
+| Extract `TaskListContainer` / `EmptyListState` from `ListColumn` | 0.5d | Cosmetic refactor; worth doing before DnD ideally — currently deferring since DnD doesn't strictly need it. |
 | Replace mock userIds in remaining E2E tests | 0.25d | Test-only cleanup. |
-| Swagger / OpenAPI decorators on all endpoints | 1d | Helpful if/when third parties hit the API; not urgent. |
+| Swagger / OpenAPI decorators on all endpoints | 1d | Helpful if/when third parties hit the API. |
 | Color hex DTO validation | 0.5d | Plug the small validation gap noted in tracker. |
-| Fractional ordering strategy | 1d | Only matters if the 1000-step orderIndex starts hitting collisions at scale; current `MoveTask` + `Reorder` use midpoint, so unlikely. |
+| Fractional ordering strategy | 1d | Only matters if 1000-step orderIndex hits collisions; unlikely. |
 
-### Drag & drop — decision not yet taken
+### Drag & drop — scoped for Sprint 1 Post-MVP
 
-Analysis already in conversation: `@dnd-kit` + `@dnd-kit/sortable`, ~3–4 days, frontend-only, backend needs no required changes (optional `MoveTask` extension to accept `newOrderIndex` saves one round-trip on cross-list drops). Risks: cross-list optimistic state, 100-task limit, mobile-swipe conflict, doc contradiction.
+`@dnd-kit/core` + `@dnd-kit/sortable`, ~3–4 days, frontend-only. Backend needs no required changes (optional `MoveTask` extension to accept `newOrderIndex` saves one round-trip on cross-list drops — apply if it cuts complexity, skip otherwise). Risks: cross-list optimistic state, 100-task limit, mobile-swipe conflict (addressed by scoping DnD to `lg+`).
 
-**Recommendation:** decide AFTER Sprint 2 (mobile-swipe ownership clarified) and Sprint 3 (keyboard parity in place). If shipped, drop DnD on the `lg+` breakpoint only.
+**Decision:** desktop (`lg+`) only. Mobile DnD revisited after Sprint 2 (Mobile) lands swipe gestures.
 
 ---
 
@@ -131,7 +143,8 @@ Analysis already in conversation: `@dnd-kit` + `@dnd-kit/sortable`, ~3–4 days,
 
 - [ ] In `.ai/project-tracker.md`, mark Phase 8 deployment items ✅ (all 9). Update `Overall MVP Completion`. Bump `Last Updated`.
 - [x] Post-Deployment Backlog cleaned up and `ux-improvements-backlog.md` deleted — all 6 items merged.
-- [x] CLAUDE.md MVP-closure pass done; DnD stance reworded as "out of current scope," revisit during Sprint 4.
+- [x] CLAUDE.md MVP-closure pass done; DnD stance reworded as "out of current scope."
+- [ ] Once Sprint 1 Post-MVP ships DnD, update CLAUDE.md's "Keyboard-first" stance and the Important Notes accordingly (DnD becomes desktop-supported, keyboard remains primary).
 
 ---
 
@@ -146,13 +159,14 @@ Analysis already in conversation: `@dnd-kit` + `@dnd-kit/sortable`, ~3–4 days,
 ## Sprint sequencing summary
 
 ```
-now  →  Sprint 1 (Confidence, ~1w)
-      → Sprint 2 (Mobile,     ~1.5w)
-      → Sprint 3 (Keyboard+a11y, ~3w)
-      → Sprint 4 (Polish + DnD decision, ~1w)
+active → Sprint 1 Post-MVP (Usability: Duplicate, Move-all, DnD, ~1w)
+now    → Sprint 1 (Confidence,        ~1w)
+       → Sprint 2 (Mobile,            ~1.5w)
+       → Sprint 3 (Keyboard+a11y,     ~3w)
+       → Sprint 4 (Deferred polish,   ~0.5w — see "Deferred from earlier Sprint 4")
 ```
 
-Total est: ~6.5 weeks of focused work, with hard dependencies only between Sprint 3a → 3b → 3c → 3d.
+Total est: ~7 weeks of focused work, with hard dependencies only between Sprint 3a → 3b → 3c → 3d.
 
 ---
 

@@ -14,6 +14,7 @@ import {
 import {
   GetListsResponseDto,
   ListDto,
+  MoveAllTasksResponseDto,
   UpdateListResponseDto,
   ToggleBacklogResponseDto,
   ReorderListResponseDto,
@@ -27,9 +28,11 @@ import { UpdateList } from '../use-cases/update-list';
 import { ToggleBacklog } from '../use-cases/toggle-backlog';
 import { ReorderList } from '../use-cases/reorder-list';
 import { DeleteList } from '../use-cases/delete-list';
+import { MoveAllTasks } from '../use-cases/move-all-tasks';
 import { CreateListDto } from '../dto/create-list.dto';
 import { UpdateListDto } from '../dto/update-list.dto';
 import { ReorderListDto } from '../dto/reorder-list.dto';
+import { MoveAllTasksDto } from '../dto/move-all-tasks.dto';
 
 @Controller('v1/lists')
 @UseGuards(JwtAuthGuard)
@@ -41,6 +44,7 @@ export class ListsController {
     private readonly toggleBacklogUseCase: ToggleBacklog,
     private readonly reorderListUseCase: ReorderList,
     private readonly deleteListUseCase: DeleteList,
+    private readonly moveAllTasksUseCase: MoveAllTasks,
   ) {}
 
   @Get()
@@ -85,6 +89,15 @@ export class ListsController {
   ): Promise<ReorderListResponseDto> {
     const list = await this.reorderListUseCase.execute(user.id, id, reorderListDto);
     return { list };
+  }
+
+  @Post(':id/move-tasks')
+  async moveAllTasks(
+    @CurrentUser() user: JwtUser,
+    @Param('id') sourceListId: string,
+    @Body() dto: MoveAllTasksDto,
+  ): Promise<MoveAllTasksResponseDto> {
+    return this.moveAllTasksUseCase.execute(user.id, sourceListId, dto.destinationListId);
   }
 
   @Delete(':id')

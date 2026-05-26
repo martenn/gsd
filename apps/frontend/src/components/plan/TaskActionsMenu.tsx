@@ -8,6 +8,7 @@ import {
   ArrowDown,
   ChevronsUp,
   ChevronsDown,
+  Copy,
 } from 'lucide-react';
 import type { ListDto, TaskDto } from '@gsd/types';
 import { Button } from '../ui/button';
@@ -21,7 +22,13 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from '../ui/dropdown-menu';
-import { useCompleteTask, useDeleteTask, useMoveTask, useReorderTask } from '../../hooks/useTasks';
+import {
+  useCompleteTask,
+  useDeleteTask,
+  useDuplicateTask,
+  useMoveTask,
+  useReorderTask,
+} from '../../hooks/useTasks';
 
 interface TaskActionsMenuProps {
   task: TaskDto;
@@ -65,12 +72,21 @@ export function TaskActionsMenu({ task, lists, siblings, onEdit }: TaskActionsMe
   const deleteTaskMutation = useDeleteTask();
   const moveTaskMutation = useMoveTask();
   const reorderTaskMutation = useReorderTask();
+  const duplicateTaskMutation = useDuplicateTask();
 
   const position = siblings.findIndex((t) => t.id === task.id);
   const canMoveUp = position > 0;
   const canMoveDown = position >= 0 && position < siblings.length - 1;
 
   const availableDestinations = lists.filter((list) => list.id !== task.listId && !list.isDone);
+
+  const handleDuplicate = async () => {
+    try {
+      await duplicateTaskMutation.mutateAsync(task.id);
+    } catch (error) {
+      console.error('Failed to duplicate task:', error);
+    }
+  };
 
   const handleComplete = async () => {
     try {
@@ -158,6 +174,10 @@ export function TaskActionsMenu({ task, lists, siblings, onEdit }: TaskActionsMe
         <DropdownMenuItem onClick={onEdit}>
           <Edit className="mr-2 h-4 w-4" />
           Edit
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={handleDuplicate}>
+          <Copy className="mr-2 h-4 w-4" />
+          Duplicate
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={handleMoveToTop} disabled={!canMoveUp}>

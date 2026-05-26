@@ -7,6 +7,7 @@ import {
   ArrowDown,
   ArrowLeft,
   ArrowRight,
+  PackageOpen,
 } from 'lucide-react';
 import { Button } from '../ui/button';
 import {
@@ -14,9 +15,17 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from '../ui/dropdown-menu';
-import { useDeleteList, useReorderList, useToggleBacklog } from '../../hooks/useLists';
+import {
+  useDeleteList,
+  useMoveAllTasks,
+  useReorderList,
+  useToggleBacklog,
+} from '../../hooks/useLists';
 import type { ListDto } from '@gsd/types';
 
 interface ListActionsMenuProps {
@@ -56,6 +65,9 @@ export function ListActionsMenu({
   const deleteListMutation = useDeleteList();
   const toggleBacklogMutation = useToggleBacklog();
   const reorderListMutation = useReorderList();
+  const moveAllTasksMutation = useMoveAllTasks();
+
+  const moveAllDestinations = lists.filter((l) => l.id !== list.id && !l.isDone);
 
   const siblings = lists
     .filter((l) => !l.isDone && l.isBacklog === list.isBacklog)
@@ -98,6 +110,17 @@ export function ListActionsMenu({
       });
     } catch (error) {
       console.error(`Failed to ${moveLaterLabel.toLowerCase()}:`, error);
+    }
+  };
+
+  const handleMoveAllTasks = async (destinationListId: string) => {
+    try {
+      await moveAllTasksMutation.mutateAsync({
+        sourceListId: list.id,
+        data: { destinationListId },
+      });
+    } catch (error) {
+      console.error('Failed to move all tasks:', error);
     }
   };
 
@@ -145,6 +168,26 @@ export function ListActionsMenu({
           <MoveLaterIcon className="mr-2 h-4 w-4" />
           {moveLaterLabel}
         </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuSub>
+          <DropdownMenuSubTrigger disabled={moveAllDestinations.length === 0}>
+            <PackageOpen className="mr-2 h-4 w-4" />
+            Move all tasks to
+          </DropdownMenuSubTrigger>
+          <DropdownMenuSubContent>
+            {moveAllDestinations.map((destination) => (
+              <DropdownMenuItem
+                key={destination.id}
+                onClick={() => handleMoveAllTasks(destination.id)}
+              >
+                {destination.name}
+              </DropdownMenuItem>
+            ))}
+            {moveAllDestinations.length === 0 && (
+              <DropdownMenuItem disabled>No other lists available</DropdownMenuItem>
+            )}
+          </DropdownMenuSubContent>
+        </DropdownMenuSub>
         <DropdownMenuSeparator />
         <DropdownMenuItem
           onClick={handleToggleBacklog}
