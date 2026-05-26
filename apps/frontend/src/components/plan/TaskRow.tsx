@@ -78,12 +78,7 @@ export function TaskRow({ task, lists, siblings }: TaskRowProps) {
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
-          <TaskActionsMenu
-            task={task}
-            lists={lists}
-            siblings={siblings}
-            onEdit={handleEdit}
-          />
+          <TaskActionsMenu task={task} lists={lists} siblings={siblings} onEdit={handleEdit} />
         </div>
       </div>
     </div>

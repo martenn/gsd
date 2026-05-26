@@ -11,12 +11,7 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from '../ui/dropdown-menu';
-import {
-  useCompleteTask,
-  useDeleteTask,
-  useMoveTask,
-  useReorderTask,
-} from '../../hooks/useTasks';
+import { useCompleteTask, useDeleteTask, useMoveTask, useReorderTask } from '../../hooks/useTasks';
 
 interface TaskActionsMenuProps {
   task: TaskDto;
