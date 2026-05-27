@@ -3,6 +3,7 @@ import type {
   BulkAddTasksRequest,
   CreateTaskRequest,
   GetTasksQuery,
+  GetTasksResponseDto,
   MoveTaskRequest,
   ReorderTaskRequest,
   UpdateTaskRequest,
@@ -79,11 +80,33 @@ export function useReorderTask() {
   return useMutation({
     mutationFn: ({ taskId, data }: { taskId: string; data: ReorderTaskRequest }) =>
       reorderTask(taskId, data),
-    onSuccess: () => {
+    // Optimistic: patch the new orderIndex into every cached tasks query and
+    // re-sort so the UI doesn't briefly snap back to the old position while we
+    // wait for the backend. Roll back on error.
+    onMutate: async ({ taskId, data }) => {
+      if (data.newOrderIndex === undefined) return { previous: [] as PreviousTasksSnapshot };
+      await queryClient.cancelQueries({ queryKey: ['tasks'] });
+      const previous = queryClient.getQueriesData<GetTasksResponseDto>({ queryKey: ['tasks'] });
+      queryClient.setQueriesData<GetTasksResponseDto>({ queryKey: ['tasks'] }, (old) => {
+        if (!old) return old;
+        const updated = old.tasks.map((t) =>
+          t.id === taskId ? { ...t, orderIndex: data.newOrderIndex! } : t,
+        );
+        updated.sort((a, b) => b.orderIndex - a.orderIndex);
+        return { ...old, tasks: updated };
+      });
+      return { previous };
+    },
+    onError: (_err, _vars, context) => {
+      context?.previous?.forEach(([key, snapshot]) => queryClient.setQueryData(key, snapshot));
+    },
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['tasks'] });
     },
   });
 }
+
+type PreviousTasksSnapshot = Array<[unknown[], GetTasksResponseDto | undefined]>;
 
 export function useDuplicateTask() {
   const queryClient = useQueryClient();
