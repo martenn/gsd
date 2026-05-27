@@ -67,7 +67,7 @@ export function TaskRow({ task, lists, siblings }: TaskRowProps) {
       className="group relative border-b border-border last:border-0 py-2 px-3 hover:bg-muted/50 transition-colors"
     >
       <div
-        className="absolute left-0 top-0 bottom-0 w-1"
+        className="absolute left-0 top-0 bottom-0 w-1.5"
         style={{ backgroundColor: task.color }}
         aria-hidden="true"
       />

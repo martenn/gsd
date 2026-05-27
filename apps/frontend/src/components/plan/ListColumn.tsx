@@ -117,7 +117,9 @@ export function ListColumn({
       />
 
       {showTaskArea && (
-        <div className="flex-1 overflow-y-auto max-h-[600px]">
+        <div
+          className={fullWidth ? 'overflow-y-auto max-h-[60vh]' : 'flex-1 min-h-0 overflow-y-auto'}
+        >
           {isCreatingTask && (
             <InlineTaskCreator listId={list.id} onCancel={() => setIsCreatingTask(false)} />
           )}
