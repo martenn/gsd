@@ -20,10 +20,7 @@ export function BacklogColumn({
   return (
     <aside className="flex-shrink-0 w-80 space-y-4 overflow-y-auto border-r border-border pr-4">
       <div className="sticky top-0 bg-background pb-2 z-10">
-        <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">
-          Backlogs
-        </h2>
-        <CreateListButton type="backlog" />
+        <CreateListButton type="backlog" title="Backlogs" />
       </div>
       <div className="space-y-4">
         {backlogs.length === 0 ? (
