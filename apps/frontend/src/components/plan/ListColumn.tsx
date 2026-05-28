@@ -100,7 +100,7 @@ export function ListColumn({
 
   return (
     <Card
-      className={`${fullWidth ? 'w-full' : 'flex-shrink-0 w-80'} flex flex-col overflow-hidden`}
+      className={`${fullWidth ? 'w-full' : 'flex-shrink-0 w-80'} flex flex-col gap-0 py-0 overflow-hidden`}
       style={accentStyle}
     >
       <ListHeader

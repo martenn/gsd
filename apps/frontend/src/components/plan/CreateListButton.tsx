@@ -78,7 +78,7 @@ export function CreateListButton({ type, title }: CreateListButtonProps) {
 
   if (title) {
     return (
-      <div className="flex items-center justify-between gap-2">
+      <div className="flex items-center gap-1">
         <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
           {title}
         </h2>
