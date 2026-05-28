@@ -9,9 +9,10 @@ import { useCreateList } from '../../hooks/useLists';
 
 interface CreateListButtonProps {
   type: 'backlog' | 'intermediate';
+  title?: string;
 }
 
-export function CreateListButton({ type }: CreateListButtonProps) {
+export function CreateListButton({ type, title }: CreateListButtonProps) {
   const [isCreating, setIsCreating] = useState(false);
   const createListMutation = useCreateList();
 
@@ -70,6 +71,28 @@ export function CreateListButton({ type }: CreateListButtonProps) {
         </div>
         {errors.name && <p className="text-xs text-destructive">{errors.name.message}</p>}
       </form>
+    );
+  }
+
+  const label = `New ${type === 'backlog' ? 'backlog' : 'list'}`;
+
+  if (title) {
+    return (
+      <div className="flex items-center justify-between gap-2">
+        <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+          {title}
+        </h2>
+        <Button
+          variant="ghost"
+          size="sm"
+          className="h-6 w-6 p-0 shrink-0"
+          onClick={() => setIsCreating(true)}
+          aria-label={label}
+          title={label}
+        >
+          <Plus className="w-4 h-4" />
+        </Button>
+      </div>
     );
   }
 

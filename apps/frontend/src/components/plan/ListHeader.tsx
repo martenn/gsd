@@ -41,7 +41,7 @@ export function ListHeader({
   };
 
   return (
-    <div className="border-b border-border px-3 py-2 bg-muted/50">
+    <div className="border-b border-border px-2 py-0.5 bg-muted/50">
       <div className="flex items-center gap-1">
         <Button
           variant="ghost"

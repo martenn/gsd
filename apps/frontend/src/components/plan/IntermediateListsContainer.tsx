@@ -20,10 +20,7 @@ export function IntermediateListsContainer({
   return (
     <section className="flex-1 overflow-x-auto overflow-y-hidden">
       <div className="sticky top-0 bg-background pb-2 z-10">
-        <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">
-          Lists
-        </h2>
-        <CreateListButton type="intermediate" />
+        <CreateListButton type="intermediate" title="Lists" />
       </div>
       <div className="flex gap-4 h-full pb-4 pt-2">
         {intermediateLists.length === 0 ? (
