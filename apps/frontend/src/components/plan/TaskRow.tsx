@@ -13,15 +13,17 @@ interface TaskRowProps {
   task: TaskDto;
   lists: ListDto[];
   siblings: TaskDto[];
+  listId: string;
 }
 
-export function TaskRow({ task, lists, siblings }: TaskRowProps) {
+export function TaskRow({ task, lists, siblings, listId }: TaskRowProps) {
   const [isEditing, setIsEditing] = useState(false);
   const updateTaskMutation = useUpdateTask();
   const completeTaskMutation = useCompleteTask();
 
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: task.id,
+    data: { type: 'task', listId },
   });
 
   const handleSave = async (data: { title: string; description?: string }) => {

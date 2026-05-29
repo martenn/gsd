@@ -169,5 +169,45 @@ describe('MoveTask', () => {
 
       expect(tasksRepository.moveTask).not.toHaveBeenCalled();
     });
+
+    it('uses explicit orderIndex when supplied and skips max-orderIndex lookup', async () => {
+      const movedTask = { ...mockTask, listId: targetListId, orderIndex: 1500 };
+      tasksRepository.findById.mockResolvedValue(mockTask);
+      listsRepository.findById.mockResolvedValue(mockTargetList);
+      tasksRepository.countByList.mockResolvedValue(2);
+      tasksRepository.moveTask.mockResolvedValue(movedTask);
+      taskMapper.toDto.mockResolvedValue({} as never);
+
+      await moveTask.execute(userId, taskId, targetListId, 1500);
+
+      expect(tasksRepository.findMaxOrderIndex).not.toHaveBeenCalled();
+      expect(tasksRepository.moveTask).toHaveBeenCalledWith(userId, taskId, targetListId, 1500);
+    });
+
+    it('short-circuits when source and target list match and no explicit orderIndex is given', async () => {
+      tasksRepository.findById.mockResolvedValue({ ...mockTask, listId: targetListId });
+      listsRepository.findById.mockResolvedValue(mockTargetList);
+      taskMapper.toDto.mockResolvedValue({} as never);
+
+      await moveTask.execute(userId, taskId, targetListId);
+
+      expect(tasksRepository.moveTask).not.toHaveBeenCalled();
+      expect(tasksRepository.countByList).not.toHaveBeenCalled();
+    });
+
+    it('allows same-list move when explicit orderIndex is provided (reorder semantics)', async () => {
+      const sameList = { ...mockTask, listId: targetListId };
+      const moved = { ...sameList, orderIndex: 2500 };
+      tasksRepository.findById.mockResolvedValue(sameList);
+      listsRepository.findById.mockResolvedValue(mockTargetList);
+      tasksRepository.moveTask.mockResolvedValue(moved);
+      taskMapper.toDto.mockResolvedValue({} as never);
+
+      await moveTask.execute(userId, taskId, targetListId, 2500);
+
+      // Same-list path skips the capacity check (already counted).
+      expect(tasksRepository.countByList).not.toHaveBeenCalled();
+      expect(tasksRepository.moveTask).toHaveBeenCalledWith(userId, taskId, targetListId, 2500);
+    });
   });
 });
