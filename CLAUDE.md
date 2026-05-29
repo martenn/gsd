@@ -25,7 +25,7 @@ This ensures consistency across all development tools and documentation.
 
 **GSD (Getting Shit Done)** is a focused personal productivity app inspired by GTD. It helps solo users plan and execute work using multiple user-managed backlogs, intermediate lists, and a focused work mode. Single-user accounts, Google OAuth, responsive web (desktop primary; mobile in progress).
 
-**Current Status**: MVP shipped — backend feature-complete, Plan/Work/Done/Dump modes live, deployed on mikrus at `getsd.bieda.it`. Next phases sequenced in [.ai/post-mvp-plan.md](./.ai/post-mvp-plan.md).
+**Current Status**: MVP shipped — backend feature-complete, Plan/Work/Done/Dump modes live, deployed on mikrus at `getsd.bieda.it`. Open improvements are tracked as a flat priority list in [.ai/post-mvp-plan.md](./.ai/post-mvp-plan.md); top of that list is the next pick.
 
 ## Tech Stack
 
@@ -281,7 +281,7 @@ export class CreateListDto implements CreateListRequest {
 - Mark completed features with ✅ status
 - Update progress percentages for the relevant phase
 - Update the "Last Updated" timestamp
-- Roadmap and sprint sequencing live in [.ai/post-mvp-plan.md](./.ai/post-mvp-plan.md); tracker remains the line-item source of truth
+- Open improvements live as a flat priority list in [.ai/post-mvp-plan.md](./.ai/post-mvp-plan.md); tracker remains the line-item source of truth
 
 ### Documentation Organization
 
@@ -293,11 +293,11 @@ export class CreateListDto implements CreateListRequest {
 
 ## Open Implementation Questions
 
-Resolved during MVP build; remaining items now sequenced in [.ai/post-mvp-plan.md](./.ai/post-mvp-plan.md):
+Resolved during MVP build; remaining items live in the improvements list at [.ai/post-mvp-plan.md](./.ai/post-mvp-plan.md):
 
-- **Keyboard map completeness** — full shortcut list for the help overlay (Sprint 3).
-- **Mobile gestures** — long-press behaviors, swipe ownership vs. future DnD (Sprint 2).
-- **Drag & drop** — kept out of current scope; revisit after Sprints 2–3.
+- **Keyboard map completeness** — full shortcut list for the help overlay.
+- **Mobile gestures** — long-press behaviors, swipe ownership vs. DnD.
+- **Drag & drop** — shipped for desktop (`lg+`) within and across lists; mobile DnD still deferred.
 
 Already resolved:
 

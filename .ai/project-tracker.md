@@ -1,6 +1,6 @@
 # GSD Project Tracker
 
-**Last Updated:** 2026-05-26 (Plan Mode task-ordering hotfixes + Work Mode active-list fix + Backlog column overflow fix)
+**Last Updated:** 2026-05-29 (Plan Mode task-ordering hotfixes + Work Mode active-list fix + Backlog column overflow fix)
 **Current Sprint:** Technical Debt Resolution & Deployment Preparation
 
 **2026-05-26 hotfixes (frontend):**
@@ -64,7 +64,7 @@ Infra:    ██████████████████░░ 94% (16/1
 - [x] Plan Mode Task Management UI ✅
 - [x] Dump Mode ✅
 
-**Post-MVP roadmap:** see [.ai/post-mvp-plan.md](./post-mvp-plan.md) for sprint sequencing (Confidence → Mobile → Keyboard & a11y → Polish/DnD).
+**Open improvements:** flat priority list in [.ai/post-mvp-plan.md](./post-mvp-plan.md). Top of that list is the next pick; reorder by moving items up/down.
 
 ---
 
