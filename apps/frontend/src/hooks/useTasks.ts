@@ -68,7 +68,32 @@ export function useMoveTask() {
   return useMutation({
     mutationFn: ({ taskId, data }: { taskId: string; data: MoveTaskRequest }) =>
       moveTask(taskId, data),
-    onSuccess: () => {
+    // Optimistic: patch listId + orderIndex into every cached tasks query so
+    // cross-list drops don't flash back to the source list while waiting for
+    // the backend. Roll back on error.
+    onMutate: async ({ taskId, data }) => {
+      await queryClient.cancelQueries({ queryKey: ['tasks'] });
+      const previous = queryClient.getQueriesData<GetTasksResponseDto>({ queryKey: ['tasks'] });
+      queryClient.setQueriesData<GetTasksResponseDto>({ queryKey: ['tasks'] }, (old) => {
+        if (!old) return old;
+        const updated = old.tasks.map((t) =>
+          t.id === taskId
+            ? {
+                ...t,
+                listId: data.listId,
+                ...(data.newOrderIndex !== undefined ? { orderIndex: data.newOrderIndex } : {}),
+              }
+            : t,
+        );
+        updated.sort((a, b) => b.orderIndex - a.orderIndex);
+        return { ...old, tasks: updated };
+      });
+      return { previous };
+    },
+    onError: (_err, _vars, context) => {
+      context?.previous?.forEach(([key, snapshot]) => queryClient.setQueryData(key, snapshot));
+    },
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['tasks'] });
     },
   });

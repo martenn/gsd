@@ -95,7 +95,7 @@ export class TasksController {
     @Param('id') taskId: string,
     @Body() dto: MoveTaskDto,
   ): Promise<MoveTaskResponseDto> {
-    const task = await this.moveTaskUseCase.execute(user.id, taskId, dto.listId);
+    const task = await this.moveTaskUseCase.execute(user.id, taskId, dto.listId, dto.newOrderIndex);
     return { task };
   }
 

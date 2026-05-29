@@ -16,7 +16,12 @@ export class MoveTask {
     this.logger.setContext(MoveTask.name);
   }
 
-  async execute(userId: string, taskId: string, targetListId: string): Promise<TaskDto> {
+  async execute(
+    userId: string,
+    taskId: string,
+    targetListId: string,
+    explicitOrderIndex?: number,
+  ): Promise<TaskDto> {
     this.logger.log(`Moving task ${taskId} to list ${targetListId} for user ${userId}`);
 
     try {
@@ -36,13 +41,25 @@ export class MoveTask {
         );
       }
 
-      const taskCount = await this.tasksRepository.countByList(userId, targetListId);
-      if (taskCount >= 100) {
-        throw new BadRequestException('Target list has reached maximum capacity of 100 tasks');
+      // Allow same-list moves only when an explicit order is supplied (reorder semantics).
+      if (task.listId === targetListId && explicitOrderIndex === undefined) {
+        return this.taskMapper.toDto(task);
       }
 
-      const maxOrderIndex = await this.tasksRepository.findMaxOrderIndex(userId, targetListId);
-      const newOrderIndex = maxOrderIndex !== null ? maxOrderIndex + 1000 : 1000;
+      if (task.listId !== targetListId) {
+        const taskCount = await this.tasksRepository.countByList(userId, targetListId);
+        if (taskCount >= 100) {
+          throw new BadRequestException('Target list has reached maximum capacity of 100 tasks');
+        }
+      }
+
+      let newOrderIndex: number;
+      if (explicitOrderIndex !== undefined) {
+        newOrderIndex = explicitOrderIndex;
+      } else {
+        const maxOrderIndex = await this.tasksRepository.findMaxOrderIndex(userId, targetListId);
+        newOrderIndex = maxOrderIndex !== null ? maxOrderIndex + 1000 : 1000;
+      }
 
       const updatedTask = await this.tasksRepository.moveTask(
         userId,
