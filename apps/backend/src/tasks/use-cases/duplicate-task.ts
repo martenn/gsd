@@ -41,7 +41,7 @@ export class DuplicateTask {
       const targetListId = target === 'origin-backlog' ? original.originBacklogId : original.listId;
 
       if (target === 'origin-backlog') {
-        const backlog = await this.listsRepository.findById(userId, targetListId);
+        const backlog = await this.listsRepository.findById(targetListId, userId);
         if (!backlog) {
           throw new NotFoundException(`Origin backlog with ID ${targetListId} not found`);
         }

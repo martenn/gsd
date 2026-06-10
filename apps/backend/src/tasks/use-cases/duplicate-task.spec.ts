@@ -185,6 +185,8 @@ describe('DuplicateTask', () => {
 
         await duplicateTask.execute(userId, taskId, 'origin-backlog');
 
+        // ListsRepository.findById takes (id, userId) — opposite of TasksRepository.
+        expect(listsRepository.findById).toHaveBeenCalledWith(originBacklogId, userId);
         // Capacity + max-orderIndex are checked against the backlog, not the source list.
         expect(tasksRepository.countByList).toHaveBeenCalledWith(userId, originBacklogId);
         expect(tasksRepository.findMaxOrderIndex).toHaveBeenCalledWith(userId, originBacklogId);
