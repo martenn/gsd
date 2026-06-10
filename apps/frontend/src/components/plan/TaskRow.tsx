@@ -1,13 +1,13 @@
 import { useState } from 'react';
 import type { TaskDto, ListDto } from '@gsd/types';
-import { CheckCircle, GripVertical } from 'lucide-react';
+import { CheckCircle, Copy, CopyPlus, GripVertical } from 'lucide-react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { TaskActionsMenu } from './TaskActionsMenu';
 import { TaskEditForm } from './TaskEditForm';
 import { Button } from '../ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../ui/tooltip';
-import { useUpdateTask, useCompleteTask } from '../../hooks/useTasks';
+import { useUpdateTask, useCompleteTask, useDuplicateTask } from '../../hooks/useTasks';
 
 interface TaskRowProps {
   task: TaskDto;
@@ -20,6 +20,7 @@ export function TaskRow({ task, lists, siblings, listId }: TaskRowProps) {
   const [isEditing, setIsEditing] = useState(false);
   const updateTaskMutation = useUpdateTask();
   const completeTaskMutation = useCompleteTask();
+  const duplicateTaskMutation = useDuplicateTask();
 
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: task.id,
@@ -48,6 +49,14 @@ export function TaskRow({ task, lists, siblings, listId }: TaskRowProps) {
       await completeTaskMutation.mutateAsync(task.id);
     } catch (error) {
       console.error('Failed to complete task:', error);
+    }
+  };
+
+  const handleDuplicate = async (target: 'in-place' | 'origin-backlog') => {
+    try {
+      await duplicateTaskMutation.mutateAsync({ taskId: task.id, target });
+    } catch (error) {
+      console.error('Failed to duplicate task:', error);
     }
   };
 
@@ -97,6 +106,38 @@ export function TaskRow({ task, lists, siblings, listId }: TaskRowProps) {
 
         <div className="ml-2 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">
           <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-6 w-6 p-0"
+                  onClick={() => handleDuplicate('origin-backlog')}
+                  aria-label="Duplicate to backlog"
+                >
+                  <CopyPlus className="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Duplicate to backlog</p>
+              </TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-6 w-6 p-0"
+                  onClick={() => handleDuplicate('in-place')}
+                  aria-label="Duplicate here"
+                >
+                  <Copy className="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Duplicate here</p>
+              </TooltipContent>
+            </Tooltip>
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button variant="ghost" size="sm" className="h-6 w-6 p-0" onClick={handleComplete}>

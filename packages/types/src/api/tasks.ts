@@ -87,6 +87,14 @@ export interface BulkAddTasksResponseDto {
   message?: string;
 }
 
+export type DuplicateTaskTarget = 'in-place' | 'origin-backlog';
+
+export interface DuplicateTaskRequest {
+  // Where the copy lands: just below the original ('in-place', default) or at the
+  // top of the task's origin backlog ('origin-backlog').
+  target?: DuplicateTaskTarget;
+}
+
 export interface DuplicateTaskResponseDto {
   task: TaskDto;
 }
