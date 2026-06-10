@@ -39,6 +39,7 @@ import { GetTasksQueryDto } from '../dto/get-tasks-query.dto';
 import { MoveTaskDto } from '../dto/move-task.dto';
 import { ReorderTaskDto } from '../dto/reorder-task.dto';
 import { BulkAddTasksDto } from '../dto/bulk-add-tasks.dto';
+import { DuplicateTaskDto } from '../dto/duplicate-task.dto';
 
 @Controller('v1/tasks')
 @UseGuards(JwtAuthGuard)
@@ -123,8 +124,9 @@ export class TasksController {
   async duplicateTask(
     @CurrentUser() user: JwtUser,
     @Param('id') taskId: string,
+    @Body() dto: DuplicateTaskDto,
   ): Promise<DuplicateTaskResponseDto> {
-    const task = await this.duplicateTaskUseCase.execute(user.id, taskId);
+    const task = await this.duplicateTaskUseCase.execute(user.id, taskId, dto.target);
     return { task };
   }
 

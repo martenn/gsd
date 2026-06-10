@@ -1,7 +1,9 @@
 import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
-import { TaskDto } from '@gsd/types';
+import { TaskDto, DuplicateTaskTarget } from '@gsd/types';
 import { TasksRepository } from '../infra/tasks.repository';
+import { ListsRepository } from '../../lists/infra/lists.repository';
 import { TaskMapper } from '../mappers/task.mapper';
+import { OrderIndexHelper } from '../infra/order-index.helper';
 import { AppLogger } from '../../logger/app-logger';
 
 const MAX_TASKS_PER_LIST = 100;
@@ -10,14 +12,19 @@ const MAX_TASKS_PER_LIST = 100;
 export class DuplicateTask {
   constructor(
     private readonly tasksRepository: TasksRepository,
+    private readonly listsRepository: ListsRepository,
     private readonly taskMapper: TaskMapper,
     private readonly logger: AppLogger,
   ) {
     this.logger.setContext(DuplicateTask.name);
   }
 
-  async execute(userId: string, taskId: string): Promise<TaskDto> {
-    this.logger.log(`Duplicating task ${taskId} for user ${userId}`);
+  async execute(
+    userId: string,
+    taskId: string,
+    target: DuplicateTaskTarget = 'in-place',
+  ): Promise<TaskDto> {
+    this.logger.log(`Duplicating task ${taskId} for user ${userId} (target: ${target})`);
 
     try {
       const original = await this.tasksRepository.findById(userId, taskId);
@@ -29,23 +36,33 @@ export class DuplicateTask {
         throw new BadRequestException('Cannot duplicate a completed task');
       }
 
-      const taskCount = await this.tasksRepository.countByList(userId, original.listId);
+      // 'in-place' lands just below the original in its current list; 'origin-backlog'
+      // lands at the top of the task's origin backlog.
+      const targetListId = target === 'origin-backlog' ? original.originBacklogId : original.listId;
+
+      if (target === 'origin-backlog') {
+        const backlog = await this.listsRepository.findById(userId, targetListId);
+        if (!backlog) {
+          throw new NotFoundException(`Origin backlog with ID ${targetListId} not found`);
+        }
+      }
+
+      const taskCount = await this.tasksRepository.countByList(userId, targetListId);
       if (taskCount >= MAX_TASKS_PER_LIST) {
         throw new BadRequestException(
           `List has reached maximum task limit (${MAX_TASKS_PER_LIST})`,
         );
       }
 
-      const newOrderIndex = await this.calculateInsertBelow(
-        userId,
-        original.listId,
-        original.orderIndex,
-      );
+      const newOrderIndex =
+        target === 'origin-backlog'
+          ? await this.calculateInsertAtTop(userId, targetListId)
+          : await this.calculateInsertBelow(userId, targetListId, original.orderIndex);
 
       const duplicate = await this.tasksRepository.create({
         title: original.title,
         description: original.description,
-        listId: original.listId,
+        listId: targetListId,
         originBacklogId: original.originBacklogId,
         userId,
         orderIndex: newOrderIndex,
@@ -61,6 +78,13 @@ export class DuplicateTask {
       );
       throw error;
     }
+  }
+
+  // Tasks render in descending orderIndex (top = highest), so the top slot is the
+  // current max plus a step (mirrors how new tasks are inserted).
+  private async calculateInsertAtTop(userId: string, listId: string): Promise<number> {
+    const maxOrderIndex = await this.tasksRepository.findMaxOrderIndex(userId, listId);
+    return OrderIndexHelper.calculateTopPosition(maxOrderIndex);
   }
 
   // Tasks render in descending orderIndex (top = highest). "Below" the original
