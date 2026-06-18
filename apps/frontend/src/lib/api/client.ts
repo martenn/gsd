@@ -15,6 +15,17 @@ export class ApiError extends Error {
 
 async function handleResponse<T>(response: Response): Promise<T | null> {
   if (!response.ok) {
+    // Session expired or signed out elsewhere: any authenticated action that
+    // comes back 401 should bounce the user to the login page (`/`). Guard to
+    // the protected app area so public pages don't redirect-loop.
+    if (
+      response.status === 401 &&
+      typeof window !== 'undefined' &&
+      window.location.pathname.startsWith('/app')
+    ) {
+      window.location.href = '/';
+    }
+
     const errorData = (await response.json().catch(() => ({}))) as ErrorResponse;
     throw new ApiError(
       errorData.message || 'An error occurred',
