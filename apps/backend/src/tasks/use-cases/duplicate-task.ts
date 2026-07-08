@@ -1,5 +1,5 @@
 import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
-import { TaskDto, DuplicateTaskTarget } from '@gsd/types';
+import { TaskDto } from '@gsd/types';
 import { TasksRepository } from '../infra/tasks.repository';
 import { ListsRepository } from '../../lists/infra/lists.repository';
 import { TaskMapper } from '../mappers/task.mapper';
@@ -19,12 +19,11 @@ export class DuplicateTask {
     this.logger.setContext(DuplicateTask.name);
   }
 
-  async execute(
-    userId: string,
-    taskId: string,
-    target: DuplicateTaskTarget = 'in-place',
-  ): Promise<TaskDto> {
-    this.logger.log(`Duplicating task ${taskId} for user ${userId} (target: ${target})`);
+  async execute(userId: string, taskId: string, targetListId?: string): Promise<TaskDto> {
+    this.logger.log(
+      `Duplicating task ${taskId} for user ${userId}` +
+        (targetListId ? ` into list ${targetListId}` : ' in place'),
+    );
 
     try {
       const original = await this.tasksRepository.findById(userId, taskId);
@@ -36,33 +35,36 @@ export class DuplicateTask {
         throw new BadRequestException('Cannot duplicate a completed task');
       }
 
-      // 'in-place' lands just below the original in its current list; 'origin-backlog'
-      // lands at the top of the task's origin backlog.
-      const targetListId = target === 'origin-backlog' ? original.originBacklogId : original.listId;
+      // No target list → duplicate in place, just below the original in its
+      // current list. Target list → insert the copy at the top of that list.
+      let destListId: string;
+      let newOrderIndex: number;
 
-      if (target === 'origin-backlog') {
-        const backlog = await this.listsRepository.findById(targetListId, userId);
-        if (!backlog) {
-          throw new NotFoundException(`Origin backlog with ID ${targetListId} not found`);
+      if (targetListId) {
+        const targetList = await this.listsRepository.findById(targetListId, userId);
+        if (!targetList) {
+          throw new NotFoundException(`Target list with ID ${targetListId} not found`);
         }
-      }
-
-      const taskCount = await this.tasksRepository.countByList(userId, targetListId);
-      if (taskCount >= MAX_TASKS_PER_LIST) {
-        throw new BadRequestException(
-          `List has reached maximum task limit (${MAX_TASKS_PER_LIST})`,
+        if (targetList.isDone) {
+          throw new BadRequestException('Cannot duplicate a task into the Done list');
+        }
+        await this.assertListHasCapacity(userId, targetListId);
+        destListId = targetListId;
+        newOrderIndex = await this.calculateInsertAtTop(userId, targetListId);
+      } else {
+        await this.assertListHasCapacity(userId, original.listId);
+        destListId = original.listId;
+        newOrderIndex = await this.calculateInsertBelow(
+          userId,
+          original.listId,
+          original.orderIndex,
         );
       }
-
-      const newOrderIndex =
-        target === 'origin-backlog'
-          ? await this.calculateInsertAtTop(userId, targetListId)
-          : await this.calculateInsertBelow(userId, targetListId, original.orderIndex);
 
       const duplicate = await this.tasksRepository.create({
         title: original.title,
         description: original.description,
-        listId: targetListId,
+        listId: destListId,
         originBacklogId: original.originBacklogId,
         userId,
         orderIndex: newOrderIndex,
@@ -77,6 +79,13 @@ export class DuplicateTask {
         error instanceof Error ? error.stack : undefined,
       );
       throw error;
+    }
+  }
+
+  private async assertListHasCapacity(userId: string, listId: string): Promise<void> {
+    const taskCount = await this.tasksRepository.countByList(userId, listId);
+    if (taskCount >= MAX_TASKS_PER_LIST) {
+      throw new BadRequestException(`List has reached maximum task limit (${MAX_TASKS_PER_LIST})`);
     }
   }
 

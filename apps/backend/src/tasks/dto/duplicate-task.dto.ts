@@ -1,8 +1,8 @@
-import { IsIn, IsOptional } from 'class-validator';
-import type { DuplicateTaskRequest, DuplicateTaskTarget } from '@gsd/types';
+import { IsOptional, IsUUID } from 'class-validator';
+import type { DuplicateTaskRequest } from '@gsd/types';
 
 export class DuplicateTaskDto implements DuplicateTaskRequest {
   @IsOptional()
-  @IsIn(['in-place', 'origin-backlog'])
-  target?: DuplicateTaskTarget;
+  @IsUUID('4', { message: 'Invalid target list ID format' })
+  targetListId?: string;
 }

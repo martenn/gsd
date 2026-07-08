@@ -126,7 +126,7 @@ export class TasksController {
     @Param('id') taskId: string,
     @Body() dto: DuplicateTaskDto,
   ): Promise<DuplicateTaskResponseDto> {
-    const task = await this.duplicateTaskUseCase.execute(user.id, taskId, dto.target);
+    const task = await this.duplicateTaskUseCase.execute(user.id, taskId, dto.targetListId);
     return { task };
   }
 

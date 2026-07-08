@@ -160,22 +160,23 @@ describe('DuplicateTask', () => {
       );
     });
 
-    describe("target 'origin-backlog'", () => {
-      const mockBacklog = {
-        id: originBacklogId,
+    describe('with an explicit target list', () => {
+      const targetListId = 'list-left';
+      const mockTargetList = {
+        id: targetListId,
         userId,
-        name: 'Backlog',
-        orderIndex: 1000,
-        isBacklog: true,
+        name: 'Left List',
+        orderIndex: 2000,
+        isBacklog: false,
         isDone: false,
-        color: '#3B82F6',
+        color: null,
         createdAt: new Date(),
         updatedAt: new Date(),
       };
 
-      it('copies to the top of the origin backlog (max + step) and checks its capacity', async () => {
+      it('copies to the top of the target list (max + step) and checks its capacity', async () => {
         tasksRepository.findById.mockResolvedValue(mockOriginal);
-        listsRepository.findById.mockResolvedValue(mockBacklog);
+        listsRepository.findById.mockResolvedValue(mockTargetList);
         tasksRepository.countByList.mockResolvedValue(3);
         tasksRepository.findMaxOrderIndex.mockResolvedValue(5000);
         tasksRepository.create.mockImplementation((data) =>
@@ -183,17 +184,19 @@ describe('DuplicateTask', () => {
         );
         taskMapper.toDto.mockResolvedValue({} as any);
 
-        await duplicateTask.execute(userId, taskId, 'origin-backlog');
+        await duplicateTask.execute(userId, taskId, targetListId);
 
         // ListsRepository.findById takes (id, userId) — opposite of TasksRepository.
-        expect(listsRepository.findById).toHaveBeenCalledWith(originBacklogId, userId);
-        // Capacity + max-orderIndex are checked against the backlog, not the source list.
-        expect(tasksRepository.countByList).toHaveBeenCalledWith(userId, originBacklogId);
-        expect(tasksRepository.findMaxOrderIndex).toHaveBeenCalledWith(userId, originBacklogId);
+        expect(listsRepository.findById).toHaveBeenCalledWith(targetListId, userId);
+        // Capacity + max-orderIndex are checked against the target list, not the source.
+        expect(tasksRepository.countByList).toHaveBeenCalledWith(userId, targetListId);
+        expect(tasksRepository.findMaxOrderIndex).toHaveBeenCalledWith(userId, targetListId);
         expect(tasksRepository.findNextBelow).not.toHaveBeenCalled();
         expect(tasksRepository.create).toHaveBeenCalledWith(
           expect.objectContaining({
-            listId: originBacklogId,
+            listId: targetListId,
+            // Copy keeps the original's origin backlog (color inheritance), even
+            // when landing in a different list.
             originBacklogId,
             orderIndex: 6000,
             title: 'Original Title',
@@ -201,38 +204,49 @@ describe('DuplicateTask', () => {
         );
       });
 
-      it('uses the initial order index when the origin backlog is empty', async () => {
+      it('uses the initial order index when the target list is empty', async () => {
         tasksRepository.findById.mockResolvedValue(mockOriginal);
-        listsRepository.findById.mockResolvedValue(mockBacklog);
+        listsRepository.findById.mockResolvedValue(mockTargetList);
         tasksRepository.countByList.mockResolvedValue(0);
         tasksRepository.findMaxOrderIndex.mockResolvedValue(null);
         tasksRepository.create.mockResolvedValue({ ...mockOriginal, id: 'new-id' } as any);
         taskMapper.toDto.mockResolvedValue({} as any);
 
-        await duplicateTask.execute(userId, taskId, 'origin-backlog');
+        await duplicateTask.execute(userId, taskId, targetListId);
 
         expect(tasksRepository.create).toHaveBeenCalledWith(
           expect.objectContaining({ orderIndex: 1000 }),
         );
       });
 
-      it('throws NotFoundException when the origin backlog no longer exists', async () => {
+      it('throws NotFoundException when the target list does not exist', async () => {
         tasksRepository.findById.mockResolvedValue(mockOriginal);
         listsRepository.findById.mockResolvedValue(null);
 
-        await expect(duplicateTask.execute(userId, taskId, 'origin-backlog')).rejects.toThrow(
+        await expect(duplicateTask.execute(userId, taskId, targetListId)).rejects.toThrow(
           NotFoundException,
         );
 
         expect(tasksRepository.create).not.toHaveBeenCalled();
       });
 
-      it('throws BadRequestException when the origin backlog is at capacity', async () => {
+      it('throws BadRequestException when the target list is the Done list', async () => {
         tasksRepository.findById.mockResolvedValue(mockOriginal);
-        listsRepository.findById.mockResolvedValue(mockBacklog);
+        listsRepository.findById.mockResolvedValue({ ...mockTargetList, isDone: true });
+
+        await expect(duplicateTask.execute(userId, taskId, targetListId)).rejects.toThrow(
+          BadRequestException,
+        );
+
+        expect(tasksRepository.create).not.toHaveBeenCalled();
+      });
+
+      it('throws BadRequestException when the target list is at capacity', async () => {
+        tasksRepository.findById.mockResolvedValue(mockOriginal);
+        listsRepository.findById.mockResolvedValue(mockTargetList);
         tasksRepository.countByList.mockResolvedValue(100);
 
-        await expect(duplicateTask.execute(userId, taskId, 'origin-backlog')).rejects.toThrow(
+        await expect(duplicateTask.execute(userId, taskId, targetListId)).rejects.toThrow(
           BadRequestException,
         );
 
