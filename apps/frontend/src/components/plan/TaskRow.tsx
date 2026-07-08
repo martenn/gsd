@@ -4,6 +4,7 @@ import { CheckCircle, GripVertical } from 'lucide-react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { TaskActionsMenu } from './TaskActionsMenu';
+import { TaskDuplicateMenu } from './TaskDuplicateMenu';
 import { TaskEditForm } from './TaskEditForm';
 import { Button } from '../ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../ui/tooltip';
@@ -96,6 +97,7 @@ export function TaskRow({ task, lists, siblings, listId }: TaskRowProps) {
         </div>
 
         <div className="ml-2 flex items-center gap-1">
+          <TaskDuplicateMenu task={task} lists={lists} />
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
