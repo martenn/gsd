@@ -8,7 +8,6 @@ import {
   ArrowDown,
   ChevronsUp,
   ChevronsDown,
-  Copy,
 } from 'lucide-react';
 import type { ListDto, TaskDto } from '@gsd/types';
 import { Button } from '../ui/button';
@@ -22,13 +21,7 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from '../ui/dropdown-menu';
-import {
-  useCompleteTask,
-  useDeleteTask,
-  useDuplicateTask,
-  useMoveTask,
-  useReorderTask,
-} from '../../hooks/useTasks';
+import { useCompleteTask, useDeleteTask, useMoveTask, useReorderTask } from '../../hooks/useTasks';
 
 interface TaskActionsMenuProps {
   task: TaskDto;
@@ -72,24 +65,12 @@ export function TaskActionsMenu({ task, lists, siblings, onEdit }: TaskActionsMe
   const deleteTaskMutation = useDeleteTask();
   const moveTaskMutation = useMoveTask();
   const reorderTaskMutation = useReorderTask();
-  const duplicateTaskMutation = useDuplicateTask();
 
   const position = siblings.findIndex((t) => t.id === task.id);
   const canMoveUp = position > 0;
   const canMoveDown = position >= 0 && position < siblings.length - 1;
 
   const availableDestinations = lists.filter((list) => list.id !== task.listId && !list.isDone);
-
-  // Board column order (mirrors BoardLayout): backlogs first, then intermediate
-  // lists, Done excluded. The "left list" is the column immediately before the
-  // task's current list; undefined when the task sits in the leftmost column.
-  const displayOrder = [
-    ...lists.filter((list) => list.isBacklog),
-    ...lists.filter((list) => !list.isBacklog && !list.isDone),
-  ];
-  const currentIndex = displayOrder.findIndex((list) => list.id === task.listId);
-  const leftList = currentIndex > 0 ? displayOrder[currentIndex - 1] : undefined;
-  const originBacklog = lists.find((list) => list.id === task.originBacklogId);
 
   const handleComplete = async () => {
     try {
@@ -104,16 +85,6 @@ export function TaskActionsMenu({ task, lists, siblings, onEdit }: TaskActionsMe
       await deleteTaskMutation.mutateAsync(task.id);
     } catch (error) {
       console.error('Failed to delete task:', error);
-    }
-  };
-
-  // targetListId undefined → duplicate in place (below the original). Otherwise
-  // the copy lands at the top of the given list.
-  const handleDuplicate = async (targetListId?: string) => {
-    try {
-      await duplicateTaskMutation.mutateAsync({ taskId: task.id, targetListId });
-    } catch (error) {
-      console.error('Failed to duplicate task:', error);
     }
   };
 
@@ -188,24 +159,6 @@ export function TaskActionsMenu({ task, lists, siblings, onEdit }: TaskActionsMe
           <Edit className="mr-2 h-4 w-4" />
           Edit
         </DropdownMenuItem>
-        <DropdownMenuSub>
-          <DropdownMenuSubTrigger>
-            <Copy className="mr-2 h-4 w-4" />
-            Duplicate
-          </DropdownMenuSubTrigger>
-          <DropdownMenuSubContent>
-            <DropdownMenuItem onClick={() => handleDuplicate(task.originBacklogId)}>
-              In backlog{originBacklog ? ` (${originBacklog.name})` : ''}
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              disabled={!leftList}
-              onClick={() => leftList && handleDuplicate(leftList.id)}
-            >
-              To the left list{leftList ? ` (${leftList.name})` : ''}
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => handleDuplicate()}>Here</DropdownMenuItem>
-          </DropdownMenuSubContent>
-        </DropdownMenuSub>
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={handleMoveToTop} disabled={!canMoveUp}>
           <ChevronsUp className="mr-2 h-4 w-4" />
