@@ -2,7 +2,6 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import type {
   BulkAddTasksRequest,
   CreateTaskRequest,
-  DuplicateTaskTarget,
   GetTasksQuery,
   GetTasksResponseDto,
   MoveTaskRequest,
@@ -138,8 +137,8 @@ export function useDuplicateTask() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ taskId, target }: { taskId: string; target?: DuplicateTaskTarget }) =>
-      duplicateTask(taskId, target),
+    mutationFn: ({ taskId, targetListId }: { taskId: string; targetListId?: string }) =>
+      duplicateTask(taskId, targetListId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tasks'] });
     },
