@@ -15,6 +15,7 @@ interface ListHeaderProps {
   canToggleBacklog: boolean;
   onNewTask: () => void;
   canCreateTask: boolean;
+  collapsible: boolean;
   isCollapsed: boolean;
   onToggleCollapsed: () => void;
 }
@@ -28,6 +29,7 @@ export function ListHeader({
   canToggleBacklog,
   onNewTask,
   canCreateTask,
+  collapsible,
   isCollapsed,
   onToggleCollapsed,
 }: ListHeaderProps) {
@@ -43,16 +45,22 @@ export function ListHeader({
   return (
     <div className="border-b border-border px-2 py-0.5 bg-muted/50">
       <div className="flex items-center gap-1">
-        <Button
-          variant="ghost"
-          size="sm"
-          className="h-6 w-6 p-0 shrink-0"
-          onClick={onToggleCollapsed}
-          aria-label={isCollapsed ? 'Expand list' : 'Collapse list'}
-          aria-expanded={!isCollapsed}
-        >
-          {isCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-        </Button>
+        {collapsible && (
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-6 w-6 p-0 shrink-0"
+            onClick={onToggleCollapsed}
+            aria-label={isCollapsed ? 'Expand list' : 'Collapse list'}
+            aria-expanded={!isCollapsed}
+          >
+            {isCollapsed ? (
+              <ChevronRight className="h-4 w-4" />
+            ) : (
+              <ChevronDown className="h-4 w-4" />
+            )}
+          </Button>
+        )}
         <div ref={editableNameRef} className="flex-1 min-w-0">
           <EditableListName listId={list.id} name={list.name} />
         </div>
