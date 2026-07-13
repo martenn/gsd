@@ -31,6 +31,10 @@ export function ListColumn({
   const [isCreatingTask, setIsCreatingTask] = useState(false);
   const [isCollapsed, toggleCollapsed] = useListCollapsed(list.id);
 
+  // Only backlogs can be folded; intermediate lists always show their tasks.
+  const collapsible = list.isBacklog;
+  const collapsed = collapsible && isCollapsed;
+
   // Each list column is itself a droppable so empty lists still accept cross-list drops.
   // The DndContext lives in BoardLayout; here we just expose the droppable + sortable set.
   const { setNodeRef: setDroppableRef, isOver } = useDroppable({
@@ -41,7 +45,7 @@ export function ListColumn({
   const canDelete = totalNonDoneLists > 1;
   const canToggleBacklog = list.isBacklog ? backlogCount > 1 : true;
   const canCreateTask = tasks.length < MAX_TASKS;
-  const showTaskArea = !isCollapsed && (isCreatingTask || tasks.length > 0);
+  const showTaskArea = !collapsed && (isCreatingTask || tasks.length > 0);
 
   const accentStyle: CSSProperties | undefined = list.color
     ? { borderLeft: `4px solid ${list.color}` }
@@ -49,7 +53,7 @@ export function ListColumn({
 
   const handleNewTask = () => {
     if (!canCreateTask) return;
-    if (isCollapsed) toggleCollapsed();
+    if (collapsed) toggleCollapsed();
     setIsCreatingTask(true);
   };
 
@@ -67,29 +71,32 @@ export function ListColumn({
         canToggleBacklog={canToggleBacklog}
         onNewTask={handleNewTask}
         canCreateTask={canCreateTask}
-        isCollapsed={isCollapsed}
+        collapsible={collapsible}
+        isCollapsed={collapsed}
         onToggleCollapsed={toggleCollapsed}
       />
 
-      <div
-        ref={setDroppableRef}
-        className={
-          showTaskArea
-            ? fullWidth
-              ? 'overflow-y-auto max-h-[60vh]'
-              : 'flex-1 min-h-0 overflow-y-auto'
-            : 'min-h-[40px]'
-        }
-      >
-        {isCreatingTask && (
-          <InlineTaskCreator listId={list.id} onCancel={() => setIsCreatingTask(false)} />
-        )}
-        <SortableContext items={tasks.map((t) => t.id)} strategy={verticalListSortingStrategy}>
-          {tasks.map((task) => (
-            <TaskRow key={task.id} task={task} lists={lists} siblings={tasks} listId={list.id} />
-          ))}
-        </SortableContext>
-      </div>
+      {!collapsed && (
+        <div
+          ref={setDroppableRef}
+          className={
+            showTaskArea
+              ? fullWidth
+                ? 'overflow-y-auto max-h-[60vh]'
+                : 'flex-1 min-h-0 overflow-y-auto'
+              : 'min-h-[40px]'
+          }
+        >
+          {isCreatingTask && (
+            <InlineTaskCreator listId={list.id} onCancel={() => setIsCreatingTask(false)} />
+          )}
+          <SortableContext items={tasks.map((t) => t.id)} strategy={verticalListSortingStrategy}>
+            {tasks.map((task) => (
+              <TaskRow key={task.id} task={task} lists={lists} siblings={tasks} listId={list.id} />
+            ))}
+          </SortableContext>
+        </div>
+      )}
     </Card>
   );
 }
