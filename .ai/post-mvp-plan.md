@@ -4,7 +4,7 @@ Flat priority list of things to do next. **Top = next pick.** Reorder by moving 
 
 **Status:** MVP shipped — app live on mikrus (`getsd.bieda.it`). Backend feature-complete, Plan/Work/Done/Dump modes live, drag-and-drop (within and across lists), task duplicate, move-all-tasks, compact list/section headers, app icon.
 
-**Last Updated:** 2026-05-29
+**Last Updated:** 2026-07-27
 
 ---
 
@@ -71,6 +71,14 @@ Phased — each step depends on the previous.
 ## Done log
 
 Recent ships (newest first). Move items here when merged.
+
+- 2026-07-27 — Removed Cursor IDE support (`.cursor/`, sync script); `.ai/standards/` is now the single source of truth. Documented validation Step 0 (`install` → `db:generate` → `build:packages`) and refreshed the code map.
+- 2026-07-27 — Board columns row bounded so each column scrolls independently; headers always visible (was: clipped, unreachable column bottoms).
+- 2026-07-13 — List folding actually works and is backlog-only (task area unmounts when collapsed).
+- 2026-07-08 — Task actions always visible (no longer hover-gated); duplicate collapsed into one toolbar button left of Complete with three options: in backlog / to the left list / here. Backend duplicate takes an optional `targetListId`.
+- 2026-06-18 — Redirect to login on any 401 (expired session / signed out), centralized in the API client.
+- 2026-06-11 — `favicon.ico` added so the browser's automatic `/favicon.ico` probe stops 404-ing.
+- 2026-06-10 — Duplicate task to its origin backlog, alongside duplicate-in-place.
 
 - 2026-05-29 — App favicon — task-list + check sweep, light/dark variants.
 - 2026-05-29 — DnD iteration 2 — cross-list drag with backend `MoveTask` accepting `newOrderIndex`; optimistic patch on `useMoveTask`.
