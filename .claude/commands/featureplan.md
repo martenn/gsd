@@ -14,7 +14,7 @@ Before we begin, review the following information:
 
 3. Implementation rules:
    <implementation_rules>
-   @.cursor/rules/backend.mdc
+   @.ai/standards/backend-development.md
    </implementation_rules>
 
 4. Implementation approach:

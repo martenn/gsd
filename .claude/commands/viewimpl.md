@@ -9,7 +9,7 @@ First, review the implementation plan:
 Now review the implementation rules:
 
 <implementation_rules>
-.cursor/rules/frontend-beginner-friendly.mdc
+.ai/standards/frontend-development.md
 </implementation_rules>
 
 Review the defined types:

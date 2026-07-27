@@ -14,10 +14,10 @@ Review the following information first:
    @CLAUDE.md
 
 2. **Backend Rules:**
-   @.cursor/rules/backend.mdc
+   @.ai/standards/backend-development.md
 
 3. **Frontend Rules:**
-   @.cursor/rules/frontend.mdc
+   @.ai/standards/frontend-development.md
 
 ## Analysis Scope
 

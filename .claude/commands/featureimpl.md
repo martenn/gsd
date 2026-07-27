@@ -11,7 +11,7 @@ First, carefully review the provided implementation plan:
 </tech_stack>
 
 <implementation_rules>
-@.cursor/rules/backend.mdc
+@.ai/standards/backend-development.md
 </implementation_rules>
 
 <implementation_approach>

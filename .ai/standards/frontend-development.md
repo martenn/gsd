@@ -143,3 +143,16 @@ The following can be omitted or simplified for MVP:
 - Complex animations
 - Advanced keyboard navigation (implement basic first)
 - Accessibility beyond semantic HTML and ARIA basics
+
+## Code Review Checklist
+
+Before submitting code, verify:
+
+- [ ] Component is under 80 lines
+- [ ] No complex nested ternaries
+- [ ] Props have explicit types
+- [ ] No `any` types used
+- [ ] Error cases handled with try-catch
+- [ ] Component has single responsibility
+- [ ] File follows naming conventions
+- [ ] Uses existing patterns from codebase

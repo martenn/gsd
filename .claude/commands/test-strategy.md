@@ -14,7 +14,7 @@ Review the following first:
    @CLAUDE.md
 
 2. **Backend Rules & Testing Conventions:**
-   @.cursor/rules/backend.mdc
+   @.ai/standards/backend-development.md
 
 3. **Development Workflow:**
    @CLAUDE.md
