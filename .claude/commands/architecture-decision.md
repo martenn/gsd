@@ -14,10 +14,10 @@ Review the following before proceeding:
    @CLAUDE.md
 
 2. **Implementation Rules:**
-   @.cursor/rules/backend.mdc
+   @.ai/standards/backend-development.md
 
 3. **Frontend Standards:**
-   @.cursor/rules/frontend.mdc
+   @.ai/standards/frontend-development.md
 
 ## Decision Framework
 

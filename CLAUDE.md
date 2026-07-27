@@ -7,19 +7,18 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 **IMPORTANT:** When architectural patterns, coding standards, or rules are established or changed during a conversation:
 
 1. Always update CLAUDE.md with the new rule/pattern (this file)
-2. Always update the corresponding `.cursor/rules/*.mdc` file(s)
-3. Both files must stay in sync
+2. Always update the detailed standard it belongs to under `.ai/standards/`
+3. Keep the two consistent — CLAUDE.md carries the summary, `.ai/standards/` the detail
 4. Changes should be made in the same response/action
 
-**Custom Commands Sync:**
+**Custom Commands:**
 
-- `.claude/commands/` - Used by Claude Code (this IDE)
-- `.cursor/commands/` - Used by Cursor IDE
-- Both directories must stay in sync
-- Run `./.maintain-command-sync.sh` to sync both directories
-- Update both locations when adding/modifying commands
+- `.claude/commands/` — the single home for custom commands
+- Reference standards from commands with `@.ai/standards/<file>.md`
 
-This ensures consistency across all development tools and documentation.
+Claude Code is the only supported AI tooling for this repo. Cursor support
+(`.cursor/rules/`, `.cursor/commands/`, `./.maintain-command-sync.sh`) was removed —
+`.ai/standards/` is now the single source of truth for detailed guidelines.
 
 ## Project Overview
 

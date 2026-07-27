@@ -14,10 +14,10 @@ Review the following standards:
    @CLAUDE.md
 
 2. **Backend Rules:**
-   @.cursor/rules/backend.mdc
+   @.ai/standards/backend-development.md
 
 3. **Frontend Rules:**
-   @.cursor/rules/frontend.mdc
+   @.ai/standards/frontend-development.md
 
 ## Review Checklist
 
