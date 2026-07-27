@@ -2,22 +2,27 @@
 
 Navigation aid for the **task** and **list** features (Plan board, task actions, DnD, keyboard groundwork) and their backend/shared counterparts. Paths are relative to the repo root. Keep in sync when files move.
 
-> Convention reminders: tasks render **DESC** by `orderIndex` (top = highest); lists render **ASC**. Order steps are 1000 (`OrderIndexHelper`). A task always has `originBacklogId` set.
+> Convention reminders:
+>
+> - Tasks render **DESC** by `orderIndex` (top = highest); lists render **ASC**. Order steps are 1000 (`OrderIndexHelper`). A task always has `originBacklogId` set.
+> - Board column order is `[...backlogs, ...intermediateLists]`, Done excluded — anything computing "left"/"right"/"active" list must match it.
+> - **Argument order differs between repositories:** `TasksRepository.findById(userId, taskId)` vs `ListsRepository.findById(id, userId)`. Swapping them yields a 404, not a type error.
 
 ---
 
 ## Frontend — Plan board (`apps/frontend/src/components/plan/`)
 
 - `BoardLayout.tsx` — owns the single `DndContext` (Mouse + Keyboard sensors, `closestCorners`); `handleDragEnd` branches same-list reorder vs cross-list move; builds `tasksByListId`. Wrap point for any future keyboard-nav provider.
-- `IntermediateListsContainer.tsx` — lays out the intermediate (non-backlog, non-done) columns.
-- `BacklogColumn.tsx` — backlog-specific column wrapper (leftmost group).
-- `ListColumn.tsx` — `useDroppable({id: list:<id>})` + `SortableContext`; renders `TaskRow`s; collapse via `useListCollapsed`; `fullWidth` prop; Card padding overridden `gap-0 py-0`.
+- `IntermediateListsContainer.tsx` — lays out the intermediate (non-backlog, non-done) columns. Bounded flex column: `shrink-0` header + `flex-1 min-h-0 … overflow-x-auto` row, so columns stay viewport-height and scroll individually.
+- `BacklogColumn.tsx` — backlog column wrapper (leftmost group); same bounded shape, backlogs stack in a `flex-1 min-h-0 overflow-y-auto` region.
+- `ListColumn.tsx` — `useDroppable({id: list:<id>})` + `SortableContext`; renders `TaskRow`s; `fullWidth` prop; Card padding overridden `gap-0 py-0`. Collapse (`useListCollapsed`) applies to **backlogs only** — the task area unmounts when collapsed.
 - `ListHeader.tsx` — column header (title, count, actions trigger).
 - `EditableListName.tsx` — inline list-name editing.
 - `ListActionsMenu.tsx` — list-level menu: rename, reorder, toggle backlog, **Move all tasks** (submenu), delete-with-destination.
 - `ListLimitIndicator.tsx` — shows when the 10-list / 100-task limits are hit (controls disabled, not hidden).
-- `TaskRow.tsx` — `useSortable` task item; hover toolbar (lg+ grip handle, **Duplicate to backlog** `CopyPlus` → leftmost, **Duplicate here** `Copy`, **Complete** `CheckCircle`) + `TaskActionsMenu`; inline edit via `TaskEditForm`. 6px color bar from `task.color`.
-- `TaskActionsMenu.tsx` — `⋯` dropdown: Edit · Move to top/up/down/bottom · Move to (submenu) · Complete · Delete. (Duplicate now lives as row buttons in `TaskRow`.)
+- `TaskRow.tsx` — `useSortable` task item; **always-visible** action toolbar (`TaskDuplicateMenu` → `Complete` `CheckCircle` → `TaskActionsMenu`); the lg+ grip handle stays hover-only as a drag affordance. Inline edit via `TaskEditForm`. 6px color bar from `task.color`.
+- `TaskDuplicateMenu.tsx` — standalone `Copy` button left of Complete; dropdown with three ordered options: **In backlog** (`originBacklogId`) · **To the left list** (previous board column, disabled in the leftmost) · **Here** (in place). Computes the left list with the same `[...backlogs, ...intermediates]` order as `BoardLayout`.
+- `TaskActionsMenu.tsx` — `⋯` dropdown: Edit · Move to top/up/down/bottom · Move to (submenu) · Complete · Delete.
 - `TaskEditForm.tsx` — inline title/description edit form.
 - `InlineTaskCreator.tsx` — top-of-list new-task input (Cmd+Enter sticky multi-add).
 - `CreateListButton.tsx` — `+` to create a new list/backlog.
@@ -31,7 +36,7 @@ Navigation aid for the **task** and **list** features (Plan board, task actions,
 
 ## Frontend — hooks (`apps/frontend/src/hooks/`)
 
-- `useTasks.ts` — `useTasksQuery`, `useCreateTask`, `useUpdateTask`, `useDeleteTask`, `useMoveTask` (optimistic), `useReorderTask` (optimistic), `useDuplicateTask` (`{ taskId, target }`), `useCompleteTask`, `useBulkAddTasks`. Query key `['tasks']`.
+- `useTasks.ts` — `useTasksQuery`, `useCreateTask`, `useUpdateTask`, `useDeleteTask`, `useMoveTask` (optimistic), `useReorderTask` (optimistic), `useDuplicateTask` (`{ taskId, targetListId }`), `useCompleteTask`, `useBulkAddTasks`. Query key `['tasks']`.
 - `useLists.ts` — `useListsQuery`, `useCreateList`, `useUpdateList`, `useDeleteList`, `useToggleBacklog`, `useReorderList`, `useMoveAllTasks`. Query key `['lists']`.
 - `useListCollapsed.ts` — per-session collapsed-list state.
 - `useGlobalKeyboardShortcut.ts` — modifier-aware global key listener (foundation for keyboard mode).
@@ -40,7 +45,7 @@ Navigation aid for the **task** and **list** features (Plan board, task actions,
 ## Frontend — API client (`apps/frontend/src/lib/api/`)
 
 - `client.ts` — `apiClient.{get,post,patch,delete}`, `post<T>(path, data?)`; credentials + `ApiError`.
-- `tasks.ts` — `getTasks`, `createTask`, `updateTask`, `deleteTask`, `moveTask`, `reorderTask`, `duplicateTask(taskId, target?)`, `completeTask`, `bulkAddTasks`.
+- `tasks.ts` — `getTasks`, `createTask`, `updateTask`, `deleteTask`, `moveTask`, `reorderTask`, `duplicateTask(taskId, targetListId?)`, `completeTask`, `bulkAddTasks`.
 - `lists.ts` — `getLists`, `createList`, `updateList`, `deleteList(listId, destinationListId)`, `toggleBacklog`, `reorderList`, `moveAllTasks`.
 
 ---
@@ -58,7 +63,7 @@ Navigation aid for the **task** and **list** features (Plan board, task actions,
 | `POST /:id/move` | `MoveTask` (listId + optional `newOrderIndex`) |
 | `POST /:id/complete` | `CompleteTask` |
 | `POST /:id/reorder` | `ReorderTask` (`newOrderIndex` \| `afterTaskId`) |
-| `POST /:id/duplicate` | `DuplicateTask` (body `{ target?: 'in-place' \| 'origin-backlog' }`) |
+| `POST /:id/duplicate` | `DuplicateTask` (body `{ targetListId?: string }` — omitted = in place) |
 | `POST /bulk-add` | `BulkAddTasks` |
 
 **Use-cases** `use-cases/` — one `execute()` each:
@@ -68,7 +73,7 @@ Navigation aid for the **task** and **list** features (Plan board, task actions,
 - `move-task.ts` — cross-list move (+ same-list reorder when explicit `newOrderIndex`); capacity + Done-list guards; injects `ListsRepository`.
 - `complete-task.ts` — sets `completedAt`, moves to Done.
 - `reorder-task.ts` — same-list orderIndex change.
-- `duplicate-task.ts` — copies title/description/originBacklog; `in-place` = midpoint below original, `origin-backlog` = top of origin backlog; injects `ListsRepository`.
+- `duplicate-task.ts` — copies title/description/originBacklog; no `targetListId` = midpoint below the original, `targetListId` = top of that list (validates existence, rejects Done, checks capacity); injects `ListsRepository`.
 - `bulk-add-tasks.ts` — multi-line add to a list.
 
 **Infra / DTO / mappers:**
@@ -99,6 +104,6 @@ Navigation aid for the **task** and **list** features (Plan board, task actions,
 
 ## Shared packages
 
-- `packages/types/src/api/tasks.ts` — `TaskDto`, request/response DTOs, `DuplicateTaskTarget` / `DuplicateTaskRequest`.
+- `packages/types/src/api/tasks.ts` — `TaskDto`, request/response DTOs, `DuplicateTaskRequest` (`targetListId?`).
 - `packages/types/src/api/lists.ts` — `ListDto`, list request/response DTOs.
 - `packages/validation/src/` — zod schemas (task title ≤500, description ≤5000, list name ≤100, bulk-add ≤10 lines).

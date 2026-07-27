@@ -105,6 +105,39 @@
 
 ## Required Tools Usage
 
+### Step 0: Prerequisites (REQUIRED before any lint/typecheck)
+
+**Skipping this step produces hundreds of errors that have nothing to do with your
+change.** Always run it in a fresh clone or a new git worktree — worktrees do not
+inherit `node_modules` or generated artifacts:
+
+```bash
+# From the repo root
+pnpm install         # workspace dependencies
+pnpm db:generate     # Prisma client — backend lint/typecheck need it
+pnpm build:packages  # builds @gsd/types + @gsd/validation into dist/
+```
+
+`@gsd/types` resolves to `./dist/index.d.ts`, so **every** app importing it fails
+typecheck until `build:packages` has run. Prefer `pnpm validate:full`, which already
+does all of this in the right order.
+
+### Phantom failures and what they actually mean
+
+Match the symptom before debugging your own code:
+
+| Symptom | Real cause | Fix |
+| --- | --- | --- |
+| Hundreds of `@typescript-eslint/no-unsafe-*` in backend | Prisma client not generated | `pnpm db:generate` |
+| Dozens of `Cannot find module '@gsd/types'` / `'@gsd/validation'` | Workspace packages not built | `pnpm build:packages` |
+| `Cannot find module 'react'`, `--jsx is not set`, `Cannot find name 'describe'` | Dependencies not installed in this worktree | `pnpm install` |
+
+If the error count is large and the messages are all module-resolution or
+`no-unsafe-*`, it is Step 0 — not the diff. Fix the environment, re-run, then read
+whatever remains.
+
+### Then validate
+
 **Always use these commands in the correct order:**
 
 ```bash
