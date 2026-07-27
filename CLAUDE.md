@@ -355,12 +355,20 @@ Before marking any task complete, AI agents MUST:
 
 **Validation Commands:**
 ```bash
+# Step 0 — REQUIRED first in a fresh clone or new worktree (from repo root).
+# Skipping it produces hundreds of errors unrelated to your change.
+pnpm install && pnpm db:generate && pnpm build:packages
+
 # Backend
 cd apps/backend && pnpm lint && pnpm typecheck && pnpm build && pnpm test
 
 # Frontend
 cd apps/frontend && pnpm lint && pnpm typecheck && pnpm build
 ```
+
+Or just `pnpm validate:full`, which runs Step 0 and everything else in order.
+A wall of `no-unsafe-*` means `db:generate` is missing; a wall of
+`Cannot find module '@gsd/types'` means `build:packages` is missing.
 
 See [.ai/standards/validation-workflow.md](.ai/standards/validation-workflow.md) for complete validation rules.
 
