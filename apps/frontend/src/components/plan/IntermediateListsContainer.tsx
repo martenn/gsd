@@ -17,12 +17,15 @@ export function IntermediateListsContainer({
   totalNonDoneLists,
   backlogCount,
 }: IntermediateListsContainerProps) {
+  // Bounded flex column: the header keeps its natural height and the columns row
+  // takes exactly the rest. Without min-h-0 the row grows past the viewport and
+  // its overflow gets clipped and unreachable.
   return (
-    <section className="flex-1 overflow-x-auto overflow-y-hidden">
-      <div className="sticky top-0 bg-background pb-2 z-10">
+    <section className="flex-1 min-w-0 flex flex-col min-h-0">
+      <div className="shrink-0 bg-background pb-2">
         <CreateListButton type="intermediate" title="Lists" />
       </div>
-      <div className="flex gap-4 h-full pb-4 pt-2">
+      <div className="flex-1 min-h-0 flex gap-4 overflow-x-auto pb-4 pt-2">
         {intermediateLists.length === 0 ? (
           <div className="text-sm text-muted-foreground py-4">
             No lists yet. Create one to organize your tasks.

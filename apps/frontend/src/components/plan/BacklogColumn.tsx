@@ -18,11 +18,11 @@ export function BacklogColumn({
   backlogCount,
 }: BacklogColumnProps) {
   return (
-    <aside className="flex-shrink-0 w-80 space-y-4 overflow-y-auto border-r border-border pr-4">
-      <div className="sticky top-0 bg-background pb-2 z-10">
+    <aside className="flex-shrink-0 w-80 flex flex-col min-h-0 border-r border-border pr-4">
+      <div className="shrink-0 bg-background pb-2">
         <CreateListButton type="backlog" title="Backlogs" />
       </div>
-      <div className="space-y-4">
+      <div className="flex-1 min-h-0 overflow-y-auto space-y-4">
         {backlogs.length === 0 ? (
           <div className="text-sm text-muted-foreground py-4">
             No backlogs yet. Create one to get started.
