@@ -11,26 +11,18 @@ export function CompletedTaskCard({ task, timezone }: CompletedTaskCardProps) {
   const completedDate = new Date(task.completedAt);
 
   return (
-    <li className="group relative border border-border rounded-lg p-4 hover:bg-muted/50 transition-colors">
+    <li
+      className="relative flex items-center gap-3 border border-border rounded-md py-2 pl-4 pr-3 hover:bg-muted/50 transition-colors"
+      title={task.description || undefined}
+    >
       <TaskColorIndicator color={task.color} />
-
-      <div className="pl-3">
-        <h3 className="text-base font-semibold text-foreground mb-1">{task.title}</h3>
-
-        {task.description && (
-          <p className="text-sm text-muted-foreground mb-2 line-clamp-3">{task.description}</p>
-        )}
-
-        <div className="flex items-center gap-4">
-          <CompletionTimestamp completedAt={completedDate} timezone={timezone} />
-
-          <span className="text-muted-foreground/50" aria-hidden="true">
-            •
-          </span>
-
-          <span className="text-xs text-muted-foreground">{task.listName}</span>
-        </div>
-      </div>
+      <span className="min-w-0 flex-1 truncate text-sm font-medium text-foreground">
+        {task.title}
+      </span>
+      <span className="hidden sm:inline shrink-0 text-xs text-muted-foreground">
+        {task.listName}
+      </span>
+      <CompletionTimestamp completedAt={completedDate} timezone={timezone} />
     </li>
   );
 }
