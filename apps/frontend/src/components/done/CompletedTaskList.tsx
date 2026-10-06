@@ -41,7 +41,7 @@ export function CompletedTaskList({
   }
 
   return (
-    <ul className="space-y-3" aria-label={`Completed tasks list, ${tasks.length} items`}>
+    <ul className="space-y-1.5" aria-label={`Completed tasks list, ${tasks.length} items`}>
       {tasks.map((task) => (
         <CompletedTaskCard key={task.id} task={task} timezone={timezone} />
       ))}

@@ -1,11 +1,13 @@
 import { useListsQuery } from '../../hooks/useLists';
 import { useTasksQuery } from '../../hooks/useTasks';
 import { useCompleteTask } from '../../hooks/useTasks';
-import { CurrentTaskCard } from '../work/CurrentTaskCard';
+import { WorkTaskTile } from '../work/WorkTaskTile';
 import { ForecastSection } from '../work/ForecastSection';
-import { CompleteButton } from '../work/CompleteButton';
 import { EmptyWorkState } from '../work/EmptyWorkState';
 import { LoadingSpinner } from '../ui/LoadingSpinner';
+
+const WORK_WINDOW_SIZE = 3;
+const UP_NEXT_SIZE = 3;
 
 export function WorkView() {
   const { data: lists, isLoading: listsLoading } = useListsQuery();
@@ -23,14 +25,8 @@ export function WorkView() {
   );
 
   const tasks = tasksData?.tasks || [];
-  const currentTask = tasks[0];
-  const forecastTasks = tasks.slice(1, 4);
-
-  const handleComplete = () => {
-    if (currentTask) {
-      completeTaskMutation.mutate(currentTask.id);
-    }
-  };
+  const windowTasks = tasks.slice(0, WORK_WINDOW_SIZE);
+  const upNextTasks = tasks.slice(WORK_WINDOW_SIZE, WORK_WINDOW_SIZE + UP_NEXT_SIZE);
 
   if (listsLoading || tasksLoading) {
     return (
@@ -40,7 +36,7 @@ export function WorkView() {
     );
   }
 
-  if (!currentTask) {
+  if (windowTasks.length === 0) {
     return (
       <div className="max-w-3xl mx-auto px-4 py-8">
         <EmptyWorkState />
@@ -50,11 +46,17 @@ export function WorkView() {
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-8">
-      <CurrentTaskCard task={currentTask} />
-      <div className="flex justify-center mb-8">
-        <CompleteButton onClick={handleComplete} disabled={completeTaskMutation.isPending} />
+      <div className="space-y-3 mb-8">
+        {windowTasks.map((task) => (
+          <WorkTaskTile
+            key={task.id}
+            task={task}
+            onComplete={(taskId) => completeTaskMutation.mutate(taskId)}
+            disabled={completeTaskMutation.isPending}
+          />
+        ))}
       </div>
-      <ForecastSection tasks={forecastTasks} />
+      <ForecastSection tasks={upNextTasks} />
     </div>
   );
 }

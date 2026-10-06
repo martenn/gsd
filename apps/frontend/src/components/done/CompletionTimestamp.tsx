@@ -1,20 +1,29 @@
-import { useRelativeTime } from '../../hooks/useRelativeTime';
-
 interface CompletionTimestampProps {
   completedAt: Date;
   timezone: string;
 }
 
-export function CompletionTimestamp({ completedAt, timezone }: CompletionTimestampProps) {
-  const { relative, absolute, useRelative } = useRelativeTime(completedAt, timezone);
+function formatCompletedAt(date: Date, timezone: string): string {
+  const parts = new Intl.DateTimeFormat('en-GB', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    hourCycle: 'h23',
+    timeZone: timezone,
+  }).formatToParts(date);
+  const get = (type: string) => parts.find((p) => p.type === type)?.value ?? '';
+  return `${get('year')}-${get('month')}-${get('day')} ${get('hour')}:${get('minute')}`;
+}
 
+export function CompletionTimestamp({ completedAt, timezone }: CompletionTimestampProps) {
   return (
     <time
       dateTime={completedAt.toISOString()}
-      title={absolute}
-      className="text-xs text-muted-foreground"
+      className="shrink-0 text-xs tabular-nums text-muted-foreground"
     >
-      Completed {useRelative ? relative : absolute}
+      {formatCompletedAt(completedAt, timezone)}
     </time>
   );
 }
